@@ -38,7 +38,7 @@ export default function UserInfo({userId, hideModal, visible}: PropTypes) {
           {JSON.parse(data.user.extraPhoneNumbers).map((number: string, index: number) => {
             return <View key={index} style={styles.phoneRow}>
               <Text>{`Тел. ${index + 2}: `}</Text>
-              <Text onPress={() => openPhoneNumber(data.user.phoneNumber)} style={styles.phoneNumber}>
+              <Text onPress={() => openPhoneNumber(number)} style={styles.phoneNumber}>
                 {number}
               </Text>
             </View>
