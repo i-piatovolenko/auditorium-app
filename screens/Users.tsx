@@ -1,43 +1,55 @@
-import React from 'react';
-import {StyleSheet, View, Text} from "react-native";
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, View, ScrollView} from "react-native";
 import useUsers from "../hooks/useUsers";
 import {DataTable} from "react-native-paper";
+import {UserTypes, UserTypesUa} from "../models/models";
+import {fullName, isTeacherType} from "../helpers/helpers";
 
 export default function Users() {
   const users = useUsers();
+  const [pages, setPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const UserElement = ({user}: any) => <DataTable.Row>
+    <DataTable.Cell>{fullName(user)}</DataTable.Cell>
+    <DataTable.Cell>{UserTypesUa[user.type as UserTypes]}</DataTable.Cell>
+  </DataTable.Row>
+
+  useEffect(() => {
+    setPages(users.length / 13)
+  }, [users]);
 
   return <View>
     <DataTable>
-      <DataTable.Header>
+      <DataTable.Header style={styles.header}>
         <DataTable.Title>П.І.Б.</DataTable.Title>
         <DataTable.Title numeric>Статус</DataTable.Title>
-        <DataTable.Title numeric>Fat</DataTable.Title>
       </DataTable.Header>
-
-      <DataTable.Row>
-        <DataTable.Cell>Frozen yogurt</DataTable.Cell>
-        <DataTable.Cell numeric>159</DataTable.Cell>
-        <DataTable.Cell numeric>6.0</DataTable.Cell>
-      </DataTable.Row>
-
-      <DataTable.Row>
-        <DataTable.Cell>Ice cream sandwich</DataTable.Cell>
-        <DataTable.Cell numeric>237</DataTable.Cell>
-        <DataTable.Cell numeric>8.0</DataTable.Cell>
-      </DataTable.Row>
-
+      <View style={styles.list}>
+        <ScrollView>
+          {users?.filter(user => isTeacherType(user.type as UserTypes)).slice(currentPage, currentPage+13).map(user => <UserElement user={user}/>)}
+        </ScrollView>
+      </View>
       <DataTable.Pagination
-        page={1}
-        numberOfPages={3}
+        style={styles.pagination}
+        page={currentPage}
+        numberOfPages={pages}
         onPageChange={page => {
-          console.log(page);
+          setCurrentPage(page);
         }}
-        label="1-2 of 6"
+        label={`${currentPage*13} - ${(currentPage*13)+13} з ${users.length}`}
       />
     </DataTable>
   </View>
 }
 
 const styles = StyleSheet.create(({
-
+  header: {
+    marginTop: 40
+  },
+  list: {
+    height: '82%'
+  },
+  pagination: {
+    justifyContent: 'center',
+  }
 }));
