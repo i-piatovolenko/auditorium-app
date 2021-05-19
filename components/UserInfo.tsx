@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from "react-native";
-import {Divider, Modal, Portal, Title} from "react-native-paper";
+import {ActivityIndicator, Divider, Modal, Portal, Title} from "react-native-paper";
 import {fullName, isTeacherType} from "../helpers/helpers";
 import {useQuery} from "@apollo/client";
 import {GET_USER_BY_ID} from "../api/operations/queries/users";
@@ -22,7 +22,7 @@ export default function UserInfo({userId, hideModal, visible}: PropTypes) {
 
   return <Portal>
     <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
-      {!loading && !error && <>
+      {!loading && !error ? <>
           <Title style={styles.occupantName}>{data.user.nameTemp === null ? fullName(data.user) :
             data.user.nameTemp}</Title>
           <Divider style={styles.divider}/>
@@ -44,7 +44,7 @@ export default function UserInfo({userId, hideModal, visible}: PropTypes) {
             </View>
           })}
         </>}
-      </>}
+      </> : <ActivityIndicator animating={true} color='#2e287c'/>}
     </Modal>
   </Portal>
 };

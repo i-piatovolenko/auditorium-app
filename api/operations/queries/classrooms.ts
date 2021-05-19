@@ -29,6 +29,7 @@ export const GET_CLASSROOMS = gql`
       schedule(date: $date) {
         from
         to
+        activity
       }
       instruments {
         name

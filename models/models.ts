@@ -65,9 +65,14 @@ export enum UserTypeColors {
   OTHER = "#ffa200",
 }
 
-export enum ActivityTypes {
+export enum ActivityTypesColor {
   LECTURE = '#ffa200',
   INDIVIDUAL_LESSON = '#2b5dff'
+}
+
+export enum ActivityTypes {
+  LECTURE = 'LECTURE',
+  INDIVIDUAL_LESSON = 'INDIVIDUAL_LESSON'
 }
 
 export enum NotificationsTypes {

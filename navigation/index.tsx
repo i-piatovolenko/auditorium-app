@@ -13,6 +13,9 @@ import {createDrawerNavigator} from "@react-navigation/drawer";
 import Home from "../screens/ClassroomsList";
 import Users from "../screens/Users";
 import CustomSidebarMenu from "./CustomSidebarMenu";
+import Schedule from "../screens/Schedule";
+import Profile from "../screens/Profile";
+import Settings from "../screens/Settings";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -46,13 +49,13 @@ function RootNavigator() {
         <Drawer.Screen name="Users" component={Users} options={{
           title: 'Довідник',
         }}/>
-        <Drawer.Screen name="Users1" component={Users} options={{
+        <Drawer.Screen name="Schedule" component={Schedule} options={{
           title: 'Розклад'
         }}/>
-        <Drawer.Screen name="Users2" component={Users} options={{
+        <Drawer.Screen name="Profile" component={Profile} options={{
           title: 'Мій профіль'
         }}/>
-        <Drawer.Screen name="Users3" component={Users} options={{
+        <Drawer.Screen name="Settings" component={Settings} options={{
           title: 'Налаштування'
         }}/>
         <Drawer.Screen name="Users4" component={Users} options={{

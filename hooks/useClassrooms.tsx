@@ -5,7 +5,7 @@ import {ISODateString} from "../helpers/helpers";
 import {ClassroomType} from "../models/models";
 import {gql, useQuery} from "@apollo/client";
 
-const useClassrooms = (props?: any): Array<ClassroomType> => {
+const useClassrooms = (): Array<ClassroomType> => {
   const [classrooms, setClassrooms] = useState<ClassroomType[]>([]);
   const { data } = useQuery(gql`
     query gridUpdate {
@@ -17,7 +17,7 @@ const useClassrooms = (props?: any): Array<ClassroomType> => {
     client
       .query({
         query: GET_CLASSROOMS,
-        variables: { date: ISODateString(props?.date ? props.date : new Date()) },
+        variables: { date: ISODateString(new Date()) },
         fetchPolicy: 'network-only',
       })
       .then((data) => {

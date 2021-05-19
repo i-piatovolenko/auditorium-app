@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, ScrollView} from "react-native";
+import {View, StyleSheet, ScrollView, Text} from "react-native";
 import {ActivityIndicator, Appbar, Button} from "react-native-paper";
 import useClassrooms from "../hooks/useClassrooms";
 import {ClassroomType} from "../models/models";
@@ -49,7 +49,7 @@ function ClassroomsList() {
           </View>
         </ScrollView>
         <Button style={styles.getInLine} mode='contained' color='#2b5dff' onPress={showModal}>
-          Стати в чергу (27-й)
+          <Text>Стати в чергу (27-й)</Text>
         </Button>
       </> : <ActivityIndicator animating={true} color='#2e287c'/>}
       <Filters hideModal={hideModal} visible={visible}/>

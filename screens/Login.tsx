@@ -1,39 +1,72 @@
 import * as React from 'react';
-import {Image, StyleSheet, TextInput} from 'react-native';
-import { Button, Checkbox } from 'react-native-paper';
-
-import { Text, View } from '../components/Themed';
+import {Image, ImageBackground, StyleSheet} from 'react-native';
+import {Button, Surface, TextInput} from 'react-native-paper';
+import {Text, View} from '../components/Themed';
+import {isLoggedVar} from "../api/client";
+import {useMutation} from "@apollo/client";
+import {LOGIN} from "../api/operations/mutations/login";
 import {useState} from "react";
 
 export default function Login({navigation}: any) {
-  const [rememberMe, setRememberMe] = useState(true);
+  const [login] = useMutation(LOGIN);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async () => {
+    let result: any;
+
+    if (email && password) {
+      try {
+        result = await login({
+          variables: {
+            input: {
+              email: email,
+              password: password
+            }
+          }
+        });
+        if (result?.data.login.userErrors?.length) {
+
+        } else {
+          const user = result?.data.login.user;
+          isLoggedVar(true);
+        }
+      } catch (e) {
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Image source={require('./../assets/images/au_logo.png')} style={styles.logo}/>
-      <Text style={styles.title}>Вхід</Text>
-      <TextInput placeholder='Логін' placeholderTextColor='rgba(255, 255, 255, .4)' style={styles.input}/>
-      <TextInput placeholder='Пароль' placeholderTextColor='rgba(255, 255, 255, .4)' style={styles.input}/>
-      <View style={styles.options}>
-        <View style={styles.remember}>
-          <Checkbox status={rememberMe ? 'checked' : 'unchecked'}
-                    onPress={() => setRememberMe(prevState => !prevState)}/>
-          <Text style={styles.rememberLogin}>Запам'ятати мене</Text>
-        </View>
-        <Button onPress={() => navigation.navigate('ForgotPassword')}
-                uppercase={false} labelStyle={styles.forgotButton}>
-          Відновити пароль
-        </Button>
-      </View>
-      <View style={styles.navButtons}>
-        <Button onPress={()=>navigation.navigate('SignUp')} mode='contained' color='#f91354'
-          style={styles.signUpButton}>
-          Зареєструватися
-        </Button>
-        <Button onPress={()=>navigation.navigate('SignUp')} mode='contained' color='#2b5dff'>
+      <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
+        <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
+        <Text style={styles.title}>Вхід</Text>
+        <Surface style={styles.inputs}>
+          <TextInput placeholder='Логін'
+                     // placeholderTextColor='rgba(255, 255, 255, .7)'
+                     style={styles.input}
+                     onChangeText={(e) => setEmail(e)}
+          />
+          <TextInput placeholder='Пароль'
+                     // placeholderTextColor='rgba(255, 255, 255, .7)'
+                     style={{...styles.input, marginBottom: 32}}
+                     onChangeText={(e) => setPassword(e)}
+          />
+
+        <Button onPress={handleSubmit} mode='contained' color='#2b5dff'
+                style={styles.button} disabled={!email || !password}>
           Увійти
         </Button>
-      </View>
+        <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'
+                style={styles.button}>
+          Реєстрація
+        </Button>
+        </Surface>
+        <Button onPress={() => navigation.navigate('ForgotPassword')} uppercase={false}
+                labelStyle={{color: '#fff'}} style={styles.button}>
+          Відновити пароль
+        </Button>
+      </ImageBackground>
     </View>
   );
 }
@@ -56,42 +89,33 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   input: {
-    width: '80%',
+    width: '100%',
     height: 40,
     fontSize: 22,
     paddingLeft: 10,
     marginTop: 16,
-    borderWidth: 1,
-    borderStyle: "solid",
+    backgroundColor: 'transparent',
     borderBottomColor: '#fff',
-    borderTopColor: 'transparent',
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent'
+    // color: '#fff'
   },
-  options: {
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    marginTop: 16,
-    marginBottom: 16,
-    width: '80%',
-    justifyContent: 'space-between',
-  },
-  remember: {
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
+  inputs: {
+    width: '90%',
+    elevation: 16,
+    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    marginTop: 32,
   },
-  rememberLogin: {
-    color: '#fff',
-  },
-  forgotButton: {
-    color: '#fff'
-  },
-  navButtons: {
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-  },
-  signUpButton: {
-    marginRight: 16,
+  button: {
+    marginTop: 16,
+    width: '100%',
+    height: 50,
+    justifyContent: 'center',
+  }, bg: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });
