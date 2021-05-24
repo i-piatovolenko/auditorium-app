@@ -26,7 +26,7 @@ export default function Home() {
 }
 
 function ClassroomsList() {
-  const classrooms: ClassroomType[] = useClassrooms(true);
+  const classrooms: ClassroomType[] = useClassrooms();
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
 

@@ -2,7 +2,7 @@ import { ApolloClient, InMemoryCache, makeVar } from "@apollo/client";
 import {ACCESS_RIGHTS} from "../models/models";
 
 export const client = new ApolloClient({
-  uri: 'http://auditoriu.me:4000/',
+  uri: 'http://3.141.103.67:4000/',
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

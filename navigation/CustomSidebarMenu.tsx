@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   View,
@@ -13,8 +13,34 @@ import {
   DrawerItemList,
   DrawerItem,
 } from '@react-navigation/drawer';
+import {Avatar, Button, Dialog, IconButton, Paragraph, Portal} from "react-native-paper";
+import {isLoggedVar} from "../api/client";
+import {getItem, removeItem} from "../api/asyncStorage";
+import {User} from "../models/models";
 
 const CustomSidebarMenu = (props: any) => {
+  const [visible, setVisible] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  const getUser = async () => {
+    await getItem('user').then(user => {
+      setUser(user as unknown as User);
+    });
+  };
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  const showDialog = () => setVisible(true);
+
+  const hideDialog = () => setVisible(false);
+
+  const logout = async () => {
+    await removeItem('user');
+    isLoggedVar(false);
+    hideDialog();
+  };
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -22,21 +48,19 @@ const CustomSidebarMenu = (props: any) => {
         source={require('../assets/images/au_logo.png')}
         style={styles.sideMenuProfileIcon}
       />
+      <View style={styles.userData}>
+        <Avatar.Icon size={44} icon='account'/>
+        <Text style={styles.userName}>{user?.firstName}, вітаємо!</Text>
+        <IconButton
+          icon="logout"
+          color="#f91354"
+          size={30}
+          onPress={showDialog}
+          style={styles.logout}
+        />
+      </View>
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
-        {/*<DrawerItem*/}
-        {/*  label="Visit Us"*/}
-        {/*  onPress={() => Linking.openURL('https://aboutreact.com/')}*/}
-        {/*/>*/}
-        {/*<View style={styles.customItem}>*/}
-        {/*  <Text>*/}
-        {/*    Rate Us*/}
-        {/*  </Text>*/}
-        {/*  <Image*/}
-        {/*    source={{uri: BASE_PATH + 'star_filled.png'}}*/}
-        {/*    style={styles.iconStyle}*/}
-        {/*  />*/}
-        {/*</View>*/}
       </DrawerContentScrollView>
       <Text
         style={{
@@ -49,6 +73,15 @@ const CustomSidebarMenu = (props: any) => {
       >
         НМАУ ім. П.І.Чайковського
       </Text>
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <Dialog.Title>Ви дійсно бажаєте вийти з аккаунту?</Dialog.Title>
+          <Dialog.Actions>
+            <Button onPress={hideDialog}>Відміна</Button>
+            <Button onPress={logout}>Так</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 };
@@ -71,6 +104,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  userData: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 12,
+    borderColor: '#ffffff22',
+    flexDirection: 'row'
+  },
+  userName: {
+    color: '#fff',
+    fontSize: 20,
+    paddingLeft: 10
+  },
+  logout: {
+    marginRight: -10,
+    marginVertical: -10
+  }
 });
 
 export default CustomSidebarMenu;

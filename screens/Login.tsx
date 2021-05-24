@@ -5,17 +5,34 @@ import {Text, View} from '../components/Themed';
 import {isLoggedVar} from "../api/client";
 import {useMutation} from "@apollo/client";
 import {LOGIN} from "../api/operations/mutations/login";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import WaitDialog from "../components/WaitDialog";
+import {setItem} from "../api/asyncStorage";
+import ErrorDialog from "../components/ErrorDialog";
+import {ErrorCodes, ErrorCodesUa} from "../models/models";
 
 export default function Login({navigation}: any) {
-  const [login] = useMutation(LOGIN);
+  const [login, {loading}] = useMutation(LOGIN);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [modalActivator, setModalActivator] = useState(null);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (modalActivator !== null) {
+      setShowError(true);
+    }
+  }, [modalActivator]);
+
+  const hideError = () => {
+    setShowError(false);
+  };
 
   const handleSubmit = async () => {
     let result: any;
-
-    if (email && password) {
+    if (email.length && password.length) {
       try {
         result = await login({
           variables: {
@@ -26,12 +43,15 @@ export default function Login({navigation}: any) {
           }
         });
         if (result?.data.login.userErrors?.length) {
-
+          setErrorMessage(ErrorCodesUa[result?.data.login.userErrors[0].code as ErrorCodes]);
+          setModalActivator(prevState => !prevState);
         } else {
           const user = result?.data.login.user;
           isLoggedVar(true);
+          await setItem('user', user);
         }
       } catch (e) {
+        setModalActivator(prevState => !prevState);
       }
     }
   };
@@ -42,15 +62,18 @@ export default function Login({navigation}: any) {
         <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
         <Text style={styles.title}>Вхід</Text>
         <Surface style={styles.inputs}>
-          <TextInput placeholder='Логін'
-                     // placeholderTextColor='rgba(255, 255, 255, .7)'
+          <TextInput label='Логін'
                      style={styles.input}
                      onChangeText={(e) => setEmail(e)}
           />
-          <TextInput placeholder='Пароль'
-                     // placeholderTextColor='rgba(255, 255, 255, .7)'
-                     style={{...styles.input, marginBottom: 32}}
+          <TextInput label='Пароль'
+                     style={{...styles.input, marginBottom: 16}}
                      onChangeText={(e) => setPassword(e)}
+                     secureTextEntry={!showPassword}
+                     selectionColor='#2b5dff'
+                     right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#2b5dff'
+                                            onPress={() => setShowPassword(prevState => !prevState)}
+                     />}
           />
 
         <Button onPress={handleSubmit} mode='contained' color='#2b5dff'
@@ -66,7 +89,14 @@ export default function Login({navigation}: any) {
                 labelStyle={{color: '#fff'}} style={styles.button}>
           Відновити пароль
         </Button>
+        <View style={styles.footer}>
+        <Text style={{color: '#fff'}}>Національна музична академія України ім. П. І. Чайковського</Text>
+        <Text style={{color: '#ffffff77'}}>Розробники: Назаренко Владислав та Іван Пятоволенко</Text>
+        <Text style={{color: '#fff'}}>Auditorium © 2021</Text>
+        </View>
       </ImageBackground>
+      <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
+      <ErrorDialog visible={showError} hideDialog={hideError} message={errorMessage}/>
     </View>
   );
 }
@@ -90,13 +120,8 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
-    height: 40,
     fontSize: 22,
-    paddingLeft: 10,
-    marginTop: 16,
     backgroundColor: 'transparent',
-    borderBottomColor: '#fff',
-    // color: '#fff'
   },
   inputs: {
     width: '90%',
@@ -104,7 +129,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 16,
     marginTop: 32,
   },
   button: {
@@ -117,5 +144,12 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  footer: {
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    position: "absolute",
+    bottom: 16,
+    opacity: .5,
   }
 });

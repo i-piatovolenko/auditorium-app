@@ -4,7 +4,7 @@ import * as React from 'react';
 import {ColorSchemeName, StyleSheet} from 'react-native';
 import {RootStackParamList} from '../types';
 import Login from "../screens/Login";
-import SignUp from "../screens/SignUp";
+import SignUp from "../screens/Signup/SignUp";
 import Verification from "../screens/Verification";
 import ForgotPassword from "../screens/ForgotPassword";
 import ForgotPasswordSuccess from "../screens/ForgotPasswordSuccess";
@@ -16,6 +16,10 @@ import CustomSidebarMenu from "./CustomSidebarMenu";
 import Schedule from "../screens/Schedule";
 import Profile from "../screens/Profile";
 import Settings from "../screens/Settings";
+import {useEffect, useState} from "react";
+import {getItem} from "../api/asyncStorage";
+import {User} from "../models/models";
+import {isLoggedVar} from "../api/client";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -32,6 +36,17 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
   const {data: {isLogged}} = useLocal('isLogged');
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    getItem('user').then(user => {
+      setUser(user as unknown as User);
+    });
+    if (user) {
+      isLoggedVar(true);
+    }
+  }, []);
+
   return (
     isLogged
       ? <Drawer.Navigator initialRouteName="Home" drawerStyle={styles.drawer} drawerContentOptions={{
@@ -57,9 +72,6 @@ function RootNavigator() {
         }}/>
         <Drawer.Screen name="Settings" component={Settings} options={{
           title: 'Налаштування'
-        }}/>
-        <Drawer.Screen name="Users4" component={Users} options={{
-          title: 'Вийти'
         }}/>
       </Drawer.Navigator>
       : <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="Login">

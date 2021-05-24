@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, ScrollView, Dimensions} from "react-native";
 import useUsers from "../hooks/useUsers";
-import {ActivityIndicator, DataTable, Searchbar, TextInput} from "react-native-paper";
+import {ActivityIndicator, DataTable, Searchbar} from "react-native-paper";
 import {UserTypes, UserTypesUa} from "../models/models";
 import {fullName, isTeacherType} from "../helpers/helpers";
 import UserInfo from "../components/UserInfo";
