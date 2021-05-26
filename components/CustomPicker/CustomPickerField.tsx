@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Text, StyleSheet} from "react-native";
 import {IconButton} from "react-native-paper";
 import {View} from "../Themed";
@@ -14,17 +14,35 @@ interface PropTypes {
   setSelected: (value: Item) => void;
   name: string;
   items: any[];
+  checkValidation: (value: number) => void;
+  setIsVisited: (value: boolean) => void;
+  underlineColor: string;
 }
 
-export default function CustomPickerField({selected, name, setSelected, items}: PropTypes) {
+export default function CustomPickerField({
+                                            selected, name, setSelected, items, setIsVisited,
+                                            checkValidation, underlineColor
+                                          }: PropTypes) {
   const [visiblePicker, setVisiblePicker] = useState(false);
 
-  const showPicker = () => setVisiblePicker(true);
+  useEffect(() => {
+    checkValidation(selected.id);
+  }, [selected]);
 
-  const hidePicker = () => setVisiblePicker(false);
+  const showPicker = () => {
+    setVisiblePicker(true);
+    setIsVisited(true);
+  };
+
+  const hidePicker = () => {
+    checkValidation(selected.id);
+    setVisiblePicker(false);
+  };
 
   return <View style={styles.picker}>
-    <Text style={styles.pickerField} numberOfLines={1} onPress={showPicker}>
+    <Text style={{...styles.pickerField, borderBottomColor: underlineColor}} numberOfLines={1}
+          onPress={showPicker}
+    >
       {selected.id === -1 ? name : selected.name}
     </Text>
     <IconButton icon='chevron-down' style={styles.pickerIcon} color='#ccc'
@@ -45,7 +63,6 @@ const styles = StyleSheet.create({
   pickerField: {
     borderBottomWidth: 1,
     borderStyle: 'solid',
-    borderBottomColor: '#ccc',
     paddingVertical: 10,
     paddingLeft: 22,
     paddingRight: 42,

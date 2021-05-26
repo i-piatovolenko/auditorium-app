@@ -1,5 +1,5 @@
-import React from 'react';
-import {Modal, Portal} from "react-native-paper";
+import React, {useEffect, useState} from 'react';
+import {Modal, Portal, Searchbar} from "react-native-paper";
 import {ScrollView, Text, StyleSheet} from "react-native";
 
 interface PropTypes {
@@ -11,6 +11,16 @@ interface PropTypes {
 }
 
 export default function CustomPicker({visible, hideDialog, setSelected,selected, items}: PropTypes) {
+  const [searchText, setSearchText] = useState('');
+  const [filteredItems, setFilteredItems] = useState<any>([]);
+
+  useEffect(() => {
+    const filtered = items.length && items.filter(({name}) => {
+      if (searchText !== '') return String(name).toLowerCase().includes(searchText.toLowerCase());
+      return true;
+    });
+    setFilteredItems(filtered);
+  }, [items, searchText]);
 
   const handlePress = (item: any) => {
     setSelected({name: item.name, id: item.id});
@@ -20,10 +30,16 @@ export default function CustomPicker({visible, hideDialog, setSelected,selected,
   return (
     <Portal>
       <Modal visible={visible} onDismiss={hideDialog} contentContainerStyle={styles.container}>
+        <Searchbar
+          placeholder="Пошук"
+          onChangeText={text => setSearchText(text)}
+          value={searchText}
+          style={styles.search}
+          clearButtonMode='while-editing'
+        />
         <ScrollView style={{height: '80%'}}>
-          {items && [{name: 'Не вибрано', id: -1}, ...items]
-            .map(item => (
-                <Text style={selected.id === item.id ? styles.selected : styles.item}
+          {filteredItems && [{name: 'Не вибрано', id: -1}, ...filteredItems].map(item => (
+                <Text key={item.id} style={selected.id === item.id ? styles.selected : styles.item}
                       onPress={() => handlePress(item)}
                 >
                   {item.name}
@@ -58,5 +74,10 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 10,
     borderRadius: 8,
+    justifyContent: 'center',
+    height: '60%'
+  },
+  search: {
+    marginBottom: 10
   }
 });
