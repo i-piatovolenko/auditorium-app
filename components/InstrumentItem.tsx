@@ -31,7 +31,7 @@ export default function InstrumentItem({instrument, expanded = false}: PropTypes
       instrumentType = <Image source={require(`./../assets/images/GrandPiano.png`)} style={styles.icon}/>;
   }
 
-  return <View style={styles.wrapper} onTouchEnd={showModal}>
+  return <View style={styles.wrapper} onTouchEnd={expanded ? showModal : () => {}}>
     {instrumentType}
     {expanded && <>
         <Text style={styles.name}>{name}</Text>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ScrollView, StyleSheet, Text} from 'react-native';
+import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text} from 'react-native';
 import {View} from '../../components/Themed';
 import {Appbar, Banner, Button, Checkbox, HelperText, TextInput} from 'react-native-paper';
 import {useState} from "react";
@@ -21,6 +21,9 @@ const startYearsItems = [
   {name: currentYear - 2, id: currentYear - 2},
   {name: currentYear - 3, id: currentYear - 3},
 ];
+
+const windowHeight = Dimensions.get('window').height;
+
 
 export default function SignUp({navigation}: any) {
   const [selectedDepartment, setSelectedDepartment] = useState({name: '', id: -1});
@@ -144,6 +147,8 @@ export default function SignUp({navigation}: any) {
   };
 
   const handleSubmit = async () => {
+    navigation.navigate('SignUpStepTwo');
+
     checkLastNameValidation(lastName);
     checkFirstNameValidation(firstName);
     checkEmailValidation(email);
@@ -173,10 +178,14 @@ export default function SignUp({navigation}: any) {
             }
           }
         });
-        if (result?.data.login.userErrors?.length) {
-          alert(ErrorCodesUa[result?.data.login.userErrors[0].code as ErrorCodes])
+        const hasErrors = result?.data.login.userErrors?.length;
+
+        if (hasErrors) {
+          const errorMessage = ErrorCodesUa[result?.data.login.userErrors[0].code as ErrorCodes];
+
+          alert(errorMessage);
         } else {
-          // navigation.navigate('Verification')
+          navigation.navigate('SignUpStepTwo');
         }
       } catch (e) {
         alert(e)
@@ -212,149 +221,155 @@ export default function SignUp({navigation}: any) {
   );
 
   return (
-    <View style={styles.container}>
-      <Appbar style={styles.top}>
-        <Appbar.BackAction onPress={handleBack}/>
-        <Appbar.Content title='Реєстрація' subtitle='Крок 1 із 3'/>
-      </Appbar>
-      <ScrollView style={styles.scrollView}>
-        <Banner
-          icon='alert-circle'
-          visible={visible}
-          actions={[
-            {
-              label: 'Зрозуміло',
-              onPress: () => setVisible(false),
-            }
-          ]}
-        >
-          Реєстрація педагогів та співробітників навчального закладу відбувається за допомогою диспетчера.
-        </Banner>
-        <Text style={styles.infoPanel}>
-          Введіть дані, що співпадають з вашим студентським квитком або іншим документом.
-        </Text>
-        <TextInput placeholder="Прізвище *" style={styles.input} value={lastName}
-                   underlineColor={!isLastNameValidated ? '#ccc' : '#f91354'}
-                   onChangeText={text => {
-                     setLastName(text);
-                     checkLastNameValidation(text);
-                   }}
-                   onBlur={() => checkLastNameValidation(lastName)}
-        />
-        <Error validator={isLastNameValidated}/>
-        <TextInput placeholder="Ім'я *" style={styles.input} value={firstName}
-                   underlineColor={!isFirstNameValidated ? '#ccc' : '#f91354'}
-                   onChangeText={text => {
-                     setFirstName(text);
-                     checkFirstNameValidation(text);
-                   }}
-                   onBlur={() => checkFirstNameValidation(firstName)}
-        />
-        <Error validator={isFirstNameValidated}/>
-        <TextInput placeholder="По-батькові" style={styles.input} value={patronymic}
-                   onChangeText={text => setPatronymic(text)}
-        />
-        <TextInput placeholder="E-mail *" style={styles.input} value={email}
-                   underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
-                   onChangeText={text => {
-                     setEmail(text);
-                     checkEmailValidation(text);
-                   }}
-                   onBlur={() => checkEmailValidation(email)}
-                   keyboardType='email-address'
-        />
-        <Error validator={isEmailValidated}/>
-        <TextInput placeholder="Тел. номер *" style={styles.phoneInput}
-                   underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
-                   onChangeText={text => {
-                     setPhoneNumber(text);
-                     checkPhoneValidation(text);
-                   }}
-                   onBlur={() => checkPhoneValidation(phoneNumber)}
-                   keyboardType='phone-pad'
-        />
-        <Error validator={isPhoneValidated}/>
-        <TextInput placeholder="Пароль *" style={styles.input}
-                   underlineColor={!isPasswordValidated ? '#ccc' : '#f91354'}
-                   onChangeText={text => {
-                     setPassword(text);
-                     checkPasswordValidation(text);
-                   }}
-                   onBlur={() => checkPasswordValidation(password)}
-                   right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#ccc'
-                                          onPress={() => setShowPassword(prevState => !prevState)}
-                                          forceTextInputFocus={false}
-                   />}
-                   secureTextEntry={!showPassword}
-        />
-        <Error validator={isPasswordValidated}/>
-        <TextInput placeholder="Повторіть пароль *" style={styles.input}
-                   underlineColor={!isPasswordConfirmValidated ? '#ccc' : '#f91354'}
-                   onChangeText={text => {
-                     setPasswordConfirm(text);
-                     checkPasswordConfirmValidation(text);
-                   }}
-                   onBlur={() => checkPasswordConfirmValidation(passwordConfirm)}
-                   right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#ccc'
-                                          onPress={() => setShowPassword(prevState => !prevState)}
-                                          forceTextInputFocus={false}
-                   />}
-                   secureTextEntry={!showPassword}
-        />
-        <Error validator={isPasswordConfirmValidated}/>
-        <CustomPickerField selected={selectedStartYear} setSelected={setSelectedStartYear}
-                           name='Рік початку навчання' items={startYearsItems}
-                           checkValidation={checkStartYearValidation}
-                           setIsVisited={setIsStartYearModalVisited}
-                           underlineColor={!isStartYearValidated ? '#ccc' : '#f91354'}
+    <ImageBackground source={require('../../assets/images/bg.jpg')}
+                     style={{width: '100%', height: '100%'}}>
+      <View style={styles.container}>
+        <Appbar style={styles.top}>
+          <Appbar.BackAction onPress={handleBack} color='#fff'/>
+          <Appbar.Content title='Реєстрація' subtitle='Крок 1 із 3' color='#fff'/>
+        </Appbar>
+        <View style={styles.wrapper}>
+          <ScrollView style={styles.scrollView}>
+            <Banner
+              icon='alert-circle'
+              visible={visible}
+              actions={[
+                {
+                  label: 'Зрозуміло',
+                  onPress: () => setVisible(false),
+                }
+              ]}
+            >
+              Реєстрація педагогів та співробітників навчального закладу відбувається за допомогою диспетчера.
+            </Banner>
+            <Text style={styles.infoPanel}>
+              Введіть дані, що співпадають з вашим студентським квитком або іншим документом.
+            </Text>
+            <TextInput placeholder="Прізвище *" style={styles.input} value={lastName}
+                       underlineColor={!isLastNameValidated ? '#ccc' : '#f91354'}
+                       onChangeText={text => {
+                         setLastName(text);
+                         checkLastNameValidation(text);
+                       }}
+                       onBlur={() => checkLastNameValidation(lastName)}
+            />
+            <Error validator={isLastNameValidated}/>
+            <TextInput placeholder="Ім'я *" style={styles.input} value={firstName}
+                       underlineColor={!isFirstNameValidated ? '#ccc' : '#f91354'}
+                       onChangeText={text => {
+                         setFirstName(text);
+                         checkFirstNameValidation(text);
+                       }}
+                       onBlur={() => checkFirstNameValidation(firstName)}
+            />
+            <Error validator={isFirstNameValidated}/>
+            <TextInput placeholder="По-батькові" style={styles.input} value={patronymic}
+                       onChangeText={text => setPatronymic(text)}
+            />
+            <View style={{height: 10}}/>
+            <TextInput placeholder="E-mail *" style={styles.input} value={email}
+                       underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
+                       onChangeText={text => {
+                         setEmail(text);
+                         checkEmailValidation(text);
+                       }}
+                       onBlur={() => checkEmailValidation(email)}
+                       keyboardType='email-address'
+            />
+            <Error validator={isEmailValidated}/>
+            <TextInput placeholder="Тел. номер *" style={styles.input}
+                       underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
+                       onChangeText={text => {
+                         setPhoneNumber(text);
+                         checkPhoneValidation(text);
+                       }}
+                       onBlur={() => checkPhoneValidation(phoneNumber)}
+                       keyboardType='phone-pad'
+            />
+            <Error validator={isPhoneValidated}/>
+            <TextInput placeholder="Пароль *" style={styles.input}
+                       underlineColor={!isPasswordValidated ? '#ccc' : '#f91354'}
+                       onChangeText={text => {
+                         setPassword(text);
+                         checkPasswordValidation(text);
+                       }}
+                       onBlur={() => checkPasswordValidation(password)}
+                       right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#ccc'
+                                              onPress={() => setShowPassword(prevState => !prevState)}
+                                              forceTextInputFocus={false}
+                       />}
+                       secureTextEntry={!showPassword}
+            />
+            <Error validator={isPasswordValidated}/>
+            <TextInput placeholder="Повторіть пароль *" style={styles.input}
+                       underlineColor={!isPasswordConfirmValidated ? '#ccc' : '#f91354'}
+                       onChangeText={text => {
+                         setPasswordConfirm(text);
+                         checkPasswordConfirmValidation(text);
+                       }}
+                       onBlur={() => checkPasswordConfirmValidation(passwordConfirm)}
+                       right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#ccc'
+                                              onPress={() => setShowPassword(prevState => !prevState)}
+                                              forceTextInputFocus={false}
+                       />}
+                       secureTextEntry={!showPassword}
+            />
+            <Error validator={isPasswordConfirmValidated}/>
+            <CustomPickerField selected={selectedStartYear} setSelected={setSelectedStartYear}
+                               name='Рік початку навчання' items={startYearsItems}
+                               checkValidation={checkStartYearValidation}
+                               setIsVisited={setIsStartYearModalVisited}
+                               underlineColor={!isStartYearValidated ? '#ccc' : '#f91354'}
 
-        />
-        <Error validator={isStartYearValidated}/>
-        <CustomPickerField name='Кафедра' selected={selectedDepartment} items={departments}
-                           setSelected={setSelectedDepartment}
-                           checkValidation={checkDepartmentValidation}
-                           setIsVisited={setIsDepartmentModalVisited}
-                           underlineColor={!isDepartmentValidated ? '#ccc' : '#f91354'}
+            />
+            <Error validator={isStartYearValidated}/>
+            <CustomPickerField name='Кафедра' selected={selectedDepartment} items={departments}
+                               setSelected={setSelectedDepartment}
+                               checkValidation={checkDepartmentValidation}
+                               setIsVisited={setIsDepartmentModalVisited}
+                               underlineColor={!isDepartmentValidated ? '#ccc' : '#f91354'}
 
-        />
-        <Error validator={isDepartmentValidated}/>
-        <CustomPickerField name='Навчальний ступінь' selected={selectedDegree} items={degrees}
-                           setSelected={setSelectedDegree}
-                           checkValidation={checkDegreeValidation}
-                           setIsVisited={setIsDegreeModalVisited}
-                           underlineColor={!isDegreeValidated ? '#ccc' : '#f91354'}
+            />
+            <Error validator={isDepartmentValidated}/>
+            <CustomPickerField name='Навчальний ступінь' selected={selectedDegree} items={degrees}
+                               setSelected={setSelectedDegree}
+                               checkValidation={checkDegreeValidation}
+                               setIsVisited={setIsDegreeModalVisited}
+                               underlineColor={!isDegreeValidated ? '#ccc' : '#f91354'}
 
-        />
-        <Error validator={isDegreeValidated}/>
-        <View style={styles.agreement}>
-          <Checkbox status={checkAgreement ? 'checked' : 'unchecked'} color='#2b5dff'
-                    uncheckedColor='#f91354'
-                    onPress={() => {
-                      setIsSignupTouched(true);
-                      setCheckAgreement(prevState => !prevState);
-                    }}/>
-          <Text style={{width: '90%'}}>Я прочитав і погоджуюсь з
-            <Text style={styles.link} onPress={showAgreement}> умовами користування</Text> сервісом.</Text>
+            />
+            <Error validator={isDegreeValidated}/>
+            <View style={styles.agreement}>
+              <Checkbox status={checkAgreement ? 'checked' : 'unchecked'} color='#2b5dff'
+                        uncheckedColor='#f91354'
+                        onPress={() => {
+                          setIsSignupTouched(true);
+                          setCheckAgreement(prevState => !prevState);
+                        }}/>
+              <Text style={{width: '90%'}}>Я прочитав і погоджуюсь з
+                <Text style={styles.link} onPress={showAgreement}> умовами користування</Text> сервісом *</Text>
+            </View>
+          </ScrollView>
+          <View style={styles.navButtons}>
+            <Button
+              onPress={handleSubmit}
+              mode='contained' color='#f91354'
+              style={styles.signUpButton}
+              disabled={!checkAgreement || loading}
+              loading={loading}
+            >
+              Зареєструватися
+            </Button>
+          </View>
+          <Agreement visible={visibleAgreement} hideDialog={hideAgreement}
+                     setCheckAgreement={setCheckAgreement}
+          />
+          <InfoDialog message={backMessage} visible={visibleBackDialog} hideDialog={hideBackDialog}
+                      navigateToLogin={navigateToLogin}
+          />
         </View>
-      </ScrollView>
-      <View style={styles.navButtons}>
-        <Button
-          onPress={handleSubmit}
-          mode='contained' color='#f91354'
-          style={styles.signUpButton}
-          disabled={!checkAgreement || loading}
-          loading={loading}
-        >
-          Зареєструватися
-        </Button>
       </View>
-      <Agreement visible={visibleAgreement} hideDialog={hideAgreement}
-                 setCheckAgreement={setCheckAgreement}
-      />
-      <InfoDialog message={backMessage} visible={visibleBackDialog} hideDialog={hideBackDialog}
-                  navigateToLogin={navigateToLogin}
-      />
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -362,7 +377,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    backgroundColor: 'transparent'
+  },
+  wrapper: {
+    backgroundColor: '#fff',
+    width: '100%',
+    height: windowHeight-60,
+    alignItems: 'center',
   },
   title: {
     fontSize: 32,
@@ -382,7 +404,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     width: '90%',
-    marginTop: 80,
   },
   input: {
     width: '100%',
@@ -391,22 +412,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     margin: 0,
   },
-  phoneNumbers: {
-    backgroundColor: 'transparent'
-  },
-  phoneRow: {
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  phoneInput: {
-    backgroundColor: 'transparent',
-    height: 50,
-    fontSize: 22,
-    flex: 1,
-    paddingLeft: 10,
-    marginTop: 16,
-  },
   top: {
     position: 'absolute',
     left: 0,
@@ -414,7 +419,8 @@ const styles = StyleSheet.create({
     top: 0,
     paddingTop: 26,
     height: 80,
-    backgroundColor: '#2e287c',
+    backgroundColor: 'transparent',
+    elevation: 0
   },
   link: {
     color: '#2b5dff',

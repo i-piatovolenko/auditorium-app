@@ -1,25 +1,26 @@
-import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
+import {DarkTheme, DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import * as React from 'react';
+import {useEffect, useState} from 'react';
 import {ColorSchemeName, StyleSheet} from 'react-native';
 import {RootStackParamList} from '../types';
 import Login from "../screens/Login";
 import SignUp from "../screens/Signup/SignUp";
-import Verification from "../screens/Verification";
 import ForgotPassword from "../screens/ForgotPassword";
 import ForgotPasswordSuccess from "../screens/ForgotPasswordSuccess";
 import {useLocal} from "../hooks/useLocal";
 import {createDrawerNavigator} from "@react-navigation/drawer";
-import Home from "../screens/ClassroomsList";
 import Users from "../screens/Users";
 import CustomSidebarMenu from "./CustomSidebarMenu";
 import Schedule from "../screens/Schedule";
 import Profile from "../screens/Profile";
 import Settings from "../screens/Settings";
-import {useEffect, useState} from "react";
 import {getItem} from "../api/asyncStorage";
-import {User} from "../models/models";
+import {AccountStatuses, User} from "../models/models";
 import {isLoggedVar} from "../api/client";
+import SignUpStepTwo from "../screens/Signup/SignUpStepTwo";
+import Verification from "../screens/Signup/Verification";
+import Home from "../screens/ClassroomsList/ClassroomsList";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -37,15 +38,27 @@ const Stack = createStackNavigator<RootStackParamList>();
 function RootNavigator() {
   const {data: {isLogged}} = useLocal('isLogged');
   const [user, setUser] = useState<User | null>(null);
+  const [accountStatus, setAccountStatus] = useState<AccountStatuses>(AccountStatuses.UNVERIFIED);
 
   useEffect(() => {
-    getItem('user').then(user => {
-      setUser(user as unknown as User);
-    });
-    if (user) {
-      isLoggedVar(true);
-    }
-  }, []);
+      try {
+        getItem('user').then(user => {
+          setUser(user as unknown as User);
+        }).then(() => {
+          if (user) {
+            const {studentInfo, employeeInfo} = user;
+            isLoggedVar(true);
+
+            const isStudent = !!studentInfo;
+            const status = isStudent ? studentInfo.accountStatus : employeeInfo.accountStatus;
+
+            setAccountStatus(status);
+          }
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }, []);
 
   return (
     isLogged
@@ -58,9 +71,14 @@ function RootNavigator() {
       }}
       drawerContent={(props: any) => <CustomSidebarMenu {...props}/>}
       >
-        <Drawer.Screen name="Home" component={Home} options={{
+        <Drawer.Screen name="Home"
+                       //TODO set !== to ===
+                       component={accountStatus !== AccountStatuses.UNVERIFIED ?
+                         Verification : Home} options={{
           title: 'Аудиторії',
-        }}/>
+        }}
+        initialParams={{id: user?.id}}
+        />
         <Drawer.Screen name="Users" component={Users} options={{
           title: 'Довідник',
         }}/>
@@ -84,8 +102,8 @@ function RootNavigator() {
           component={SignUp}
         />
         <Stack.Screen
-          name="Verification"
-          component={Verification}
+          name="SignUpStepTwo"
+          component={SignUpStepTwo}
         />
         <Stack.Screen
           name="ForgotPassword"

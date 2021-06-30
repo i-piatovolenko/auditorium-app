@@ -44,13 +44,9 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
   return <View>
       <Appbar style={styles.top}>
         <Appbar.BackAction onPress={() => navigation.goBack()}/>
-        <Appbar.Content title={`Аудиторія ${name}`}/>
+        <Appbar.Content title={`Аудиторія ${name}`} subtitle={chair ? chair.name : ''}/>
       </Appbar>
       <View style={styles.wrapper}>
-        {chair && <>
-            <Headline style={styles.department}>{chair.name}</Headline>
-            <Divider style={styles.divider}/>
-        </>}
         {(isWing || isOperaStudio || special) && <>
             <View style={styles.tags}>
               {isWing && <Chip selected selectedColor='#00f' mode='outlined'
@@ -71,11 +67,11 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
         </Text>
         <Divider style={styles.divider}/>
         <View>
-          {instruments.length && <>
+          {instruments.length ? <>
             {instruments?.map((instrument: InstrumentType) => <InstrumentItem
               key={instrument.id} instrument={instrument} expanded/>)}
             <Divider style={styles.divider}/>
-          </>}
+          </> : null}
         </View>
         <Text style={styles.scheduleHeader}>Розклад на сьогодні</Text>
         {!loading && !error ? data.schedule

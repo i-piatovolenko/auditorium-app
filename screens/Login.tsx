@@ -16,7 +16,7 @@ export default function Login({navigation}: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [modalActivator, setModalActivator] = useState(null);
+  const [modalActivator, setModalActivator] = useState<boolean | null>(null);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -76,8 +76,8 @@ export default function Login({navigation}: any) {
                      />}
           />
 
-        <Button onPress={handleSubmit} mode='contained' color='#2b5dff'
-                style={styles.button} disabled={!email || !password}>
+        <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
+                style={styles.button} disabled={(!email || !password) || loading}>
           Увійти
         </Button>
         <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'

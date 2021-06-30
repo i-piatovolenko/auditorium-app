@@ -81,6 +81,12 @@ export enum NotificationsTypes {
   DEFAULT = "default",
 }
 
+export enum AccountStatuses {
+  ACTIVE = 'ACTIVE',
+  UNVERIFIED = 'UNVERIFIED',
+  ACADEMIC_LEAVE = 'ACADEMIC_LEAVE'
+}
+
 export type User = {
   id: number;
   createdAt: Date;
@@ -96,19 +102,18 @@ export type User = {
   startYear: number;
   studentInfo: StudentInfo;
   employeeInfo: EmployeeInfo;
-  verified: boolean;
   expireDate: Date | null;
 };
 
 export type StudentInfo = {
   degree: Degree;
   startYear: number;
-  accountStatus: string;
+  accountStatus: AccountStatuses;
 };
 
 export type EmployeeInfo = {
   employmentType: EmploymentTypes;
-  accountStatus: string;
+  accountStatus: AccountStatuses;
 };
 
 export type OccupiedInfo = {
@@ -210,5 +215,6 @@ export type MenuElement = {
 export enum ClassroomsFilterTypes {
   ALL = 'ALL',
   FREE = 'FREE',
-  SPECIAL = 'SPECIAL'
+  SPECIAL = 'SPECIAL',
+  INLINE = 'INLINE'
 }
