@@ -4,6 +4,13 @@ export enum ACCESS_RIGHTS {
   ADMIN
 }
 
+export enum Mode {
+  PRIMARY = 'PRIMARY',
+  QUEUE_SETUP = 'QUEUE_SETUP',
+  INLINE = 'INLINE',
+  OWNER = 'OWNER'
+}
+
 export enum ErrorCodesUa {
   INVALID_PASSWORD = "Невірний пароль",
   USER_NOT_FOUND = "Користувача не знайдено",

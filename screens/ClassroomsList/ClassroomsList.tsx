@@ -1,15 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {ImageBackground, ScrollView, StyleSheet, Text, View} from "react-native";
 import {ActivityIndicator, Appbar, Button} from "react-native-paper";
 import useClassrooms from "../../hooks/useClassrooms";
-import {ClassroomType} from "../../models/models";
+import {ClassroomType, InstrumentType, Mode} from "../../models/models";
 import ClassroomsCell from "../../components/ClassroomCell";
 import Filters, {SpecialT} from "./Filters";
 import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
-import {useNavigation} from '@react-navigation/native';
-import {DrawerActions} from '@react-navigation/native';
+import {DrawerActions, useNavigation} from '@react-navigation/native';
+import {getClassroomsFilteredByInstruments} from "./helpers";
+import Inline from "../Inline";
+import {useLocal} from "../../hooks/useLocal";
+import {desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
+import getInLine from "../../helpers/queue/getInLine";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -23,90 +27,60 @@ export default function Home() {
       name='ClassroomInfo'
       component={ClassroomInfo}
     />
+    <Stack.Screen
+      name='Inline'
+      component={Inline}
+    />
   </Stack.Navigator>
 }
 
 function ClassroomsList() {
   const classrooms: ClassroomType[] = useClassrooms();
   const [visible, setVisible] = useState(false);
-  const [visibleShowOnly, setVisibleShowOnly] = useState(false);
-  const [inlineClassrooms, setInlineClassrooms] = useState<number[]>([]);
-  const [freeCounter, setFreeCounter] = useState(0);
   const navigation = useNavigation();
-  const [isQueueSetup, setIsQueueSetup] = useState(false);
-  const [queueClassroomIds, setQueueClassroomIds] = useState<number[]>([]);
   const [queueSize, setQueueSize] = useState(27);
   const [title, setTitle] = useState(`Людей в черзі: ${queueSize}`);
-  const [isMinimal, setIsMinimal] = useState(true);
-  const [minimalClassroomIds, setMinimalClassroomIds] = useState<number[]>([]);
-  const [desirableClassroomIds, setDesirableClassroomIds] = useState<number[]>([]);
+  const {data: {mode}} = useLocal('mode');
+  const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
+  const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
+  const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
 
   const showModal = () => setVisible(true);
 
   const hideModal = () => setVisible(false);
 
-  const showModalShowOnly = () => setVisibleShowOnly(true);
-
-  const hideModalShowOnly = () => setVisibleShowOnly(false);
-
-  const addToFilteredList = (classroomId: number) => {
-   if (isMinimal) {
-      // @ts-ignore
-      const elementIndex = minimalClassroomIds.findIndex((id) => id === classroomId);
-
-      if (elementIndex === -1) {
-        setMinimalClassroomIds(prevState => [...prevState, classroomId]);
-      } else {
-        const filteredArray = minimalClassroomIds.slice();
-
-        filteredArray.splice(elementIndex, 1);
-        setMinimalClassroomIds(filteredArray);
-      }
-    } else {
-     // @ts-ignore
-     const elementIndex = desirableClassroomIds.findIndex((id) => id === classroomId);
-
-     if (elementIndex === -1) {
-       setDesirableClassroomIds(prevState => [...prevState, classroomId]);
-     } else {
-       const filteredArray = desirableClassroomIds.slice();
-
-       filteredArray.splice(elementIndex, 1);
-       setDesirableClassroomIds(filteredArray);
-     }
-   }
-  };
-
-  const setAllWithoutWing = (value: boolean) => {
-    if (value) {
-      const allIdsWithoutWing = classrooms?.filter(classroom => !classroom.isWing).map(({id}) => id);
-
-      if (isMinimal) {
-        setMinimalClassroomIds(allIdsWithoutWing);
-      } else {
-        setDesirableClassroomIds(allIdsWithoutWing);
-      }
-    } else {
-      setAll();
-    }
-  };
-
-  const setOnlyOperaStudio = (value: boolean) => {
-
-  };
-
-  const apply = (instruments: number[] | null, withWing: boolean,
+  const applyGeneralFilter = (instruments: InstrumentType[], withWing: boolean,
                  operaStudioOnly: boolean, special: SpecialT) => {
 
+    const filteredClassroomsByInstruments = instruments.length ?
+      getClassroomsFilteredByInstruments(classrooms, instruments) : classrooms;
+
+    const filteredIds = filteredClassroomsByInstruments
+      .filter(classroom => withWing ? true : !classroom.isWing)
+      .filter(classroom => operaStudioOnly ? classroom.isOperaStudio : true)
+      .filter(classroom => {
+        switch (special) {
+          case "with": return true;
+          case "only": return classroom.special;
+          case "without": return !classroom.special;
+        }
+      })
+      .map(classroom => classroom.id);
+
+    if (isMinimalSetup) {
+      minimalClassroomIdsVar(filteredIds);
+    } else {
+      desirableClassroomIdsVar(filteredIds);
+    }
   };
 
   const setAll = () => {
     const allIds = classrooms.map(({id}) => id);
 
-    if (isMinimal) {
-      setMinimalClassroomIds(allIds);
+    if (isMinimalSetup) {
+      minimalClassroomIdsVar(allIds);
     } else {
-      setDesirableClassroomIds(allIds);
+      desirableClassroomIdsVar(allIds);
     }
   };
 
@@ -114,25 +88,25 @@ function ClassroomsList() {
                           style={{width: '100%', height: '100%'}}>
     <Appbar style={styles.top}>
       <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} color='#fff'/>
-      {!isQueueSetup ? (
+      {mode === Mode.PRIMARY ? (
         <Appbar.Content style={{marginLeft: -10}} title={title} subtitle={'Вільних аудиторій: ' +
         classrooms?.filter(classroom => !classroom.occupied).length} color='#fff'/>
       ) : (
         <>
         <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '88%'}}>
           <View style={styles.queueSwitcher}>
-            <Button mode={isMinimal ? 'contained' : 'text'}
+            <Button mode={isMinimalSetup ? 'contained' : 'text'}
                     style={{position: 'relative', width: '50%'}}
                     color='#fff'
-                    onPress={() => setIsMinimal(true)}
+                    onPress={() => isMinimalSetupVar(true)}
             >
               Мінімальні
             </Button>
             <Button
-              mode={!isMinimal ? 'contained' : 'text'}
+              mode={!isMinimalSetup ? 'contained' : 'text'}
               style={{position: 'relative', width: '50%'}}
               color='#fff'
-              onPress={() => setIsMinimal(false)}
+              onPress={() => isMinimalSetupVar(false)}
             >
               Бажані
             </Button>
@@ -150,30 +124,29 @@ function ClassroomsList() {
         <ScrollView>
           <View style={styles.grid}>
             {classrooms?.map(classroom => <ClassroomsCell key={classroom.id} classroom={classroom}
-              isQueueSetup={isQueueSetup} addToFilteredList={addToFilteredList}
-              filteredList={isMinimal ? minimalClassroomIds: desirableClassroomIds}
+              filteredList={isMinimalSetup ? minimalClassroomIds: desirableClassroomIds}
             />)}
           </View>
         </ScrollView>
-        {!isQueueSetup ? (
+        {mode === Mode.PRIMARY ? (
           <Button style={styles.getInLine} mode='contained' color='#2b5dff'
-                  onPress={() => setIsQueueSetup(true)}>
+                  onPress={() => modeVar(Mode.QUEUE_SETUP)}>
             <Text>Стати в чергу ({queueSize + 1}-й)</Text>
           </Button>
         ) : (
           <>
             <Button style={styles.approve} mode='contained' color='#2b5dff'
-                    onPress={() => setIsQueueSetup(true)}>
+                    onPress={() => getInLine(minimalClassroomIds, desirableClassroomIds)}>
               <Text>Готово ({queueSize + 1}-й)</Text>
             </Button>
             <Button style={styles.getOutLine} mode='contained' color='#f91354'
-                    onPress={() => setIsQueueSetup(false)}>
+                    onPress={() => modeVar(Mode.PRIMARY)}>
               <Text>Скасувати</Text>
             </Button>
           </>
         )}
-      </> : <ActivityIndicator animating={true} color='#fff'/>}
-      <Filters hideModal={hideModal} visible={visible} apply={apply}/>
+      </> : <ActivityIndicator animating color='#fff'/>}
+      <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter}/>
     </View>
   </ImageBackground>
 }

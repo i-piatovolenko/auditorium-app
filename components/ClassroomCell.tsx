@@ -1,23 +1,23 @@
 import React, {useState} from 'react';
 import {View, StyleSheet, Text, Dimensions, Image, TouchableHighlight} from "react-native";
-import {ClassroomType, DisabledInfo, OccupiedInfo} from "../models/models";
+import {ClassroomType, DisabledInfo, Mode, OccupiedInfo} from "../models/models";
 import {fullName, isOccupiedOnSchedule, typeStyle} from "../helpers/helpers";
 import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "./InstrumentItem";
 import { useNavigation } from '@react-navigation/native';
 import ErrorDialog from "./ErrorDialog";
 import moment from "moment";
+import {useLocal} from "../hooks/useLocal";
+import addToFilteredList from "../helpers/queue/addToFilteredList";
 
 interface PropTypes {
   classroom: ClassroomType;
-  isQueueSetup: boolean;
-  addToFilteredList: (classroomId: number) => void;
   filteredList: number[];
 }
 
 const windowWidth = Dimensions.get('window').width;
 
-export default function ClassroomsCell({classroom, isQueueSetup, addToFilteredList, filteredList
+export default function ClassroomsCell({classroom, filteredList
 }: PropTypes) {
   const {name, occupied, schedule, special, instruments, disabled, id} = classroom;
   const navigation = useNavigation();
@@ -25,21 +25,23 @@ export default function ClassroomsCell({classroom, isQueueSetup, addToFilteredLi
   const userFullName = occupied?.user.nameTemp === null ? fullName(occupied?.user, true) :
     occupied?.user.nameTemp;
   const [visible, setVisible] = useState(false);
+  const {data: {mode}} = useLocal('mode');
+
 
   const handleTouch = (disabled: DisabledInfo | null) => {
     !disabled && navigation.navigate('ClassroomInfo', {classroom});
     disabled && setVisible(true);
   }
 
-  return <TouchableHighlight onPress={isQueueSetup ? () => addToFilteredList(id) : () => handleTouch(disabled)}
+  return <TouchableHighlight onPress={mode === Mode.QUEUE_SETUP ? () => addToFilteredList(id) : () => handleTouch(disabled)}
                              underlayColor={disabled ? '#f91354' : '#2b5dff'}
                              style={{borderRadius: 4}}
-                             onLongPress={isQueueSetup ? () => handleTouch(disabled) : null}
+                             onLongPress={mode === Mode.QUEUE_SETUP ? () => handleTouch(disabled) : null}
   >
     <Surface style={[styles.cell,
       disabled ? styles.disabled : occupied ? styles.occupied : styles.free]}
     >
-      {filteredList.includes(id) && isQueueSetup ?
+      {filteredList.includes(id) && mode === Mode.QUEUE_SETUP ?
         <IconButton icon='check-bold' style={styles.checkMark} color='#0f0'/>
         : null
       }

@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet} from "react-native";
 import {
-  InstrumentType,
+  InstrumentType, Mode,
   ScheduleUnitType,
   UserTypeColors,
   UserTypes,
   UserTypesUa
 } from "../models/models";
-import {ActivityIndicator, Appbar, Chip, Divider, Headline, Surface} from "react-native-paper";
+import {ActivityIndicator, Appbar, Button, Chip, Divider, Headline, Surface} from "react-native-paper";
 import InstrumentItem from "./InstrumentItem";
 import {useNavigation} from "@react-navigation/native";
 import ScheduleItem from "./ScheduleItem";
@@ -15,6 +15,9 @@ import {useQuery} from "@apollo/client";
 import {GET_SCHEDULE_UNIT} from "../api/operations/queries/schedule";
 import {fullName, getTimeHHMM, isOccupiedOnSchedule, ISODateString} from "../helpers/helpers";
 import UserInfo from "./UserInfo";
+import {useLocal} from "../hooks/useLocal";
+import getInLine from "../helpers/queue/getInLine";
+import addToFilteredList from "../helpers/queue/addToFilteredList";
 
 interface PropTypes {
   route: any;
@@ -22,7 +25,7 @@ interface PropTypes {
 
 export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes) {
   const {
-    name, isWing, isOperaStudio, chair, description, special, floor, instruments,
+    name, id, isWing, isOperaStudio, chair, description, special, floor, instruments,
     schedule, occupied
   } = classroom;
   const navigation = useNavigation();
@@ -36,14 +39,22 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
     occupied?.user.nameTemp;
   const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
   const [visible, setVisible] = useState(false);
+  const {data: {mode}} = useLocal('mode');
 
   const showModal = () => setVisible(true);
 
   const hideModal = () => setVisible(false);
 
+  const goBack = () => navigation.goBack();
+
+  const handleAddToLine = () => {
+    addToFilteredList(id);
+    goBack();
+  };
+
   return <View>
       <Appbar style={styles.top}>
-        <Appbar.BackAction onPress={() => navigation.goBack()}/>
+        <Appbar.BackAction onPress={goBack}/>
         <Appbar.Content title={`Аудиторія ${name}`} subtitle={chair ? chair.name : ''}/>
       </Appbar>
       <View style={styles.wrapper}>
@@ -67,11 +78,11 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
         </Text>
         <Divider style={styles.divider}/>
         <View>
-          {instruments.length ? <>
+          {!!instruments.length && <>
             {instruments?.map((instrument: InstrumentType) => <InstrumentItem
               key={instrument.id} instrument={instrument} expanded/>)}
             <Divider style={styles.divider}/>
-          </> : null}
+          </>}
         </View>
         <Text style={styles.scheduleHeader}>Розклад на сьогодні</Text>
         {!loading && !error ? data.schedule
@@ -92,6 +103,30 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
             <Text style={styles.occupiedUntil}>Зайнято до {getTimeHHMM(new Date(occupied.until))}</Text>
             <UserInfo userId={occupied.user.id} hideModal={hideModal} visible={visible}/>
           </Surface>}
+          <View style={styles.queueSetupButtons}>
+            {mode === Mode.PRIMARY && (
+              occupied ? (
+                  <Button mode='contained'>Стати в чергу за цією аудиторією</Button>
+                ) : (
+                  <Button mode='contained'
+                          onPress={() => getInLine([id], [])}
+                  >
+                    Взяти аудиторію
+                  </Button>
+                )
+            )}
+            {mode === Mode.QUEUE_SETUP && (
+              occupied ? (
+                <Button mode='contained' onPress={handleAddToLine}>Додати до черги</Button>
+              ) : (
+                <Button mode='contained'
+                        onPress={() => getInLine([id], [])}
+                >
+                  Взяти аудиторію
+                </Button>
+              )
+            )}
+          </View>
       </View>
   </View>
 };
@@ -166,5 +201,8 @@ const styles = StyleSheet.create({
   occupiedUntil: {
     textAlign: 'center',
     marginTop: 8
+  },
+  queueSetupButtons: {
+    marginTop: 32,
   }
 });

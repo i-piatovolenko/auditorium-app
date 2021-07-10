@@ -1,21 +1,45 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, View, Dimensions} from "react-native";
 import {Button, Checkbox, Divider, Headline, Modal, Portal, RadioButton} from "react-native-paper";
+import InstrumentFilters from "./InstrumentFilters";
+import {InstrumentType} from "../../models/models";
 
 export type SpecialT = 'with' | 'only' | 'without';
 
 interface PropTypes {
   hideModal: () => void;
   visible: boolean;
-  apply: (instruments: number[] | null, withWing: boolean, operaStudioOnly: boolean, special: SpecialT) => void;
+  apply: (instruments: InstrumentType[], withWing: boolean, operaStudioOnly: boolean, special: SpecialT) => void;
 }
 
 const windowWidth = Dimensions.get('window').width;
 
 export default function Filters({hideModal, visible, apply}: PropTypes) {
-  const [instruments, setInstruments] = useState<string | null>(null);
-  const [special, setSpecial] = useState<string>('with');
-  const [withWing, setWithWing] = useState(false);
+  const [instruments, setInstruments] = useState<InstrumentType[]>([]);
+  const [special, setSpecial] = useState<SpecialT>('with');
+  const [withWing, setWithWing] = useState(true);
+  const [onlyOperaStudio, setOnlyOperaStudio] = useState(false);
+  const [visibleInstrumentFilters, setVisibleInstrumentFilters] = useState(false);
+
+
+  const showModalInstrumentFilters = () => setVisibleInstrumentFilters(true);
+
+  const hideModalInstrumentFilters= () => setVisibleInstrumentFilters(false);
+
+  const handleApply = () => {
+    apply(instruments, withWing, onlyOperaStudio, special);
+  };
+
+  const getEnding = () => {
+    switch (instruments.length) {
+      case 1: return '';
+      case 2: return 'а';
+      case 3: return 'и';
+      case 4: return 'и';
+      case 5: return 'ів';
+      default: return '...';
+    }
+  };
 
   return <Portal>
     <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
@@ -23,19 +47,26 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
         <Headline>Фільтри аудиторій для черги</Headline>
       </View>
       <View style={styles.body}>
-        <Button icon='pencil'>Будь-які інструменти</Button>
+        <Button icon='pencil' onPress={showModalInstrumentFilters}>
+          <Text>
+            { !instruments.length
+              ? 'Будь-які або без інструментів'
+              : `${instruments.length} інструмент${getEnding()}` }
+          </Text>
+        </Button>
         <Divider style={styles.divider}/>
         <View style={styles.checkbox}>
-          <Checkbox status={withWing ? 'checked' : 'unchecked'}
+          <Checkbox status={!withWing ? 'checked' : 'unchecked'}
                     onPress={() => setWithWing(prevState => !prevState)}/>
           <Text>Без флігеля</Text>
         </View>
         <View style={styles.checkbox}>
-          <Checkbox status={'unchecked'}/>
+          <Checkbox status={onlyOperaStudio ? 'checked' : 'unchecked'}
+                    onPress={() => setOnlyOperaStudio(prevState => !prevState)}/>
           <Text>Тільки оперна студія</Text>
         </View>
         <Divider style={styles.divider}/>
-        <RadioButton.Group onValueChange={newValue => setSpecial(newValue)} value={special}>
+        <RadioButton.Group onValueChange={newValue => setSpecial(newValue as SpecialT)} value={special}>
           <View style={styles.radioItem}>
             <RadioButton value='with' />
             <Text>Зі спеціалізованими (ф-но)</Text>
@@ -52,8 +83,10 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
         <Divider style={styles.divider}/>
         <View style={styles.buttons}>
           <Button mode='contained'>Збережені фільтри</Button>
-          <Button mode='contained'>Застосувати</Button>
+          <Button mode='contained' onPress={handleApply}>Застосувати</Button>
         </View>
+        <InstrumentFilters hideModal={hideModalInstrumentFilters} visible={visibleInstrumentFilters}
+                           instruments={instruments} setInstruments={setInstruments} />
       </View>
     </Modal>
   </Portal>
