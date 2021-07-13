@@ -1,11 +1,8 @@
-import {useLocal} from "../../hooks/useLocal";
 import {minimalClassroomIdsVar} from "../../api/client";
 
-const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
-const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
-const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
+const addToFilteredList = (classroomId: number, isMinimalSetup: boolean,
+                           minimalClassroomIds: any, desirableClassroomIds: any) => {
 
-const addToFilteredList = (classroomId: number) => {
   if (isMinimalSetup) {
     const elementIndex = minimalClassroomIds.findIndex((id: number) => id === classroomId);
 

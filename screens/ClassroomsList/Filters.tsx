@@ -28,6 +28,7 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
 
   const handleApply = () => {
     apply(instruments, withWing, onlyOperaStudio, special);
+    hideModal();
   };
 
   const getEnding = () => {

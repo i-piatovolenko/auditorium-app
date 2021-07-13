@@ -4,7 +4,7 @@ import {ClassroomType, DisabledInfo, Mode, OccupiedInfo} from "../models/models"
 import {fullName, isOccupiedOnSchedule, typeStyle} from "../helpers/helpers";
 import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "./InstrumentItem";
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import ErrorDialog from "./ErrorDialog";
 import moment from "moment";
 import {useLocal} from "../hooks/useLocal";
@@ -17,8 +17,9 @@ interface PropTypes {
 
 const windowWidth = Dimensions.get('window').width;
 
-export default function ClassroomsCell({classroom, filteredList
-}: PropTypes) {
+export default function ClassroomsCell({
+                                         classroom, filteredList
+                                       }: PropTypes) {
   const {name, occupied, schedule, special, instruments, disabled, id} = classroom;
   const navigation = useNavigation();
   const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
@@ -26,6 +27,9 @@ export default function ClassroomsCell({classroom, filteredList
     occupied?.user.nameTemp;
   const [visible, setVisible] = useState(false);
   const {data: {mode}} = useLocal('mode');
+  const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
+  const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
+  const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
 
 
   const handleTouch = (disabled: DisabledInfo | null) => {
@@ -33,10 +37,14 @@ export default function ClassroomsCell({classroom, filteredList
     disabled && setVisible(true);
   }
 
-  return <TouchableHighlight onPress={mode === Mode.QUEUE_SETUP ? () => addToFilteredList(id) : () => handleTouch(disabled)}
-                             underlayColor={disabled ? '#f91354' : '#2b5dff'}
-                             style={{borderRadius: 4}}
-                             onLongPress={mode === Mode.QUEUE_SETUP ? () => handleTouch(disabled) : null}
+  return <TouchableHighlight
+    onPress={ mode === Mode.QUEUE_SETUP
+      ? () => addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds)
+      : () => handleTouch(disabled)
+    }
+    underlayColor={disabled ? '#f91354' : '#2b5dff'}
+    style={{borderRadius: 4}}
+    onLongPress={mode === Mode.QUEUE_SETUP ? () => handleTouch(disabled) : null}
   >
     <Surface style={[styles.cell,
       disabled ? styles.disabled : occupied ? styles.occupied : styles.free]}
@@ -52,8 +60,8 @@ export default function ClassroomsCell({classroom, filteredList
       </View>
       <Text style={[styles.occupationInfo, typeStyle(occupied as OccupiedInfo)]} numberOfLines={1}>
         {disabled ? disabled.comment : occupied
-        ? userFullName
-        : occupiedOnSchedule ? 'Зайнято за розкладом': 'Вільно'}</Text>
+          ? userFullName
+          : occupiedOnSchedule ? 'Зайнято за розкладом' : 'Вільно'}</Text>
       <View style={styles.instruments}>
         {instruments?.length
           ? instruments
@@ -73,7 +81,7 @@ export default function ClassroomsCell({classroom, filteredList
 
 const styles = StyleSheet.create({
   cell: {
-    width: (windowWidth-10)/3,
+    width: (windowWidth - 10) / 3,
     justifyContent: 'center',
     alignItems: 'center',
     height: 100,
@@ -85,7 +93,7 @@ const styles = StyleSheet.create({
   cellHeader: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: (windowWidth-10)/3,
+    width: (windowWidth - 10) / 3,
     paddingLeft: 16,
     paddingRight: 16,
     flexDirection: 'row',
@@ -104,8 +112,7 @@ const styles = StyleSheet.create({
     height: 20,
     opacity: 0
   },
-  occupied: {
-  },
+  occupied: {},
   free: {
     backgroundColor: '#4bfd63'
   },
@@ -113,7 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   occupationInfo: {
-    width: (windowWidth-10)/3,
+    width: (windowWidth - 10) / 3,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,

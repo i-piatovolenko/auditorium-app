@@ -40,6 +40,9 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
   const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
   const [visible, setVisible] = useState(false);
   const {data: {mode}} = useLocal('mode');
+  const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
+  const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
+  const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
 
   const showModal = () => setVisible(true);
 
@@ -47,8 +50,17 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
 
   const goBack = () => navigation.goBack();
 
+  const isAlreadyFilteredClassroom = (classroomId: number) => {
+    if (isMinimalSetup) {
+      return minimalClassroomIds.includes(classroomId);
+    } else {
+      return desirableClassroomIds.includes(classroomId);
+    }
+  };
+
   const handleAddToLine = () => {
-    addToFilteredList(id);
+    addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds);
+    isAlreadyFilteredClassroom(id);
     goBack();
   };
 
@@ -117,7 +129,9 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
             )}
             {mode === Mode.QUEUE_SETUP && (
               occupied ? (
-                <Button mode='contained' onPress={handleAddToLine}>Додати до черги</Button>
+                <Button mode='contained' onPress={handleAddToLine}>
+                  {isAlreadyFilteredClassroom(id) ? 'Видалити з черги' : 'Додати до черги'}
+                </Button>
               ) : (
                 <Button mode='contained'
                         onPress={() => getInLine([id], [])}
