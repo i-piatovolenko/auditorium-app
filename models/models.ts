@@ -225,3 +225,22 @@ export enum ClassroomsFilterTypes {
   SPECIAL = 'SPECIAL',
   INLINE = 'INLINE'
 }
+
+export enum QueueState {
+  ACTIVE = 'ACTIVE',
+  RESERVED = 'RESERVED'
+}
+
+export enum QueueType {
+  MINIMAL = 'MINIMAL',
+  DESIRED = 'DESIRED'
+}
+
+export type QueueRecord = {
+  id: number;
+  user: User;
+  date: string;
+  classroom: ClassroomType;
+  state: QueueState;
+  type: QueueType;
+}
