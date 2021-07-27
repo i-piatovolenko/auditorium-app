@@ -5,11 +5,6 @@ export const OCCUPY_CLASSROOM = gql`
         occupyClassroom(input: $input) {
             classroom {
                 id
-                name
-                special
-                chair {
-                    name
-                }
                 occupied {
                     user {
                         id
@@ -21,12 +16,10 @@ export const OCCUPY_CLASSROOM = gql`
                             name
                         }
                     }
+                    until
+                    state
                 }
-                instruments {
-                    type
-                    name
-                    rate
-                }
+             
             }
             userErrors {
                 message

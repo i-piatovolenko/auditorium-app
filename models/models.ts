@@ -175,6 +175,7 @@ export type ClassroomType = {
   instruments: Array<InstrumentType>;
   disabled: DisabledInfo | null;
   schedule: Array<ScheduleUnitType>;
+  isHidden: boolean;
 };
 
 export type RegisterUnit = {

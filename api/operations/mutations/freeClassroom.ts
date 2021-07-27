@@ -15,6 +15,7 @@ export const FREE_CLASSROOM = gql`
                         type
                     }
                     until
+                    state
                 }
             }
                 userErrors {

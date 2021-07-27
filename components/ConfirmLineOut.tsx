@@ -3,6 +3,7 @@ import {Button, Dialog, Paragraph, Portal} from "react-native-paper";
 import {InstrumentType, Mode} from "../models/models";
 import React from "react";
 import {modeVar} from "../api/client";
+import removeFromLine from "../helpers/queue/removeFromLine";
 
 interface PropTypes {
   hideDialog: () => void;
@@ -11,7 +12,8 @@ interface PropTypes {
 
 export default function ConfirmLineOut({hideDialog, visible}: PropTypes) {
 
-  const handleOk = () => {
+  const handleOk = async () => {
+    await removeFromLine();
     modeVar(Mode.PRIMARY);
     hideDialog();
   }

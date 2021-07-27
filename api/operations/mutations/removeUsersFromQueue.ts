@@ -1,8 +1,8 @@
 import {gql} from "@apollo/client";
 
-export const ADD_USERS_TO_QUEUE = gql`
-    mutation addUsersToQueue($input: [AddUserToQueueInputType!]!) {
-        addUsersToQueue(input: $input) {
+export const REMOVE_USERS_FROM_QUEUE = gql`
+    mutation removeUsersFromQueue($where: QueueRecordWhereInput) {
+        removeUsersFromQueue(where: $where) {
           count
         }
     }

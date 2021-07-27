@@ -1,13 +1,14 @@
 import { gql } from "@apollo/client";
 
 export const GET_CLASSROOMS = gql`
-  query getClassrooms($date: Date!) {
-    classrooms {
+  query getClassrooms($date: Date!, $where: ClassroomWhereInput) {
+    classrooms(where: $where) {
       id
       description
       name
       floor
       special
+      isHidden
       chair {
           name
       }
@@ -25,6 +26,7 @@ export const GET_CLASSROOMS = gql`
           phoneNumber
         }
         until
+        state
       }
       schedule(date: $date) {
         from

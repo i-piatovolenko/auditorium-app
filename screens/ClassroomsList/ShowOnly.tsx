@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {StyleSheet, Text, View} from "react-native";
 import {Headline, Modal, Portal, RadioButton} from "react-native-paper";
 import {ClassroomsFilterTypes} from "../../models/models";

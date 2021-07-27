@@ -12,6 +12,7 @@ import {DrawerActions, useNavigation} from '@react-navigation/native';
 import {getClassroomsFilteredByInstruments} from "./helpers";
 import {useLocal} from "../../hooks/useLocal";
 import {
+  client,
   desirableClassroomIdsVar,
   isMinimalSetupVar,
   minimalClassroomIdsVar,
@@ -23,6 +24,8 @@ import ConfirmLineOut from "../../components/ConfirmLineOut";
 import {getItem} from "../../api/asyncStorage";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
+import {GET_CLASSROOMS} from "../../api/operations/queries/classrooms";
+import {ISODateString} from "../../helpers/helpers";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -67,6 +70,19 @@ function ClassroomsList() {
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+
+  useEffect(() => {
+    client.watchQuery({
+      query: GET_CLASSROOMS,
+      variables: {
+        date: ISODateString(new Date()),
+      },
+      fetchPolicy: 'network-only',
+      pollInterval: 3000
+    }).subscribe({
+      next: ({ data }) => {},
+      })
+  }, []);
 
   useEffect(() => {
     // @ts-ignore
@@ -204,8 +220,8 @@ function ClassroomsList() {
     }
   };
 
-  const handleReady = () => {
-    getInLine(minimalClassroomIds, desirableClassroomIds);
+  const handleReady = async () => {
+    await getInLine(minimalClassroomIds, desirableClassroomIds);
     showModalInline();
   };
 
@@ -214,7 +230,7 @@ function ClassroomsList() {
     if (classrooms) {
       result = classrooms.filter(classroom => {
         if (!classroom.occupied) {
-          sendPushNotification(classroom.id);
+          // sendPushNotification(classroom.id);
         }
         return !classroom.occupied
           // && classroom.queue[0] === me.id;
@@ -226,7 +242,11 @@ function ClassroomsList() {
 
   useEffect(() => {
     classrooms && filterAwaitingFreeClassrooms();
-  }, [classrooms.filter(({occupied}) => !occupied).length])
+  }, [classrooms.filter(({occupied}) => !occupied).length]);
+
+  const filterHiddenClassrooms = ({isHidden, occupied} : ClassroomType) => {
+    return mode === Mode.PRIMARY ? (!(isHidden && !occupied)) : !isHidden;
+  };
 
   return <ImageBackground source={require('../../assets/images/bg.jpg')}
                           style={{width: '100%', height: '100%'}}>
@@ -273,9 +293,13 @@ function ClassroomsList() {
         <ScrollView>
           {(mode === Mode.PRIMARY || mode === Mode.QUEUE_SETUP || mode === Mode.OWNER) && (
             <View style={styles.grid}>
-              {classrooms.map(classroom => <ClassroomsCell key={classroom.id} classroom={classroom}
-                         filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-              />)}
+              {classrooms && classrooms.filter(filterHiddenClassrooms)
+                .map(classroom => (
+                    <ClassroomsCell key={classroom.id} classroom={classroom}
+                           filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                    />
+                  )
+                )}
             </View>
           )}
           {mode === Mode.INLINE && (

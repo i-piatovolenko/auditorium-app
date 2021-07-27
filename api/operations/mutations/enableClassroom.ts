@@ -4,7 +4,11 @@ export const ENABLE_CLASSROOM = gql`
     mutation enable($input: EnableClassroomInput!) {
         enableClassroom(input: $input) {
             classroom {
-                name
+                id
+                disabled {
+                    comment
+                    until
+                }
             }
             userErrors {
                 message
