@@ -1,0 +1,31 @@
+{
+  "files": {
+    "app.js": "/auditorium-app-pwa/static/js/app.4f60cb6b.chunk.js",
+    "app.js.map": "/auditorium-app-pwa/static/js/app.4f60cb6b.chunk.js.map",
+    "runtime~app.js": "/auditorium-app-pwa/static/js/runtime~app.be599692.js",
+    "runtime~app.js.map": "/auditorium-app-pwa/static/js/runtime~app.be599692.js.map",
+    "static/js/2.14d5d9fb.chunk.js": "/auditorium-app-pwa/static/js/2.14d5d9fb.chunk.js",
+    "static/js/2.14d5d9fb.chunk.js.map": "/auditorium-app-pwa/static/js/2.14d5d9fb.chunk.js.map",
+    "fonts/MaterialCommunityIcons.ttf": "/auditorium-app-pwa/./fonts/MaterialCommunityIcons.ttf",
+    "favicon-16.png": "/auditorium-app-pwa/favicon-16.png",
+    "favicon-32.png": "/auditorium-app-pwa/favicon-32.png",
+    "favicon.ico": "/auditorium-app-pwa/favicon.ico",
+    "index.html": "/auditorium-app-pwa/index.html",
+    "manifest.json": "/auditorium-app-pwa/manifest.json",
+    "serve.json": "/auditorium-app-pwa/serve.json",
+    "static/js/2.14d5d9fb.chunk.js.LICENSE.txt": "/auditorium-app-pwa/static/js/2.14d5d9fb.chunk.js.LICENSE.txt",
+    "static/media/Chembalo.png": "/auditorium-app-pwa/static/media/Chembalo.5e053f8a.png",
+    "static/media/GrandPiano.png": "/auditorium-app-pwa/static/media/GrandPiano.5e053f8a.png",
+    "static/media/UpRightPiano.png": "/auditorium-app-pwa/static/media/UpRightPiano.791ce387.png",
+    "static/media/au_logo.png": "/auditorium-app-pwa/static/media/au_logo.de05cb10.png",
+    "static/media/au_logo_shadow.png": "/auditorium-app-pwa/static/media/au_logo_shadow.0250c21a.png",
+    "static/media/bg.jpg": "/auditorium-app-pwa/static/media/bg.b6732535.jpg",
+    "static/media/specialPiano.png": "/auditorium-app-pwa/static/media/specialPiano.11c92757.png",
+    "static/media/star.png": "/auditorium-app-pwa/static/media/star.f99f6a14.png"
+  },
+  "entrypoints": [
+    "static/js/runtime~app.be599692.js",
+    "static/js/2.14d5d9fb.chunk.js",
+    "static/js/app.4f60cb6b.chunk.js"
+  ]
+}
