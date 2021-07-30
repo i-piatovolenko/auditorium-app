@@ -20,17 +20,17 @@
   "prefer_related_applications": true,
   "icons": [
     {
-      "src": "/auditorium-app-pwa/pwa/chrome-icon/chrome-icon-144.png",
+      "src": "/auditorium-app/pwa/chrome-icon/chrome-icon-144.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "/auditorium-app-pwa/pwa/chrome-icon/chrome-icon-192.png",
+      "src": "/auditorium-app/pwa/chrome-icon/chrome-icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/auditorium-app-pwa/pwa/chrome-icon/chrome-icon-512.png",
+      "src": "/auditorium-app/pwa/chrome-icon/chrome-icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
