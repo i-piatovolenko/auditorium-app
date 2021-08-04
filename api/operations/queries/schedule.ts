@@ -23,6 +23,7 @@ export const GET_SCHEDULE = gql`
       id
       name
       schedule(date: $date) {
+        id
         from
         to
         activity

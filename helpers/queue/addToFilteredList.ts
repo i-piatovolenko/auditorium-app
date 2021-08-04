@@ -1,4 +1,4 @@
-import {minimalClassroomIdsVar} from "../../api/client";
+import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
 
 const addToFilteredList = (classroomId: number, isMinimalSetup: boolean,
                            minimalClassroomIds: any, desirableClassroomIds: any) => {
@@ -18,12 +18,12 @@ const addToFilteredList = (classroomId: number, isMinimalSetup: boolean,
     const elementIndex = desirableClassroomIds.findIndex((id: number) => id === classroomId);
 
     if (elementIndex === -1) {
-      desirableClassroomIds([...desirableClassroomIds, classroomId]);
+      desirableClassroomIdsVar([...desirableClassroomIds, classroomId]);
     } else {
       const filteredArray = desirableClassroomIds.slice();
 
       filteredArray.splice(elementIndex, 1);
-      desirableClassroomIds(filteredArray);
+      desirableClassroomIdsVar(filteredArray);
     }
   }
 };

@@ -1,15 +1,15 @@
 import { ApolloClient, InMemoryCache, makeVar } from "@apollo/client";
-import {ACCESS_RIGHTS, Mode} from "../models/models";
+import {ACCESS_RIGHTS, Mode, User} from "../models/models";
 
 export const client = new ApolloClient({
-  uri: 'http://3.142.219.180:4000/',
+  uri: 'http://54.75.17.229:4000/',
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
         fields: {
-          isLogged: {
+          me: {
             read() {
-              return isLoggedVar();
+              return meVar();
             },
           },
           accessRights: {
@@ -42,7 +42,7 @@ export const client = new ApolloClient({
     },
   }),
 });
-export const isLoggedVar = makeVar(false);
+export const meVar = makeVar<User | null>(null);
 export const accessRightsVar = makeVar(ACCESS_RIGHTS.USER);
 export const modeVar = makeVar(Mode.PRIMARY);
 export const minimalClassroomIdsVar = makeVar<number[]>([]);

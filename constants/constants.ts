@@ -1,0 +1,1 @@
+export const TWO_MINUTES = 120000;

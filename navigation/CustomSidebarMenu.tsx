@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   View,
@@ -11,26 +11,13 @@ import {
 import {
   DrawerContentScrollView,
   DrawerItemList,
-  DrawerItem,
 } from '@react-navigation/drawer';
-import {Avatar, Button, Dialog, IconButton, Paragraph, Portal} from "react-native-paper";
-import {isLoggedVar} from "../api/client";
-import {getItem, removeItem} from "../api/asyncStorage";
-import {User} from "../models/models";
+import {Avatar, Button, Dialog, IconButton, Portal} from "react-native-paper";
+import {removeItem} from "../api/asyncStorage";
+import {meVar} from "../api/client";
 
 const CustomSidebarMenu = (props: any) => {
   const [visible, setVisible] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  const getUser = async () => {
-    await getItem('user').then(user => {
-      setUser(user as unknown as User);
-    });
-  };
-
-  useEffect(() => {
-    getUser();
-  }, []);
 
   const showDialog = () => setVisible(true);
 
@@ -38,7 +25,7 @@ const CustomSidebarMenu = (props: any) => {
 
   const logout = async () => {
     await removeItem('user');
-    isLoggedVar(false);
+    meVar(null);
     hideDialog();
   };
 
@@ -50,7 +37,7 @@ const CustomSidebarMenu = (props: any) => {
       />
       <View style={styles.userData}>
         <Avatar.Icon size={44} icon='account'/>
-        <Text style={styles.userName}>{user?.firstName}, вітаємо!</Text>
+        <Text style={styles.userName}>{meVar()?.firstName}, вітаємо!</Text>
         <IconButton
           icon="logout"
           color="#f91354"

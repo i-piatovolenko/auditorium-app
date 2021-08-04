@@ -1,12 +1,13 @@
-import {client, modeVar} from "../../api/client";
+import {client, meVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
 import {Mode, QueueState, QueueType, User} from "../../models/models";
-import {ADD_USERS_TO_QUEUE} from "../../api/operations/mutations/addUsersToQueue";
-import {getItem} from "../../api/asyncStorage";
+import {ADD_USER_TO_QUEUE} from "../../api/operations/mutations/addUserToQueue";
 
 const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: number[]) => {
-  const user: User | undefined = await getItem('user');
+  const user: User | null = meVar();
 
-  const minimalData = minimalClassroomsIds.map(id => ({
+  const allClassroomIds = [...(new Set([...minimalClassroomsIds, ...desirableClassroomIds]))];
+
+  const minimalData = allClassroomIds.map(id => ({
     userId: (user as unknown as User).id,
     classroomId: id,
     state: QueueState.ACTIVE,
@@ -20,10 +21,17 @@ const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: 
     type: QueueType.DESIRED
   }));
 
-  await client.mutate({mutation: ADD_USERS_TO_QUEUE, variables: {
-      input: [...minimalData, ...desirableData]
-    }})
-  modeVar(Mode.INLINE);
+  try {
+    await client.mutate({
+      mutation: ADD_USER_TO_QUEUE, variables: {
+        input: [...minimalData, ...desirableData]
+      }
+    })
+    modeVar(Mode.INLINE);
+    minimalClassroomIdsVar(allClassroomIds);
+  } catch (e) {
+    alert(JSON.stringify(e));
+  }
 };
 
 export  default getInLine;

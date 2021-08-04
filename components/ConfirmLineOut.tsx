@@ -14,7 +14,6 @@ export default function ConfirmLineOut({hideDialog, visible}: PropTypes) {
 
   const handleOk = async () => {
     await removeFromLine();
-    modeVar(Mode.PRIMARY);
     hideDialog();
   }
 
@@ -31,7 +30,3 @@ export default function ConfirmLineOut({hideDialog, visible}: PropTypes) {
     </Dialog>
   </Portal>
 };
-
-const styles = StyleSheet.create({
-
-});

@@ -1,8 +1,15 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {ImageBackground, Platform, ScrollView, StyleSheet, Text, View} from "react-native";
-import {ActivityIndicator, Appbar, Button, Divider} from "react-native-paper";
+import React, {useEffect, useState} from 'react';
+import {ImageBackground, ScrollView, StyleSheet, Text, View} from "react-native";
+import {ActivityIndicator, Appbar, Button} from "react-native-paper";
 import useClassrooms from "../../hooks/useClassrooms";
-import {ClassroomType, InstrumentType, Mode, User} from "../../models/models";
+import {
+  ClassroomType,
+  InstrumentType,
+  Mode,
+  OccupiedState,
+  QueueState,
+  QueueType, SavedFilterT
+} from "../../models/models";
 import ClassroomsCell from "../../components/ClassroomCell";
 import Filters, {SpecialT} from "./Filters";
 import {createStackNavigator} from "@react-navigation/stack";
@@ -15,17 +22,22 @@ import {
   client,
   desirableClassroomIdsVar,
   isMinimalSetupVar,
+  meVar,
   minimalClassroomIdsVar,
   modeVar
 } from "../../api/client";
 import getInLine from "../../helpers/queue/getInLine";
 import InlineDialog from "../../components/InlineDialog";
 import ConfirmLineOut from "../../components/ConfirmLineOut";
-import {getItem} from "../../api/asyncStorage";
 import * as Notifications from "expo-notifications";
-import Constants from "expo-constants";
 import {GET_CLASSROOMS} from "../../api/operations/queries/classrooms";
 import {ISODateString} from "../../helpers/helpers";
+import {useQuery} from "@apollo/client";
+import {GET_ME} from "../../api/operations/queries/me";
+import MyClassroomCell from "./MyClassroomCell";
+import {GET_GENERAL_QUEUE} from "../../api/operations/queries/generalQueue";
+import SavedFilters from "./SavedFilters";
+import {getItem} from "../../api/asyncStorage";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -54,22 +66,19 @@ export default function Home() {
 function ClassroomsList() {
   const classrooms: ClassroomType[] = useClassrooms();
   const [visible, setVisible] = useState(false);
+  const [visibleSavedFilters, setVisibleSavedFilters] = useState(false);
   const [visibleModalInline, setVisibleModalInline] = useState(false);
   const [visibleLineOut, setVisibleLineOut] = useState(false);
   const navigation = useNavigation();
   const [queueSize, setQueueSize] = useState(27);
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
-  const [me, setMe] = useState<User | null>(null);
-  const title = `Людей в черзі: ${queueSize}`;
+  const title = queueSize ? `Людей в черзі: ${queueSize}` : `Людей в черзі немає`;
   const inlineTitle = `Ви в черзі: ${queueSize}-й`;
   const {data: {mode}} = useLocal('mode');
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
-  const [expoPushToken, setExpoPushToken] = useState('');
-  const [notification, setNotification] = useState(false);
-  const notificationListener = useRef();
-  const responseListener = useRef();
+  const {data: {me}} = useQuery(GET_ME);
 
   useEffect(() => {
     client.watchQuery({
@@ -80,97 +89,41 @@ function ClassroomsList() {
       fetchPolicy: 'network-only',
       pollInterval: 3000
     }).subscribe({
-      next: ({ data }) => {},
-      })
-  }, []);
-
-  useEffect(() => {
-    // @ts-ignore
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-
-    // This listener is fired whenever a notification is received while the app is foregrounded
-    // @ts-ignore
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      // @ts-ignore
-      setNotification(notification);
-    });
-
-    // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
-    // @ts-ignore
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
-    });
-
-    return () => {
-      // @ts-ignore
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      // @ts-ignore
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
-  }, []);
-
-  // Can use this function below, OR use Expo's Push Notification Tool-> https://expo.io/notifications
-  async function sendPushNotification(clasroomId: number) {
-    const classroomName = classrooms.find(({id}) => id === clasroomId)?.name;
-
-    const message = {
-      to: expoPushToken,
-      sound: 'default',
-      title: `Аудиторія ${classroomName} вільна!`,
-      body: 'Підтвердіть або скасуйте',
-      data: { someData: 'goes here' },
-    };
-
-    await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
+      next: ({data}) => {
       },
-      body: JSON.stringify(message),
     });
-  }
 
-  async function registerForPushNotificationsAsync() {
-    let token;
-    if (Constants.isDevice) {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== 'granted') {
-        alert('Failed to get push token for push notification!');
-        return;
-      }
-      token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log(token);
-    } else {
-      alert('Must use physical device for Push Notifications');
-    }
+    client.watchQuery({
+      query: GET_GENERAL_QUEUE,
+      fetchPolicy: 'network-only',
+      pollInterval: 3000
+    }).subscribe({
+      next: ({data}) => {
+        setQueueSize(data.generalQueue.length)
+      },
+    });
 
-    if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
+    if (meVar()?.queue.length) {
+      const minimal = meVar()?.queue.filter(({type, state}) => {
+        return type === QueueType.MINIMAL && state === QueueState.ACTIVE;
       });
+      const desired = meVar()?.queue.filter(({type, state}) => {
+        return type === QueueType.DESIRED && state === QueueState.ACTIVE;
+      });
+      modeVar(Mode.INLINE);
+      minimalClassroomIdsVar(minimal ? minimal.map(({classroom: {id}}) => id) : []);
+      desirableClassroomIdsVar(desired ? desired.map(({classroom: {id}}) => id) : []);
     }
-
-    return token;
-  }
-
-  const getMe = () => getItem('user').then(user => setMe(user as unknown as User));
-
-  useEffect(() => {
-    getMe()
   }, []);
 
   useEffect(() => {
-    classrooms && setFreeClassroomsAmount(classrooms?.filter(classroom => !classroom.occupied).length);
+    if (classrooms) {
+      const myClassroom = classrooms.find(({occupied}) => {
+        return occupied?.user.id === me.id && occupied?.state === OccupiedState.OCCUPIED;
+      });
+      meVar({...me, occupiedClassroom: myClassroom || null});
+      setFreeClassroomsAmount(classrooms?.filter(classroom => !classroom.occupied).length);
+    }
   }, [classrooms]);
 
   const showModalInline = () => setVisibleModalInline(true);
@@ -181,12 +134,16 @@ function ClassroomsList() {
 
   const hideModal = () => setVisible(false);
 
+  const showModalSavedFilters = () => setVisibleSavedFilters(true);
+
+  const hideModalSavedFilters = () => setVisibleSavedFilters(false);
+
   const showConfirmLineOut = () => setVisibleLineOut(true);
 
   const hideConfirmLineOut = () => setVisibleLineOut(false);
 
   const applyGeneralFilter = (instruments: InstrumentType[], withWing: boolean,
-                 operaStudioOnly: boolean, special: SpecialT) => {
+                              operaStudioOnly: boolean, special: SpecialT) => {
 
     const filteredClassroomsByInstruments = instruments.length ?
       getClassroomsFilteredByInstruments(classrooms, instruments) : classrooms;
@@ -196,9 +153,12 @@ function ClassroomsList() {
       .filter(classroom => operaStudioOnly ? classroom.isOperaStudio : true)
       .filter(classroom => {
         switch (special) {
-          case "with": return true;
-          case "only": return classroom.special;
-          case "without": return !classroom.special;
+          case "with":
+            return true;
+          case "only":
+            return classroom.special;
+          case "without":
+            return !classroom.special;
         }
       })
       .map(classroom => classroom.id);
@@ -225,15 +185,34 @@ function ClassroomsList() {
     showModalInline();
   };
 
+  const getInQueueSetup = async () => {
+    const savedFilters: SavedFilterT[] | undefined = await getItem('filters');
+    if (savedFilters) {
+      const mainFilter = savedFilters!.find(filter => filter.main);
+      if (mainFilter) {
+        minimalClassroomIdsVar(mainFilter.minimalClassroomIds);
+        desirableClassroomIdsVar(mainFilter.desirableClassroomIds);
+      }
+    }
+    modeVar(Mode.QUEUE_SETUP);
+  };
+
+  const handleCancelQueueSetup = () => {
+    modeVar(Mode.PRIMARY);
+    minimalClassroomIdsVar([]);
+    desirableClassroomIdsVar([]);
+    isMinimalSetupVar(true);
+  }
+
   const filterAwaitingFreeClassrooms = () => {
     let result;
     if (classrooms) {
       result = classrooms.filter(classroom => {
         if (!classroom.occupied) {
-          // sendPushNotification(classroom.id);
+          //TODO push notifications
         }
         return !classroom.occupied
-          // && classroom.queue[0] === me.id;
+        // && classroom.queue[0] === me.id;
       });
     }
 
@@ -244,43 +223,62 @@ function ClassroomsList() {
     classrooms && filterAwaitingFreeClassrooms();
   }, [classrooms.filter(({occupied}) => !occupied).length]);
 
-  const filterHiddenClassrooms = ({isHidden, occupied} : ClassroomType) => {
+  const filterHiddenClassrooms = ({isHidden, occupied}: ClassroomType) => {
     return mode === Mode.PRIMARY ? (!(isHidden && !occupied)) : !isHidden;
   };
 
+  const filterDisabledClassrooms = ({disabled}: ClassroomType) => {
+    return mode === Mode.QUEUE_SETUP || mode === Mode.INLINE ? !disabled : true;
+  };
+
+  const filterMyPendingClassrooms = ({id, occupied}: ClassroomType) => {
+    return minimalClassroomIds.includes(id) && occupied && (
+      occupied.state === OccupiedState.PENDING || occupied.state === OccupiedState.RESERVED
+    );
+  }
+
+  const filterAllAnotherClassrooms = ({id}: ClassroomType) => id !== me?.occupiedClassroom?.id;
+
+  const filterQueuedClassrooms = ({id, occupied}: ClassroomType) => {
+    return minimalClassroomIds.includes(id) && occupied && me?.id !== occupied.user.id;
+  }
+
   return <ImageBackground source={require('../../assets/images/bg.jpg')}
                           style={{width: '100%', height: '100%'}}>
+    {/*<Log data={me}/>*/}
     <Appbar style={styles.top}>
-      <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} color='#fff'/>
+      <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                     color='#fff'
+      />
       {mode === Mode.PRIMARY && (
         <Appbar.Content style={{marginLeft: -10}} title={title} subtitle={'Вільних аудиторій: ' +
         freeClassroomsAmount} color='#fff'/>
       )}
       {mode === Mode.QUEUE_SETUP && (
         <>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '88%'}}>
-          <View style={styles.queueSwitcher}>
-            <Button mode={isMinimalSetup ? 'contained' : 'text'}
-                    style={{position: 'relative', width: '50%'}}
-                    color='#fff'
-                    onPress={() => isMinimalSetupVar(true)}
-            >
-              Мінімальні
-            </Button>
-            <Button
-              mode={!isMinimalSetup ? 'contained' : 'text'}
-              style={{position: 'relative', width: '50%'}}
-              color='#fff'
-              onPress={() => isMinimalSetupVar(false)}
-            >
-              Бажані
-            </Button>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '88%'}}>
+            <View style={styles.queueSwitcher}>
+              <Button mode={isMinimalSetup ? 'contained' : 'text'}
+                      style={{position: 'relative', width: '45%'}}
+                      color='#fff'
+                      onPress={() => isMinimalSetupVar(true)}
+              >
+                Мінімальні
+              </Button>
+              <Button
+                mode={!isMinimalSetup ? 'contained' : 'text'}
+                style={{position: 'relative', width: '35%'}}
+                color='#fff'
+                onPress={() => isMinimalSetupVar(false)}
+              >
+                Бажані
+              </Button>
+            </View>
           </View>
-        </View>
-        <Appbar.Action icon="content-save" onPress={showModal} color='#fff'
-                       style={{position: 'absolute', right: 40, top: 28}}/>
-        <Appbar.Action icon="filter" onPress={showModal} color='#fff'
-                       style={{position: 'absolute', right: 0, top: 28}}/>
+          <Appbar.Action icon="content-save" onPress={showModalSavedFilters} color='#fff'
+                         style={{position: 'absolute', right: 40, top: 28}}/>
+          <Appbar.Action icon="filter" onPress={showModal} color='#fff'
+                         style={{position: 'absolute', right: 0, top: 28}}/>
         </>
       )}
       {mode === Mode.INLINE && (
@@ -290,84 +288,104 @@ function ClassroomsList() {
 
     <View style={styles.wrapper}>
       {classrooms?.length ? <>
+
         <ScrollView>
+          <MyClassroomCell me={me} classrooms={classrooms} isMinimalSetup={isMinimalSetup}
+                           minimalClassroomIds={minimalClassroomIds}
+                           desirableClassroomIds={desirableClassroomIds}
+          />
           {(mode === Mode.PRIMARY || mode === Mode.QUEUE_SETUP || mode === Mode.OWNER) && (
-            <View style={styles.grid}>
-              {classrooms && classrooms.filter(filterHiddenClassrooms)
-                .map(classroom => (
-                    <ClassroomsCell key={classroom.id} classroom={classroom}
-                           filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                    />
-                  )
-                )}
-            </View>
+            <>
+              {me.occupiedClassroom && <Text style={styles.gridDivider}>
+                  Всі аудиторії:
+              </Text>}
+              <View style={styles.grid}>
+                {classrooms && classrooms
+                  .filter(filterHiddenClassrooms)
+                  .filter(filterDisabledClassrooms)
+                  .filter(filterAllAnotherClassrooms)
+                  .map(classroom => (
+                      <ClassroomsCell key={classroom.id} classroom={classroom}
+                                      filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                      />
+                    )
+                  )}
+              </View>
+            </>
           )}
           {mode === Mode.INLINE && (
             <>
-              {!!freeClassroomsAmount && (
-                <Text style={styles.gridDivider}>
-                  Моя аудиторія:
-                </Text>
+              {!!classrooms.filter(filterMyPendingClassrooms)?.length && (
+                <>
+                  <Text style={styles.gridDivider}>
+                    Аудиторії, що очікують підтвердження:
+                  </Text>
+                  <View style={{...styles.grid, marginBottom: 10}}>
+                    {classrooms.filter(filterMyPendingClassrooms).map(classroom => (
+                      <ClassroomsCell key={classroom.id} classroom={classroom}
+                                      filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                      />
+                    ))}
+                  </View>
+                </>
               )}
-              {!!freeClassroomsAmount && (
-                <Text style={styles.gridDivider}>
-                  Аудиторії, що очікують підтвердження:
-                </Text>
-              )}
-              <View style={{...styles.grid, marginBottom: 10}}>
-                {classrooms.filter(({id}) => minimalClassroomIds.includes(id))
-                  .filter(({occupied}) => !occupied)
-                  .map(classroom => <ClassroomsCell key={classroom.id} classroom={classroom}
-                                                    filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                  />)}
-              </View>
-              <Text style={styles.gridDivider}>Аудиторії, за якими я стою в черзі: </Text>
-              <View style={{...styles.grid, marginBottom: 10}}>
-                {classrooms.filter(({id}) => minimalClassroomIds.includes(id))
-                  .filter(({occupied}) => occupied)
-                  .map(classroom => <ClassroomsCell key={classroom.id} classroom={classroom}
-                                                    filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                  />)}
-              </View>
+              {!!(classrooms.filter(filterQueuedClassrooms).length) && <>
+                  <Text style={styles.gridDivider}>Аудиторії, за якими я стою в черзі:</Text>
+                  <View style={{...styles.grid, marginBottom: 10}}>
+                    {classrooms.filter(filterQueuedClassrooms).map(classroom => (
+                      <ClassroomsCell key={classroom.id} classroom={classroom}
+                                      filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                      />
+                    ))}
+                  </View>
+              </>}
               <Text style={styles.gridDivider}>Інші аудиторії: </Text>
               <View style={styles.grid}>
-                {classrooms.filter(({id}) => !(minimalClassroomIds.includes(id)))
-                  .map(classroom => <ClassroomsCell key={classroom.id} classroom={classroom}
-                           filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                />)}
+                {classrooms
+                  .filter(({id}) => !(minimalClassroomIds.includes(id)))
+                  .filter(filterHiddenClassrooms)
+                  .filter(filterDisabledClassrooms)
+                  .map(classroom => (
+                    <ClassroomsCell key={classroom.id} classroom={classroom}
+                                    filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                    />
+                  ))}
               </View>
             </>
           )}
         </ScrollView>
-        {mode === Mode.PRIMARY && (
+
+        {mode === Mode.PRIMARY && !me.occupiedClassroom && (
           <Button style={styles.getInLine} mode='contained' color='#2b5dff'
-                  onPress={() => modeVar(Mode.QUEUE_SETUP)}>
-            <Text>Стати в чергу ({queueSize + 1}-й)</Text>
+                  onPress={getInQueueSetup}>
+            <Text>Стати в чергу</Text>
           </Button>
         )}
         {mode === Mode.QUEUE_SETUP && (
           <>
             <Button style={styles.approve} mode='contained' color='#2b5dff'
-                    onPress={handleReady}>
+                    onPress={handleReady} disabled={!minimalClassroomIds.length}
+            >
               <Text>Готово ({queueSize + 1}-й)</Text>
             </Button>
             <Button style={styles.getOutLine} mode='contained' color='#f91354'
-                    onPress={() => modeVar(Mode.PRIMARY)}>
+                    onPress={handleCancelQueueSetup}>
               <Text>Скасувати</Text>
             </Button>
           </>
         )}
         {mode === Mode.INLINE && (
-            <Button style={styles.getOutLineSingle} mode='contained' color='#f91354'
-                    onPress={showConfirmLineOut}
-            >
-                <Text>Вийти з черги</Text>
-            </Button>
+          <Button style={styles.getOutLineSingle} mode='contained' color='#f91354'
+                  onPress={showConfirmLineOut}
+          >
+            <Text>Вийти з черги</Text>
+          </Button>
         )}
       </> : <ActivityIndicator animating color='#fff'/>}
-      <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter} />
-      <InlineDialog visible={visibleModalInline} hideDialog={hideModalInline} />
-      <ConfirmLineOut hideDialog={hideConfirmLineOut} visible={visibleLineOut} />
+      <SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters} />
+      <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter}/>
+      <InlineDialog visible={visibleModalInline} hideDialog={hideModalInline}/>
+      <ConfirmLineOut hideDialog={hideConfirmLineOut} visible={visibleLineOut}/>
     </View>
   </ImageBackground>
 }
@@ -383,14 +401,16 @@ const styles = StyleSheet.create(
       height: 80,
       backgroundColor: 'transparent',
       zIndex: 1
-    },
+    }
+    ,
     grid: {
       marginBottom: 80,
       marginLeft: 2,
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'flex-start'
-    },
+    }
+    ,
     getInLine: {
       position: 'absolute',
       zIndex: 1,
@@ -400,7 +420,8 @@ const styles = StyleSheet.create(
       justifyContent: 'center',
       flexDirection: 'row',
       alignItems: 'center'
-    },
+    }
+    ,
     getOutLine: {
       position: 'absolute',
       zIndex: 1,
@@ -411,7 +432,8 @@ const styles = StyleSheet.create(
       justifyContent: 'center',
       flexDirection: 'row',
       alignItems: 'center'
-    },
+    }
+    ,
     getOutLineSingle: {
       position: 'absolute',
       zIndex: 1,
@@ -421,7 +443,8 @@ const styles = StyleSheet.create(
       justifyContent: 'center',
       flexDirection: 'row',
       alignItems: 'center'
-    },
+    }
+    ,
     approve: {
       position: 'absolute',
       zIndex: 1,
@@ -432,7 +455,8 @@ const styles = StyleSheet.create(
       justifyContent: 'center',
       flexDirection: 'row',
       alignItems: 'center'
-    },
+    }
+    ,
     wrapper: {
       width: '100%',
       height: '100%',
@@ -441,24 +465,27 @@ const styles = StyleSheet.create(
       backgroundColor: 'transparent',
       marginTop: 80,
       paddingBottom: 70,
-    },
+    }
+    ,
     queueSwitcher: {
       flexDirection: 'row',
       width: '76%',
-      justifyContent: 'space-between',
+      justifyContent: 'center',
       paddingHorizontal: 5,
       marginHorizontal: 20,
       alignItems: 'center',
-    },
+    }
+    ,
     gridDivider: {
       color: '#fff',
       marginBottom: 10,
       marginLeft: 3,
       marginRight: 3,
       paddingLeft: 17,
-      fontSize: 18,
       borderBottomWidth: 1,
       borderBottomColor: '#ffffff77',
       paddingBottom: 10
     }
-  });
+  }
+  )
+;

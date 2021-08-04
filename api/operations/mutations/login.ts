@@ -13,7 +13,39 @@ export const LOGIN = gql`
                 phoneNumber
                 extraPhoneNumbers
                 email
+                department {
+                  id
+                  name  
+                }
+                occupiedClassroom: classroom {
+                  id
+                  name
+                  occupied {
+                    state
+                  }
+                }
+                studentInfo {
+                  degree {
+                    name
+                  }
+                  startYear
+                  accountStatus
+                }
+                employeeInfo {
+                  employmentType
+                  accountStatus
+                }
+                queue {
+                  id
+                  classroom {
+                    id
+                    name
+                  }
+                  state
+                  type
+                }
             }
+               
             userErrors {
                 message
                 code

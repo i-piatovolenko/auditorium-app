@@ -42,7 +42,7 @@ export default function InstrumentInfo({instrument, hideModal, visible}: PropTyp
       <Divider style={styles.divider}/>
       <Text style={{textAlign: 'center'}}>Рейтинг: {instrument.rate.toFixed(1)}</Text>
       <View style={styles.rate}>
-        {rate.map((item, index) => <Image
+        {rate.map((item, index) => <Image key={index}
           style={{...styles.star, opacity: index < intRate ? 1 : .3}}
           source={require('../assets/images/star.png')}
         />)}

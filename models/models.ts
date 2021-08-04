@@ -91,7 +91,8 @@ export enum NotificationsTypes {
 export enum AccountStatuses {
   ACTIVE = 'ACTIVE',
   UNVERIFIED = 'UNVERIFIED',
-  ACADEMIC_LEAVE = 'ACADEMIC_LEAVE'
+  ACADEMIC_LEAVE = 'ACADEMIC_LEAVE',
+  FROZEN = 'FROZEN'
 }
 
 export type User = {
@@ -110,7 +111,29 @@ export type User = {
   studentInfo: StudentInfo;
   employeeInfo: EmployeeInfo;
   expireDate: Date | null;
+  classroom: ClassroomType;
+  queue: QueueRecord[];
 };
+
+export type CurrentUser = {
+  id: number;
+  createdAt: Date;
+  firstName: string;
+  patronymic: string | null;
+  lastName: string;
+  type: string;
+  department: Department;
+  email: string;
+  phoneNumber: string;
+  extraPhoneNumbers: string | null;
+  nameTemp: string | null;
+  startYear: number;
+  studentInfo: StudentInfo;
+  employeeInfo: EmployeeInfo;
+  expireDate: Date | null;
+  occupiedClassroom: ClassroomType;
+  queue: QueueRecord[];
+}
 
 export type StudentInfo = {
   degree: Degree;
@@ -126,7 +149,14 @@ export type EmployeeInfo = {
 export type OccupiedInfo = {
   user: User;
   until: Date;
+  state: OccupiedState | null;
 };
+
+export enum OccupiedState {
+  OCCUPIED = 'OCCUPIED',
+  PENDING = 'PENDING',
+  RESERVED = 'RESERVED'
+}
 
 export type Comment = {
   id: number;
@@ -244,4 +274,11 @@ export type QueueRecord = {
   classroom: ClassroomType;
   state: QueueState;
   type: QueueType;
+}
+
+export type SavedFilterT = {
+  minimalClassroomIds: number[];
+  desirableClassroomIds: number[];
+  name: string;
+  main: boolean;
 }

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, Text, Dimensions, Image, TouchableHighlight} from "react-native";
-import {ClassroomType, DisabledInfo, Mode, OccupiedInfo} from "../models/models";
-import {fullName, isOccupiedOnSchedule, typeStyle} from "../helpers/helpers";
+import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
+import {ClassroomType, DisabledInfo, Mode, OccupiedInfo, OccupiedState} from "../models/models";
+import {fullName, isOccupiedOnSchedule, isPendingForMe, typeStyle} from "../helpers/helpers";
 import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "./InstrumentItem";
 import {useNavigation} from '@react-navigation/native';
@@ -9,6 +9,10 @@ import ErrorDialog from "./ErrorDialog";
 import moment from "moment";
 import {useLocal} from "../hooks/useLocal";
 import addToFilteredList from "../helpers/queue/addToFilteredList";
+import {useQuery} from "@apollo/client";
+import {GET_ME} from "../api/operations/queries/me";
+import useTimeLeft from "../hooks/useTimeLeft";
+import Colors from "../constants/Colors";
 
 interface PropTypes {
   classroom: ClassroomType;
@@ -30,7 +34,8 @@ export default function ClassroomsCell({
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
-
+  const {data: {me}} = useQuery(GET_ME);
+  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo);
 
   const handleTouch = (disabled: DisabledInfo | null) => {
     !disabled && navigation.navigate('ClassroomInfo', {classroom});
@@ -38,7 +43,7 @@ export default function ClassroomsCell({
   }
 
   return <TouchableHighlight
-    onPress={ mode === Mode.QUEUE_SETUP
+    onPress={mode === Mode.QUEUE_SETUP && occupied
       ? () => addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds)
       : () => handleTouch(disabled)
     }
@@ -49,25 +54,40 @@ export default function ClassroomsCell({
     <Surface style={[styles.cell,
       disabled ? styles.disabled : occupied ? styles.occupied : styles.free]}
     >
-      {filteredList.includes(id) && mode === Mode.QUEUE_SETUP ?
+      {filteredList.includes(id) && mode === Mode.QUEUE_SETUP && (
         <IconButton icon='check-bold' style={styles.checkMark} color='#0f0'/>
-        : null
-      }
+      )}
+      {isPendingForMe(occupied as OccupiedInfo, me, mode) && (
+        <>
+          {occupied?.state === OccupiedState.RESERVED && (
+            <Image source={require('../assets/images/key.png')} style={styles.keyImage} />
+          )}
+          <View
+            style={{...styles.timeLeftProgress,
+              width: (((windowWidth - 10) / 3) / 100) * timeLeftInPer}}
+          />
+        </>
+      )}
       <View style={styles.cellHeader}>
         <Text style={styles.name}>{name}</Text>
         <Image source={require('./../assets/images/specialPiano.png')}
                style={[special ? styles.special : styles.notSpecial]}/>
       </View>
-      <Text style={[styles.occupationInfo, typeStyle(occupied as OccupiedInfo)]} numberOfLines={1}>
-        {disabled ? disabled.comment : occupied
-          ? userFullName
-          : occupiedOnSchedule ? 'Зайнято за розкладом' : 'Вільно'}</Text>
+      {isPendingForMe(occupied as OccupiedInfo, me, mode) ? (
+        <Text style={styles.timeLeft}>{timeLeft}</Text>
+      ) : (
+        <Text style={[styles.occupationInfo, typeStyle(occupied as OccupiedInfo)]} numberOfLines={1}>
+          {disabled ? disabled.comment : occupied
+            ? userFullName
+            : occupiedOnSchedule ? 'Зайнято за розкладом' : 'Вільно'}
+        </Text>
+      )}
       <View style={styles.instruments}>
         {instruments?.length
           ? instruments
             .slice()
             .sort((a, b) => b.rate - a.rate).slice(0, 2)
-            .map(instrument => <InstrumentItem instrument={instrument}/>)
+            .map(instrument => <InstrumentItem instrument={instrument} key={instrument.id}/>)
           : <View style={styles.space}/>}
       </View>
       <ErrorDialog message={'Аудиторія відключена до ' + moment(disabled?.until)
@@ -88,7 +108,8 @@ const styles = StyleSheet.create({
     margin: 1,
     elevation: 2,
     borderRadius: 4,
-    position: 'relative'
+    position: 'relative',
+    overflow: 'hidden'
   },
   cellHeader: {
     alignItems: 'center',
@@ -137,5 +158,32 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 2,
     backgroundColor: '#00000088'
+  },
+  timeLeftProgress: {
+    left: 0,
+    position: 'absolute',
+    zIndex: 1000,
+    backgroundColor: '#00000033',
+    height: 100,
+    width: (windowWidth - 10) / 3,
+  },
+  timeLeft: {
+    fontSize: 12,
+    backgroundColor: '#f91354',
+    color: '#fff',
+    width: (windowWidth - 10) / 3,
+    margin: 2,
+    paddingHorizontal: 4,
+    paddingBottom: 2,
+    textAlign: 'center'
+  },
+  keyImage: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 30,
+    height:30,
+    resizeMode: "stretch",
+    tintColor: Colors.red
   }
 });

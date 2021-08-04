@@ -1,7 +1,7 @@
 import {gql} from "@apollo/client";
 
-export const GET_ME_TYPE = gql`
+export const GET_ME = gql`
     query meType {
-        meType @client
+        me @client
     }
 `;

@@ -4,14 +4,15 @@ import {Appbar, Button, Title} from "react-native-paper";
 import {client, meVar} from "../../api/client";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {getItem, removeItem, setItem} from "../../api/asyncStorage";
+import { useNavigation } from '@react-navigation/native';
 
-export default function Verification() {
-  const message1 = 'Для доступу до застосунку підтвердіть свій аккаунт в учбовій частині. \n' +
-    'Ваш номер користувача:';
-  const message2 = 'Після верифікації оновіть сторінку або поверніться на сторінку входу.';
+export default function Frozen() {
+  const message1 = 'Ваш аккаунт заблоковано. Для отримання доступу разблокуйте аккаунт в учбовій частині. Ваш номер:';
+  const message2 = 'Після разблокування оновіть сторінку або поверніться на сторінку входу.';
   const [storageUser, setStorageUser] = useState<any>(null);
   const [update, setUpdate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     getItem('user').then(u => setStorageUser(u));
@@ -42,12 +43,8 @@ export default function Verification() {
   return <ImageBackground source={require('../../assets/images/bg.jpg')}
                           style={{width: '100%', height: '100%'}}>
     <View style={styles.container}>
-      <Appbar style={styles.top}>
-        <Appbar.BackAction onPress={navigateToLogin}/>
-        <Appbar.Content title='Реєстрація' subtitle='Крок 3 із 3' color='#fff'/>
-      </Appbar>
       <View style={styles.wrapper}>
-        <Title style={styles.title}>Верифікація в учбовій частині</Title>
+        <Title style={styles.title}>Аккаунт заблоковано</Title>
         <Text style={styles.message}>{message1}</Text>
         <Title style={styles.number}>{storageUser ? storageUser.id : ''}</Title>
         <Text style={styles.message}>{message2}</Text>

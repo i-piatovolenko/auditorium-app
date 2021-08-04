@@ -93,7 +93,7 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
   </Portal>
 };
 
-const styles = StyleSheet.create(({
+const styles = StyleSheet.create({
   containerStyle: {
     backgroundColor: 'white',
     margin: 20,
@@ -136,4 +136,4 @@ const styles = StyleSheet.create(({
     flexDirection: 'row',
     justifyContent: 'space-between'
   }
-}));
+});

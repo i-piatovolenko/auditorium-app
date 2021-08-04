@@ -6,8 +6,8 @@ import {
   WORKING_DAY_START,
 } from "./constants";
 import {
-  ACCESS_RIGHTS,
-  OccupiedInfo,
+  ACCESS_RIGHTS, Mode,
+  OccupiedInfo, OccupiedState,
   ScheduleUnitType,
   User,
   UserTypes,
@@ -16,6 +16,7 @@ import moment from "moment";
 import React, {ReactElement} from "react";
 import {accessRightsVar} from "../api/client";
 import {Image} from "react-native";
+import {TWO_MINUTES} from "../constants/constants";
 
 export const getScheduleTimeline = (start: number, end: number): string[] => {
   let timeSnippets: string[] = [];
@@ -226,4 +227,24 @@ export const setAccessRights = (user: User) => {
 
 export const isTeacherType = (type: UserTypes) => {
   return type === UserTypes.TEACHER || type === UserTypes.CONCERTMASTER || type === UserTypes.ILLUSTRATOR;
+};
+
+export const getTimeFromUntil = (until: string) => {
+  if (until) {
+    const lastIndex = until.length - 5;
+    const differenceInMs = moment(until.slice(0, lastIndex)).diff(moment());
+    const tempTime = moment.duration(differenceInMs);
+
+    return [tempTime.minutes() + ':' + tempTime.seconds(), differenceInMs / (TWO_MINUTES / 100)];
+  }
+};
+
+export const isPendingForMe = (occupied: OccupiedInfo, me: User, mode: Mode) => {
+  return occupied && occupied.user.id === me.id &&
+    (occupied.state === OccupiedState.PENDING || occupied.state === OccupiedState.RESERVED) &&
+    mode === Mode.INLINE;
+}
+
+export const isOwnClassroom = (occupied: OccupiedInfo, me: User) => {
+  return occupied && occupied.user.id === me.id && occupied.state === OccupiedState.OCCUPIED;
 };

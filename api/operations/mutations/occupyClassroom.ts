@@ -19,7 +19,14 @@ export const OCCUPY_CLASSROOM = gql`
                     until
                     state
                 }
-             
+            }
+            prevClassroom {
+               id
+                occupied {
+                    user {
+                        id
+                    }
+                }
             }
             userErrors {
                 message

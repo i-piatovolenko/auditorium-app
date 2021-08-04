@@ -8,7 +8,6 @@ import Login from "../screens/Login";
 import SignUp from "../screens/Signup/SignUp";
 import ForgotPassword from "../screens/ForgotPassword";
 import ForgotPasswordSuccess from "../screens/ForgotPasswordSuccess";
-import {useLocal} from "../hooks/useLocal";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import Users from "../screens/Users";
 import CustomSidebarMenu from "./CustomSidebarMenu";
@@ -17,10 +16,16 @@ import Profile from "../screens/Profile";
 import Settings from "../screens/Settings";
 import {getItem} from "../api/asyncStorage";
 import {AccountStatuses, User} from "../models/models";
-import {isLoggedVar} from "../api/client";
 import SignUpStepTwo from "../screens/Signup/SignUpStepTwo";
 import Verification from "../screens/Signup/Verification";
 import Home from "../screens/ClassroomsList/ClassroomsList";
+import {meVar} from "../api/client";
+import {useQuery} from "@apollo/client";
+import {GET_ME} from "../api/operations/queries/me";
+import Frozen from "../screens/Signup/Frozen";
+import Loading from "../screens/Loading";
+import * as SplashScreen from "expo-splash-screen";
+import Splash from "../screens/Splash";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -36,48 +41,87 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 
 function RootNavigator() {
-  const {data: {isLogged}} = useLocal('isLogged');
-  const [user, setUser] = useState<User | null>(null);
-  const [accountStatus, setAccountStatus] = useState<AccountStatuses>(AccountStatuses.UNVERIFIED);
+  const [accountStatus, setAccountStatus] = useState<AccountStatuses | null>(null);
+  const {data: {me}} = useQuery(GET_ME);
+  const [appIsReady, setAppIsReady] = useState(false);
+
+  const getAccountStatus = (user: User) => {
+    //@ts-ignore
+    const {studentInfo, employeeInfo} = user;
+
+    const isStudent = !!studentInfo;
+    const status = isStudent ? studentInfo?.accountStatus : employeeInfo?.accountStatus;
+    setAccountStatus(status);
+  }
+
+  const getMe = async () => {
+    if (!me) {
+      try {
+        const user: User | undefined = await getItem('user')
+        if (user) {
+          getAccountStatus(user);
+          meVar(user);
+        } else {
+        }
+      } catch (e) {
+        alert(JSON.stringify(e));
+      }
+    } else {
+      getAccountStatus(me);
+    }
+  }
 
   useEffect(() => {
+    getMe();
+  }, [me]);
+
+  const checkStatus = ((accountStatus: AccountStatuses) => {
+    switch (accountStatus) {
+      case AccountStatuses.UNVERIFIED:
+        return Verification;
+      case AccountStatuses.FROZEN:
+      case AccountStatuses.ACADEMIC_LEAVE:
+        return Frozen;
+      case AccountStatuses.ACTIVE:
+        return Home;
+      default:
+        return Loading;
+    }
+  });
+
+
+  useEffect(() => {
+    async function prepare() {
       try {
-        getItem('user').then(user => {
-          setUser(user as unknown as User);
-        }).then(() => {
-          if (user) {
-            const {studentInfo, employeeInfo} = user;
-            isLoggedVar(true);
-
-            const isStudent = !!studentInfo;
-            const status = isStudent ? studentInfo.accountStatus : employeeInfo.accountStatus;
-
-            setAccountStatus(status);
-          }
-        });
+        await getMe();
+        await SplashScreen.preventAutoHideAsync();
       } catch (e) {
-        alert(e);
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
       }
-    }, []);
+    }
 
-  return (
-    isLogged
-      ? <Drawer.Navigator initialRouteName="Home" drawerStyle={styles.drawer} drawerContentOptions={{
+    prepare();
+  }, []);
+
+ return (
+    me ? <Drawer.Navigator initialRouteName="Home" drawerStyle={styles.drawer} drawerContentOptions={{
         activeBackgroundColor: '#2b5dff',
         labelStyle: {
           fontSize: 20,
           color: '#fff'
         },
       }}
-      drawerContent={(props: any) => <CustomSidebarMenu {...props}/>}
+                           drawerContent={(props: any) => <CustomSidebarMenu {...props}/>}
       >
         <Drawer.Screen name="Home"
-                       //TODO set !== to ===
-                       component={accountStatus !== AccountStatuses.UNVERIFIED ?
-                         Verification : Home} options={{
-          title: 'Аудиторії',
-        }}
-        initialParams={{id: user?.id}}
+          //TODO set !== to ===
+                       component={checkStatus(accountStatus as AccountStatuses)}
+                       options={{
+                         title: 'Аудиторії',
+                       }}
+                       initialParams={{id: meVar()?.id}}
         />
         <Drawer.Screen name="Users" component={Users} options={{
           title: 'Довідник',
@@ -95,7 +139,7 @@ function RootNavigator() {
       : <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="Login">
         <Stack.Screen
           name="Login"
-          component={Login}
+          component={appIsReady ? Login : Splash}
         />
         <Stack.Screen
           name="SignUp"

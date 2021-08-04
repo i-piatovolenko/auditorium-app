@@ -1,17 +1,17 @@
 import * as React from 'react';
+import {useEffect, useState} from 'react';
 import {Image, ImageBackground, StyleSheet} from 'react-native';
 import {Button, Surface, TextInput} from 'react-native-paper';
 import {Text, View} from '../components/Themed';
-import {isLoggedVar} from "../api/client";
 import {useMutation} from "@apollo/client";
 import {LOGIN} from "../api/operations/mutations/login";
-import {useEffect, useState} from "react";
 import WaitDialog from "../components/WaitDialog";
 import {setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
-import {ErrorCodes, ErrorCodesUa} from "../models/models";
+import {ErrorCodes, ErrorCodesUa, Mode, QueueState, QueueType, User} from "../models/models";
+import {desirableClassroomIdsVar, meVar, minimalClassroomIdsVar, modeVar} from "../api/client";
 
-export default function Login({navigation}: any) {
+export default function Login({route, navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,11 +46,23 @@ export default function Login({navigation}: any) {
           setErrorMessage(ErrorCodesUa[result?.data.login.userErrors[0].code as ErrorCodes]);
           setModalActivator(prevState => !prevState);
         } else {
-          const user = result?.data.login.user;
-          isLoggedVar(true);
+          const user: User = result?.data.login.user;
           await setItem('user', user);
+          if (user.queue.length) {
+            const minimal = user.queue.filter(({type, state}) => {
+              return type === QueueType.MINIMAL && state === QueueState.ACTIVE;
+            });
+            const desired = user.queue.filter(({type, state}) => {
+              return type === QueueType.DESIRED && state === QueueState.ACTIVE;
+            });
+            modeVar(Mode.INLINE);
+            minimalClassroomIdsVar(minimal.map(({classroom: {id}}) => id));
+            desirableClassroomIdsVar(desired.map(({classroom: {id}}) => id));
+          }
+          meVar(user);
         }
       } catch (e) {
+        setErrorMessage(e?.graphQLErrors[0]?.message || JSON.stringify(e));
         setModalActivator(prevState => !prevState);
       }
     }
