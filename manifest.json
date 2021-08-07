@@ -4,7 +4,7 @@
   "lang": "en",
   "name": "Auditorium",
   "short_name": "Auditorium",
-  "start_url": "/?utm_source=web_app_manifest",
+  "start_url": "https://i-piatovolenko.github.io/auditorium-app/",
   "orientation": "portrait",
   "related_applications": [
     {
