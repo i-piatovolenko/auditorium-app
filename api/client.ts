@@ -1,8 +1,36 @@
-import { ApolloClient, InMemoryCache, makeVar } from "@apollo/client";
+import { ApolloClient, HttpLink, InMemoryCache, makeVar, split } from "@apollo/client";
 import {ACCESS_RIGHTS, Mode, User} from "../models/models";
+import { WebSocketLink } from '@apollo/client/link/ws';
+import {getMainDefinition} from "@apollo/client/utilities";
+
+const wsLink = new WebSocketLink({
+  uri: 'ws://54.75.17.229:4000//subscriptions',
+  options: {
+    reconnect: true,
+    // connectionParams: {
+      // authToken: user.authToken,
+    // },
+  }
+});
+
+const httpLink = new HttpLink({
+  uri: 'http://54.75.17.229:4000/'
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink,
+);
 
 export const client = new ApolloClient({
-  uri: 'http://54.75.17.229:4000/',
+  link: splitLink,
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
@@ -42,6 +70,7 @@ export const client = new ApolloClient({
     },
   }),
 });
+
 export const meVar = makeVar<User | null>(null);
 export const accessRightsVar = makeVar(ACCESS_RIGHTS.USER);
 export const modeVar = makeVar(Mode.PRIMARY);

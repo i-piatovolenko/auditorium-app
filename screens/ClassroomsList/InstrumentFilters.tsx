@@ -9,6 +9,8 @@ import {
 } from "react-native-paper";
 import {InstrumentType} from "../../models/models";
 import InstrumentsList from "./InstrumentsList";
+import CustomRating from "../../components/CustomRating/CustomRating";
+import Colors from "../../constants/Colors";
 
 export type SpecialT = 'with' | 'only' | 'without';
 
@@ -25,15 +27,18 @@ export default function InstrumentFilters({hideModal, visible, instruments, setI
   const [isGrandPianoOnly, setIsGrandPianoOnly] = useState(false);
   const [count, setCount] = useState(0);
   const [visibleList, setVisibleList] = useState(false);
-
+  const [visibleRate, setVisibleRate] = useState(false);
 
   const showModalList = () => setVisibleList(true);
 
   const hideModalList = () => setVisibleList(false);
 
+  const showModalRate = () => setVisibleRate(true);
+
+  const hideModalRate = () => setVisibleRate(false);
+
   const addInstrument = () => {
     const newInstrument = {type: isGrandPianoOnly ? 'GrandPiano' : 'UpRightPiano', rate: count};
-
     setInstruments((prevState: InstrumentType[]) => [...prevState, newInstrument]);
     setCount(0);
     setIsGrandPianoOnly(false);
@@ -56,8 +61,9 @@ export default function InstrumentFilters({hideModal, visible, instruments, setI
                 {instrument.type === 'UpRightPiano' ? 'Рояль або піаніно' : 'Рояль'}
               </Text>
               <View style={{flexDirection: 'row', alignItems: 'center', width: '20%'}}>
-                <IconButton icon='star' color='orange'/>
-                <Text style={{paddingLeft: 6}}>{instrument.rate}+</Text>
+                <Button icon='star' color={Colors.orange} disabled>
+                  {instrument.rate}
+                </Button>
               </View>
               <IconButton icon='trash-can-outline' onPress={() => removeInstrument(index)}/>
             </View>
@@ -70,11 +76,9 @@ export default function InstrumentFilters({hideModal, visible, instruments, setI
               <IconButton icon='menu-down' onPress={showModalList}/>
             </View>
             <View style={{flexDirection: 'row', alignItems: 'center', width: '20%'}}>
-              <IconButton icon='star' color='orange' style={{marginRight: -5}}/>
-              <TextInput placeholder='0' style={styles.countInput} autoCompleteType='cc-number'
-                         value={count as unknown as string}
-                         onChangeText={(text) => setCount(text.replace(/[^0-9]/g, '') as unknown as number)}
-                         mode='outlined'
+              <Button onPress={showModalRate} icon='star' color={Colors.orange}>{count}</Button>
+              <CustomRating size={10} count={count} setCount={setCount} hideDialog={hideModalRate}
+                            visible={visibleRate}
               />
             </View>
             <IconButton icon='plus' onPress={addInstrument}/>

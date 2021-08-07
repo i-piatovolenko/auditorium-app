@@ -26,6 +26,7 @@ import Frozen from "../screens/Signup/Frozen";
 import Loading from "../screens/Loading";
 import * as SplashScreen from "expo-splash-screen";
 import Splash from "../screens/Splash";
+import PrivacyPolicy from "../screens/PrivacyPolicy";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -132,8 +133,8 @@ function RootNavigator() {
         <Drawer.Screen name="Profile" component={Profile} options={{
           title: 'Мій профіль'
         }}/>
-        <Drawer.Screen name="Settings" component={Settings} options={{
-          title: 'Налаштування'
+        <Drawer.Screen name="PrivacyPolicy" component={PrivacyPolicy} options={{
+          title: 'Політика конфіденційності'
         }}/>
       </Drawer.Navigator>
       : <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="Login">

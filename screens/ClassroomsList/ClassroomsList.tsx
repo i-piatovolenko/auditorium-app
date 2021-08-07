@@ -29,7 +29,6 @@ import {
 import getInLine from "../../helpers/queue/getInLine";
 import InlineDialog from "../../components/InlineDialog";
 import ConfirmLineOut from "../../components/ConfirmLineOut";
-import * as Notifications from "expo-notifications";
 import {GET_CLASSROOMS} from "../../api/operations/queries/classrooms";
 import {ISODateString} from "../../helpers/helpers";
 import {useQuery} from "@apollo/client";
@@ -40,14 +39,6 @@ import SavedFilters from "./SavedFilters";
 import {getItem} from "../../api/asyncStorage";
 
 const Stack = createStackNavigator<RootStackParamList>();
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
 
 export default function Home() {
   // @ts-ignore
@@ -203,25 +194,6 @@ function ClassroomsList() {
     desirableClassroomIdsVar([]);
     isMinimalSetupVar(true);
   }
-
-  const filterAwaitingFreeClassrooms = () => {
-    let result;
-    if (classrooms) {
-      result = classrooms.filter(classroom => {
-        if (!classroom.occupied) {
-          //TODO push notifications
-        }
-        return !classroom.occupied
-        // && classroom.queue[0] === me.id;
-      });
-    }
-
-    return result;
-  }
-
-  useEffect(() => {
-    classrooms && filterAwaitingFreeClassrooms();
-  }, [classrooms.filter(({occupied}) => !occupied).length]);
 
   const filterHiddenClassrooms = ({isHidden, occupied}: ClassroomType) => {
     return mode === Mode.PRIMARY ? (!(isHidden && !occupied)) : !isHidden;

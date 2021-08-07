@@ -46,13 +46,13 @@ export default function SavedFilters({hideModal, visible}: PropTypes) {
       main: saveAsMainFilter
     };
 
-    setItem('filters', [...savedFilters.map((filter: any) => {
+    setItem('filters', [...savedFilters?.map((filter: any) => {
       return saveAsMainFilter ? ({...filter, main: false}) : filter
     }), item]).then(res => {
       setIsSaving(false);
     });
     // @ts-ignore
-    setSavedFilters(prevState => [...prevState.map((filter: any) => {
+    setSavedFilters(prevState => [...prevState?.map((filter: any) => {
       return saveAsMainFilter ? ({...filter, main: false}) : filter
     }), item]);
   };
@@ -80,7 +80,7 @@ export default function SavedFilters({hideModal, visible}: PropTypes) {
         <Headline>Збережені фільтри</Headline>
       </View>
       <View style={styles.body}>
-        {savedFilters.map((filterItem: SavedFilterT, index) => (
+        {savedFilters?.map((filterItem: SavedFilterT, index) => (
           <View key={index} style={styles.itemRow}>
             <Text style={selectedFilter === index ? styles.selectedItem : styles.item}
                   onPress={() => handleSelectFilter(filterItem, index)}>

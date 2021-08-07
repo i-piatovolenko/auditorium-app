@@ -79,7 +79,7 @@ export default function Login({route, navigation}: any) {
                      onChangeText={(e) => setEmail(e)}
           />
           <TextInput label='Пароль'
-                     style={{...styles.input, marginBottom: 16}}
+                     style={styles.input}
                      onChangeText={(e) => setPassword(e)}
                      secureTextEntry={!showPassword}
                      selectionColor='#2b5dff'
@@ -103,8 +103,7 @@ export default function Login({route, navigation}: any) {
         </Button>
         <View style={styles.footer}>
         <Text style={{color: '#fff'}}>Національна музична академія України ім. П. І. Чайковського</Text>
-        <Text style={{color: '#ffffff77'}}>Розробники: Назаренко Владислав та Іван Пятоволенко</Text>
-        <Text style={{color: '#fff'}}>Auditorium © 2021</Text>
+        <Text style={{color: '#fff', marginTop: 16}}>Auditorium © 2021</Text>
         </View>
       </ImageBackground>
       <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
@@ -119,11 +118,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#2e287c',
+    overflow: 'hidden'
   },
   logo: {
     width: '80%',
     resizeMode: 'contain',
-    height: 130,
+    flex: 1
   },
   title: {
     fontSize: 32,
@@ -160,8 +160,8 @@ const styles = StyleSheet.create({
   footer: {
     backgroundColor: 'transparent',
     alignItems: 'center',
-    position: "absolute",
-    bottom: 16,
+    textAlign: 'center',
     opacity: .5,
+    marginBottom: 16
   }
 });

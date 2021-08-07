@@ -266,7 +266,7 @@ export default function SignUp({navigation}: any) {
             <TextInput placeholder="По-батькові" style={styles.input} value={patronymic}
                        onChangeText={text => setPatronymic(text)}
             />
-            <View style={{height: 10}}/>
+            <View style={{height: 10, backgroundColor: '#fff'}}/>
             <TextInput placeholder="E-mail *" style={styles.input} value={email}
                        underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
                        onChangeText={text => {
@@ -346,8 +346,8 @@ export default function SignUp({navigation}: any) {
                           setIsSignupTouched(true);
                           setCheckAgreement(prevState => !prevState);
                         }}/>
-              <Text style={{width: '90%'}}>Я прочитав і погоджуюсь з
-                <Text style={styles.link} onPress={showAgreement}> умовами користування</Text> сервісом *</Text>
+              <Text style={{width: '90%', backgroundColor: '#fff'}}>Я прочитав і погоджуюсь з
+                <Text style={styles.link} onPress={showAgreement}> політикою конфіденційності</Text> *</Text>
             </View>
           </ScrollView>
           <View style={styles.navButtons}>
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: '#fff',
     width: '100%',
-    height: windowHeight-60,
+    height: windowHeight-80,
     alignItems: 'center',
   },
   title: {
@@ -400,7 +400,6 @@ const styles = StyleSheet.create({
   signUpButton: {
     height: 50,
     justifyContent: 'center',
-    width: '90%',
   },
   scrollView: {
     width: '90%',
@@ -431,6 +430,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
   infoPanel: {
     borderRadius: 8,

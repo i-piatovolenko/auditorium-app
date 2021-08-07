@@ -66,7 +66,8 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
-  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo);
+  const occupiedTotalTime = occupied?.state === OccupiedState.OCCUPIED ? 180 : 2;
+  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo, occupiedTotalTime);
   const [visibleBanner, setVisibleBanner] = useState(true);
   const [skips, setSkips] = useState(0);
 
@@ -138,7 +139,7 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
     //TODO remove classroom from queue mutation
   };
 
-  return <View>
+  return <View style={{backgroundColor: '#fff'}}>
     <Appbar style={styles.top}>
       <Appbar.BackAction onPress={goBack}/>
       <Appbar.Content
@@ -320,6 +321,7 @@ const styles = StyleSheet.create({
     marginTop: 100,
     marginLeft: 16,
     marginRight: 16,
+    backgroundColor: '#fff',
   },
   divider: {
     marginTop: 16,

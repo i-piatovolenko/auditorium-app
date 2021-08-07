@@ -229,13 +229,16 @@ export const isTeacherType = (type: UserTypes) => {
   return type === UserTypes.TEACHER || type === UserTypes.CONCERTMASTER || type === UserTypes.ILLUSTRATOR;
 };
 
-export const getTimeFromUntil = (until: string) => {
+export const getTimeFromUntil = (until: string, minutesDuration = 2) => {
   if (until) {
     const lastIndex = until.length - 5;
     const differenceInMs = moment(until.slice(0, lastIndex)).diff(moment());
     const tempTime = moment.duration(differenceInMs);
 
-    return [tempTime.minutes() + ':' + tempTime.seconds(), differenceInMs / (TWO_MINUTES / 100)];
+    const resultHHMM = tempTime.minutes() + ':' + tempTime.seconds();
+    const resultPercents = differenceInMs / ((MINUTE * minutesDuration) / 100);
+
+    return [resultHHMM, resultPercents];
   }
 };
 

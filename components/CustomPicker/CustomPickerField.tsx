@@ -40,7 +40,7 @@ export default function CustomPickerField({
   };
 
   return <View style={styles.picker}>
-    <Text style={{...styles.pickerField, borderBottomColor: underlineColor}} numberOfLines={1}
+    <Text style={[styles.pickerField, {borderBottomColor: underlineColor}]} numberOfLines={1}
           onPress={showPicker}
     >
       {selected.id === -1 ? name : selected.name}
@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
   picker: {
     flexDirection: 'row',
     position: 'relative',
+    backgroundColor: '#fff',
   },
   pickerField: {
     borderBottomWidth: 1,
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     marginTop: 20,
     color: '#6f6f6f',
-    width: '100%'
+    width: '100%',
   },
   pickerIcon: {
     position: 'absolute',

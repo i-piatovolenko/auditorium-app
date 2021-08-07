@@ -22,7 +22,7 @@ export function getClassroomsFilteredByInstruments(classrooms: ClassroomType[],
     }
 
     // first checking all the required grand pianos
-    while (instrumentsFilter[instrumentsFilter.length - 1].type === 'GrandPiano') {
+    while (instrumentsFilter[instrumentsFilter.length - 1]?.type === 'GrandPiano') {
       const classroomGrandPianoInd = getMinimumSatisfactoryInstrumentIndex(
         classroomInstruments,
         'GrandPiano',

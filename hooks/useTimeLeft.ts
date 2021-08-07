@@ -5,7 +5,7 @@ import {GET_ME} from "../api/operations/queries/me";
 import {useLocal} from "./useLocal";
 import {getTimeFromUntil, isPendingForMe} from "../helpers/helpers";
 
-const useTimeLeft = (occupied: OccupiedInfo) => {
+const useTimeLeft = (occupied: OccupiedInfo, minutesDuration: number) => {
   const [timeLeft, setTimeLeft] = useState('');
   const [timeLeftInPer, setTimeLeftInPer] = useState(100);
   const interval = useRef<any>({current: null});
@@ -13,11 +13,11 @@ const useTimeLeft = (occupied: OccupiedInfo) => {
   const {data: {mode}} = useLocal('mode');
 
   useEffect(() => {
-    if (isPendingForMe(occupied, me as User, mode) && interval.current !== null) {
+    if (occupied && occupied.user.id === me.id  && interval.current !== null) {
       // @ts-ignore
       interval.current = setInterval(() => {
         // @ts-ignore
-        const [left, leftPer] = getTimeFromUntil(occupied?.until as unknown as string);
+        const [left, leftPer] = getTimeFromUntil(occupied?.until as unknown as string, minutesDuration);
         const min: string = (left as string).split(':')?.[0] + ' хв. ';
         const sec: string = (left as string).split(':')?.[1] + ' сек. ';
 

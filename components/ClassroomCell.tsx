@@ -20,6 +20,7 @@ interface PropTypes {
 }
 
 const windowWidth = Dimensions.get('window').width;
+const cellWidth = ((windowWidth - 10) / 3);
 
 export default function ClassroomsCell({
                                          classroom, filteredList
@@ -35,12 +36,20 @@ export default function ClassroomsCell({
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
   const {data: {me}} = useQuery(GET_ME);
-  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo);
+  const occupiedTotalTime = occupied?.state === OccupiedState.OCCUPIED ? 180 : 2;
+  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo, occupiedTotalTime);
 
   const handleTouch = (disabled: DisabledInfo | null) => {
     !disabled && navigation.navigate('ClassroomInfo', {classroom});
     disabled && setVisible(true);
-  }
+  };
+
+  const ProgressBackground = () => (
+    <View
+      style={{...styles.timeLeftProgress,
+        width: (cellWidth / 100) * (timeLeftInPer as number)}}
+    />
+  );
 
   return <TouchableHighlight
     onPress={mode === Mode.QUEUE_SETUP && occupied
@@ -62,18 +71,19 @@ export default function ClassroomsCell({
           {occupied?.state === OccupiedState.RESERVED && (
             <Image source={require('../assets/images/key.png')} style={styles.keyImage} />
           )}
-          <View
-            style={{...styles.timeLeftProgress,
-              width: (((windowWidth - 10) / 3) / 100) * timeLeftInPer}}
-          />
+          <ProgressBackground/>
         </>
+      )}
+      {occupied && occupied.user.id === me.id && occupied.state === OccupiedState.OCCUPIED && (
+        <ProgressBackground/>
       )}
       <View style={styles.cellHeader}>
         <Text style={styles.name}>{name}</Text>
         <Image source={require('./../assets/images/specialPiano.png')}
                style={[special ? styles.special : styles.notSpecial]}/>
       </View>
-      {isPendingForMe(occupied as OccupiedInfo, me, mode) ? (
+      {isPendingForMe(occupied as OccupiedInfo, me, mode) ||
+      occupied && occupied.user.id === me.id && occupied.state === OccupiedState.OCCUPIED ? (
         <Text style={styles.timeLeft}>{timeLeft}</Text>
       ) : (
         <Text style={[styles.occupationInfo, typeStyle(occupied as OccupiedInfo)]} numberOfLines={1}>
@@ -101,7 +111,7 @@ export default function ClassroomsCell({
 
 const styles = StyleSheet.create({
   cell: {
-    width: (windowWidth - 10) / 3,
+    width: cellWidth,
     justifyContent: 'center',
     alignItems: 'center',
     height: 100,
@@ -114,7 +124,7 @@ const styles = StyleSheet.create({
   cellHeader: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: (windowWidth - 10) / 3,
+    width: cellWidth,
     paddingLeft: 16,
     paddingRight: 16,
     flexDirection: 'row',
@@ -141,7 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   occupationInfo: {
-    width: (windowWidth - 10) / 3,
+    width: cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,
@@ -165,13 +175,13 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     backgroundColor: '#00000033',
     height: 100,
-    width: (windowWidth - 10) / 3,
+    width: cellWidth,
   },
   timeLeft: {
     fontSize: 12,
     backgroundColor: '#f91354',
     color: '#fff',
-    width: (windowWidth - 10) / 3,
+    width: cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,
