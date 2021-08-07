@@ -35,7 +35,8 @@
     "web": {
       "favicon": "./assets/images/favicon.png",
       "backgroundColor": "#fff",
-      "name": "Auditorium"
+      "name": "Auditorium",
+      "startUrl": "https://i-piatovolenko.github.io/auditorium-app/"
     }
   }
 }
