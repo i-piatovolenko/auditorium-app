@@ -25,8 +25,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "permissions": [],
       "package": "com.knmau.auditorium",
@@ -34,7 +33,6 @@
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
-      "backgroundColor": "#fff",
       "name": "Auditorium",
       "startUrl": "https://i-piatovolenko.github.io/auditorium-app/"
     }
