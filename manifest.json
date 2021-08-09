@@ -2,8 +2,8 @@
   "background_color": "#ffffff",
   "display": "standalone",
   "lang": "en",
-  "name": "Auditorium",
-  "short_name": "Auditorium",
+  "name": "auditorium-app",
+  "short_name": "auditorium-app",
   "start_url": "/",
   "orientation": "portrait",
   "related_applications": [
