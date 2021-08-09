@@ -1,7 +1,7 @@
 {
   "files": {
-    "app.js": "/auditorium-app/static/js/app.75ceb038.chunk.js",
-    "app.js.map": "/auditorium-app/static/js/app.75ceb038.chunk.js.map",
+    "app.js": "/auditorium-app/static/js/app.773aa4f1.chunk.js",
+    "app.js.map": "/auditorium-app/static/js/app.773aa4f1.chunk.js.map",
     "runtime~app.js": "/auditorium-app/static/js/runtime~app.25d9251d.js",
     "runtime~app.js.map": "/auditorium-app/static/js/runtime~app.25d9251d.js.map",
     "static/js/2.a929811a.chunk.js": "/auditorium-app/static/js/2.a929811a.chunk.js",
@@ -19,7 +19,7 @@
     "static/media/UpRightPiano.png": "/auditorium-app/static/media/UpRightPiano.791ce387.png",
     "static/media/au_logo.png": "/auditorium-app/static/media/au_logo.de05cb10.png",
     "static/media/au_logo_shadow.png": "/auditorium-app/static/media/au_logo_shadow.0250c21a.png",
-    "static/media/bg.jpg": "/auditorium-app/static/media/bg.b6732535.jpg",
+    "static/media/bg.jpg": "/auditorium-app/static/media/bg.5326a7ca.jpg",
     "static/media/key.png": "/auditorium-app/static/media/key.5df04324.png",
     "static/media/specialPiano.png": "/auditorium-app/static/media/specialPiano.11c92757.png",
     "static/media/star.png": "/auditorium-app/static/media/star.f99f6a14.png"
@@ -27,6 +27,6 @@
   "entrypoints": [
     "static/js/runtime~app.25d9251d.js",
     "static/js/2.a929811a.chunk.js",
-    "static/js/app.75ceb038.chunk.js"
+    "static/js/app.773aa4f1.chunk.js"
   ]
 }
