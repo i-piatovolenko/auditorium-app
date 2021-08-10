@@ -1,7 +1,7 @@
 {
   "files": {
-    "app.js": "/auditorium-app/static/js/app.ea19e3e7.chunk.js",
-    "app.js.map": "/auditorium-app/static/js/app.ea19e3e7.chunk.js.map",
+    "app.js": "/auditorium-app/static/js/app.2cf7f376.chunk.js",
+    "app.js.map": "/auditorium-app/static/js/app.2cf7f376.chunk.js.map",
     "runtime~app.js": "/auditorium-app/static/js/runtime~app.25d9251d.js",
     "runtime~app.js.map": "/auditorium-app/static/js/runtime~app.25d9251d.js.map",
     "static/js/2.4506cc76.chunk.js": "/auditorium-app/static/js/2.4506cc76.chunk.js",
@@ -27,6 +27,6 @@
   "entrypoints": [
     "static/js/runtime~app.25d9251d.js",
     "static/js/2.4506cc76.chunk.js",
-    "static/js/app.ea19e3e7.chunk.js"
+    "static/js/app.2cf7f376.chunk.js"
   ]
 }
