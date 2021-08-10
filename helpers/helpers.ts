@@ -235,10 +235,10 @@ export const getTimeFromUntil = (until: string, minutesDuration = 2) => {
     const differenceInMs = moment(until.slice(0, lastIndex)).diff(moment());
     const tempTime = moment.duration(differenceInMs);
 
-    const resultHHMM = tempTime.minutes() + ':' + tempTime.seconds();
+    const resultHHMMSS = tempTime.hours() + ':' + tempTime.minutes() + ':' + tempTime.seconds();
     const resultPercents = differenceInMs / ((MINUTE * minutesDuration) / 100);
 
-    return [resultHHMM, resultPercents];
+    return [resultHHMMSS, resultPercents];
   }
 };
 

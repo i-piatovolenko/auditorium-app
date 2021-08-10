@@ -62,7 +62,7 @@ export default function InstrumentFilters({hideModal, visible, instruments, setI
               </Text>
               <View style={{flexDirection: 'row', alignItems: 'center', width: '20%'}}>
                 <Button icon='star' color={Colors.orange} disabled>
-                  {instrument.rate}
+                  {instrument.rate} +
                 </Button>
               </View>
               <IconButton icon='trash-can-outline' onPress={() => removeInstrument(index)}/>
@@ -76,7 +76,7 @@ export default function InstrumentFilters({hideModal, visible, instruments, setI
               <IconButton icon='menu-down' onPress={showModalList}/>
             </View>
             <View style={{flexDirection: 'row', alignItems: 'center', width: '20%'}}>
-              <Button onPress={showModalRate} icon='star' color={Colors.orange}>{count}</Button>
+              <Button onPress={showModalRate} icon='star' color={Colors.orange}>{count} +</Button>
               <CustomRating size={10} count={count} setCount={setCount} hideDialog={hideModalRate}
                             visible={visibleRate}
               />

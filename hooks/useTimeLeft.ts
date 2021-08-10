@@ -18,10 +18,11 @@ const useTimeLeft = (occupied: OccupiedInfo, minutesDuration: number) => {
       interval.current = setInterval(() => {
         // @ts-ignore
         const [left, leftPer] = getTimeFromUntil(occupied?.until as unknown as string, minutesDuration);
-        const min: string = (left as string).split(':')?.[0] + ' хв. ';
-        const sec: string = (left as string).split(':')?.[1] + ' сек. ';
+        const hour: string = (left as string).split(':')?.[0] + ' год. ';
+        const min: string = (left as string).split(':')?.[1] + ' хв. ';
+        const sec: string = (left as string).split(':')?.[2] + ' сек. ';
 
-        setTimeLeft(min + sec);
+        setTimeLeft(hour + min + sec);
         setTimeLeftInPer(leftPer as number);
         if (timeLeftInPer <= 0) clearInterval(interval.current);
       }, 1000);

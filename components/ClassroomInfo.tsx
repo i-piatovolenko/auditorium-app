@@ -139,7 +139,7 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
     //TODO remove classroom from queue mutation
   };
 
-  return <View style={{backgroundColor: '#fff'}}>
+  return <View style={styles.container}>
     <Appbar style={styles.top}>
       <Appbar.BackAction onPress={goBack}/>
       <Appbar.Content
@@ -184,14 +184,14 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
       {!occupied
         ? <Text style={styles.freeText}>{occupiedOnSchedule ? 'Зайнято за розкладом' : 'Вільно'}</Text>
         : !isPendingForMe(occupied, me as User, mode) && (
-        <Surface style={{elevation: visible ? 0 : 4, ...styles.occupationInfo}}
+        <Surface style={[{elevation: visible ? 0 : 4}, styles.occupationInfo]}
                  onTouchEnd={showModal}
         >
           <Text style={styles.occupantName}>{userFullName}</Text>
-          <Text style={{
-            backgroundColor: UserTypeColors[occupied.user.type as UserTypes],
-            ...styles.occupantType
-          }}
+          <Text style={[{
+            backgroundColor: UserTypeColors[occupied.user.type as UserTypes]},
+            styles.occupantType
+          ]}
           >
             {UserTypesUa[occupied.user.type as UserTypes]}
           </Text>
@@ -255,12 +255,12 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
         {occupied && occupied.state === OccupiedState.RESERVED &&
         occupied.user.id === me.id && mode === Mode.INLINE && (
           <>
-            {timeLeftInPer > 0 && <View style={{marginBottom: 30}}>
+            {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
                 <Banner visible={visibleBanner} actions={[{
                   label: 'Зрозуміло',
                   onPress: () => setVisibleBanner(false)
                 }]}
-                        style={{marginBottom: 30}}
+                        style={styles.spaceBottom30}
                 >Заберіть ключі від аудиторії в учбовій частині. Максимальний час знаходження в аудиторії - 3 години.
                 </Banner>
                 <Paragraph>
@@ -275,12 +275,12 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
         {occupied && occupied.state === OccupiedState.PENDING &&
         occupied.user.id === me.id && mode === Mode.INLINE && (
           <>
-            {timeLeftInPer > 0 && <View style={{marginBottom: 30}}>
+            {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
                 <Banner visible={visibleBanner} actions={[{
                   label: 'Зрозуміло',
                   onPress: () => setVisibleBanner(false)
                 }]}
-                        style={{marginBottom: 30}}
+                        style={styles.spaceBottom30}
                 >
                   {
                     `Ви можете відхилити аудиторію ${skips} раз${skips === 2 || skips === 3 || skips === 4 ? 'и.' : '.'
@@ -317,11 +317,15 @@ const styles = StyleSheet.create({
     height: 80,
     backgroundColor: '#2e287c',
   },
+  container: {
+    backgroundColor: '#ffffff'
+  },
   wrapper: {
     marginTop: 100,
-    marginLeft: 16,
-    marginRight: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
     backgroundColor: '#fff',
+    height: '100%'
   },
   divider: {
     marginTop: 16,
@@ -381,9 +385,14 @@ const styles = StyleSheet.create({
   },
   queueSetupButtons: {
     marginTop: 32,
+    backgroundColor: '#ffffff'
   },
   progressBar: {
     height: 24,
     borderRadius: 6,
   },
+  spaceBottom30: {
+    marginBottom: 30,
+    backgroundColor: '#ffffff'
+  }
 });

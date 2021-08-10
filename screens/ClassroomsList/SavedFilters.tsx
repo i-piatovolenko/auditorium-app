@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, Dimensions, TextInput} from "react-native";
-import {Button, Checkbox, Divider, Headline, IconButton, Modal, Portal, RadioButton} from "react-native-paper";
-import InstrumentFilters from "./InstrumentFilters";
-import {InstrumentType, SavedFilterT} from "../../models/models";
+import {Button, Checkbox, Headline, IconButton, Modal, Portal} from "react-native-paper";
+import {ClassroomType, SavedFilterT} from "../../models/models";
 import {getItem, setItem} from "../../api/asyncStorage";
-import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
 import {useLocal} from "../../hooks/useLocal";
 import Colors from "../../constants/Colors";
+import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
+import useClassrooms from "../../hooks/useClassrooms";
 
 export type SpecialT = 'with' | 'only' | 'without';
 
@@ -18,6 +18,7 @@ interface PropTypes {
 const windowWidth = Dimensions.get('window').width;
 
 export default function SavedFilters({hideModal, visible}: PropTypes) {
+  const classrooms: ClassroomType[] = useClassrooms();
   const [savedFilters, setSavedFilters] = useState<SavedFilterT[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [inputName, setInputName] = useState<string>('');
@@ -68,8 +69,7 @@ export default function SavedFilters({hideModal, visible}: PropTypes) {
   };
 
   const handleSelectFilter = (filterItem: any, index: number) => {
-    minimalClassroomIdsVar(filterItem.minimalClassroomIds);
-    desirableClassroomIdsVar(filterItem.desirableClassroomIds);
+    filterSavedFilter(filterItem, classrooms)
     setSelectedFilter(index);
     hideModal();
   };

@@ -37,6 +37,8 @@ import MyClassroomCell from "./MyClassroomCell";
 import {GET_GENERAL_QUEUE} from "../../api/operations/queries/generalQueue";
 import SavedFilters from "./SavedFilters";
 import {getItem} from "../../api/asyncStorage";
+import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
+import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -140,6 +142,7 @@ function ClassroomsList() {
       getClassroomsFilteredByInstruments(classrooms, instruments) : classrooms;
 
     const filteredIds = filteredClassroomsByInstruments
+      .filter(filterDisabledForQueue)
       .filter(classroom => withWing ? true : !classroom.isWing)
       .filter(classroom => operaStudioOnly ? classroom.isOperaStudio : true)
       .filter(classroom => {
@@ -181,8 +184,7 @@ function ClassroomsList() {
     if (savedFilters) {
       const mainFilter = savedFilters!.find(filter => filter.main);
       if (mainFilter) {
-        minimalClassroomIdsVar(mainFilter.minimalClassroomIds);
-        desirableClassroomIdsVar(mainFilter.desirableClassroomIds);
+        filterSavedFilter(mainFilter, classrooms)
       }
     }
     modeVar(Mode.QUEUE_SETUP);

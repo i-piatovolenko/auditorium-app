@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Auditorium",
+    "name": "auditorium-app",
     "slug": "auditorium-app",
-    "version": "1.0.5",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -21,20 +21,22 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.knmau.auditorium",
-      "buildNumber": "1.0.5"
+      "buildNumber": "1.0.7"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
       },
+      "backgroundColor": "#ffffff",
       "permissions": [],
       "package": "com.knmau.auditorium",
-      "versionCode": 5
+      "versionCode": 7
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
-      "name": "Auditorium",
-      "startUrl": "/"
+      "startUrl": "/",
+      "backgroundColor": "#ffffff"
     }
   }
 }
