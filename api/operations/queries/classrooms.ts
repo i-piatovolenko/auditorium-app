@@ -41,6 +41,7 @@ export const GET_CLASSROOMS = gql`
       disabled {
         comment
         until
+        state
       }
     }
   }

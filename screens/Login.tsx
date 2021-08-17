@@ -10,6 +10,7 @@ import {setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
 import {ErrorCodes, ErrorCodesUa, Mode, QueueState, QueueType, User} from "../models/models";
 import {desirableClassroomIdsVar, meVar, minimalClassroomIdsVar, modeVar} from "../api/client";
+import PushNotification from "./PushNotification";
 
 export default function Login({route, navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
@@ -70,6 +71,7 @@ export default function Login({route, navigation}: any) {
 
   return (
     <View style={styles.container}>
+      <PushNotification/>
       <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
         <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
         <Text style={styles.title}>Вхід</Text>

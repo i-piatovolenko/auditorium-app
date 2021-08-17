@@ -47,15 +47,15 @@ export default function SavedFilters({hideModal, visible}: PropTypes) {
       main: saveAsMainFilter
     };
 
-    setItem('filters', [...savedFilters?.map((filter: any) => {
+    setItem('filters', savedFilters ? [...savedFilters?.map((filter: any) => {
       return saveAsMainFilter ? ({...filter, main: false}) : filter
-    }), item]).then(res => {
+    }), item] : [item]).then(res => {
       setIsSaving(false);
     });
     // @ts-ignore
-    setSavedFilters(prevState => [...prevState?.map((filter: any) => {
+    setSavedFilters(prevState => prevState ? [...prevState?.map((filter: any) => {
       return saveAsMainFilter ? ({...filter, main: false}) : filter
-    }), item]);
+    }), item] : [item]);
   };
 
   const handleRemoveFilter = (index: number) => {

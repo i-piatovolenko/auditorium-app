@@ -1,14 +1,16 @@
-import React, {useEffect, useState} from 'react';
-import {ImageBackground, ScrollView, StyleSheet, Text, View} from "react-native";
+import React, {useCallback, useEffect, useState} from 'react';
+import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text, View} from "react-native";
 import {ActivityIndicator, Appbar, Button} from "react-native-paper";
 import useClassrooms from "../../hooks/useClassrooms";
 import {
   ClassroomType,
+  DisabledState,
   InstrumentType,
   Mode,
   OccupiedState,
   QueueState,
-  QueueType, SavedFilterT
+  QueueType,
+  SavedFilterT
 } from "../../models/models";
 import ClassroomsCell from "../../components/ClassroomCell";
 import Filters, {SpecialT} from "./Filters";
@@ -41,6 +43,7 @@ import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 
 const Stack = createStackNavigator<RootStackParamList>();
+const screenHeight = Dimensions.get('window').height;
 
 export default function Home() {
   // @ts-ignore
@@ -118,6 +121,10 @@ function ClassroomsList() {
       setFreeClassroomsAmount(classrooms?.filter(classroom => !classroom.occupied).length);
     }
   }, [classrooms]);
+
+  useEffect(() => {
+    console.log('classrooms list render')
+  })
 
   const showModalInline = () => setVisibleModalInline(true);
 
@@ -197,171 +204,177 @@ function ClassroomsList() {
     isMinimalSetupVar(true);
   }
 
-  const filterHiddenClassrooms = ({isHidden, occupied}: ClassroomType) => {
+  const filterHiddenClassrooms = useCallback(() => ({isHidden, occupied}: ClassroomType) => {
     return mode === Mode.PRIMARY ? (!(isHidden && !occupied)) : !isHidden;
-  };
+  }, [classrooms, mode]);
 
-  const filterDisabledClassrooms = ({disabled}: ClassroomType) => {
-    return mode === Mode.QUEUE_SETUP || mode === Mode.INLINE ? !disabled : true;
-  };
+  const filterDisabledClassrooms = useCallback(() => ({disabled}: ClassroomType) => {
+    return mode === Mode.QUEUE_SETUP || mode === Mode.INLINE ?
+      disabled?.state === DisabledState.NOT_DISABLED
+      : true;
+  }, [classrooms, mode]);
 
-  const filterMyPendingClassrooms = ({id, occupied}: ClassroomType) => {
+  const filterMyPendingClassrooms = useCallback(() => ({id, occupied}: ClassroomType) => {
     return minimalClassroomIds.includes(id) && occupied && (
       occupied.state === OccupiedState.PENDING || occupied.state === OccupiedState.RESERVED
     );
-  }
+  }, [classrooms, mode, minimalClassroomIds])
 
-  const filterAllAnotherClassrooms = ({id}: ClassroomType) => id !== me?.occupiedClassroom?.id;
+  const filterAllAnotherClassrooms = useCallback(() => {
+    return ({id}: ClassroomType) => id !== me?.occupiedClassroom?.id;
+  }, [classrooms, me]);
 
-  const filterQueuedClassrooms = ({id, occupied}: ClassroomType) => {
+  const filterQueuedClassrooms = useCallback(() => ({id, occupied}: ClassroomType) => {
     return minimalClassroomIds.includes(id) && occupied && me?.id !== occupied.user.id;
-  }
+  }, [classrooms, minimalClassroomIds, me])
 
-  return <ImageBackground source={require('../../assets/images/bg.jpg')}
-                          style={{width: '100%', height: '100%'}}>
-    {/*<Log data={me}/>*/}
-    <Appbar style={styles.top}>
-      <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-                     color='#fff'
-      />
-      {mode === Mode.PRIMARY && (
-        <Appbar.Content style={{marginLeft: -10}} title={title} subtitle={'Вільних аудиторій: ' +
-        freeClassroomsAmount} color='#fff'/>
-      )}
-      {mode === Mode.QUEUE_SETUP && (
-        <>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '88%'}}>
-            <View style={styles.queueSwitcher}>
-              <Button mode={isMinimalSetup ? 'contained' : 'text'}
-                      style={{position: 'relative', width: '45%'}}
-                      color='#fff'
-                      onPress={() => isMinimalSetupVar(true)}
-              >
-                Мінімальні
-              </Button>
-              <Button
-                mode={!isMinimalSetup ? 'contained' : 'text'}
-                style={{position: 'relative', width: '35%'}}
-                color='#fff'
-                onPress={() => isMinimalSetupVar(false)}
-              >
-                Бажані
-              </Button>
-            </View>
-          </View>
-          <Appbar.Action icon="content-save" onPress={showModalSavedFilters} color='#fff'
-                         style={{position: 'absolute', right: 40, top: 28}}/>
-          <Appbar.Action icon="filter" onPress={showModal} color='#fff'
-                         style={{position: 'absolute', right: 0, top: 28}}/>
-        </>
-      )}
-      {mode === Mode.INLINE && (
-        <Appbar.Content style={{marginLeft: -10}} title={inlineTitle} color='#fff'/>
-      )}
-    </Appbar>
-
-    <View style={styles.wrapper}>
-      {classrooms?.length ? <>
-
-        <ScrollView>
-          <MyClassroomCell me={me} classrooms={classrooms} isMinimalSetup={isMinimalSetup}
-                           minimalClassroomIds={minimalClassroomIds}
-                           desirableClassroomIds={desirableClassroomIds}
-          />
-          {(mode === Mode.PRIMARY || mode === Mode.QUEUE_SETUP || mode === Mode.OWNER) && (
-            <>
-              {me.occupiedClassroom && <Text style={styles.gridDivider}>
-                  Всі аудиторії:
-              </Text>}
-              <View style={styles.grid}>
-                {classrooms && classrooms
-                  .filter(filterHiddenClassrooms)
-                  .filter(filterDisabledClassrooms)
-                  .filter(filterAllAnotherClassrooms)
-                  .map(classroom => (
-                      <ClassroomsCell key={classroom.id} classroom={classroom}
-                                      filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                      />
-                    )
-                  )}
-              </View>
-            </>
-          )}
-          {mode === Mode.INLINE && (
-            <>
-              {!!classrooms.filter(filterMyPendingClassrooms)?.length && (
-                <>
-                  <Text style={styles.gridDivider}>
-                    Аудиторії, що очікують підтвердження:
-                  </Text>
-                  <View style={{...styles.grid, marginBottom: 10}}>
-                    {classrooms.filter(filterMyPendingClassrooms).map(classroom => (
-                      <ClassroomsCell key={classroom.id} classroom={classroom}
-                                      filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                      />
-                    ))}
-                  </View>
-                </>
-              )}
-              {!!(classrooms.filter(filterQueuedClassrooms).length) && <>
-                  <Text style={styles.gridDivider}>Аудиторії, за якими я стою в черзі:</Text>
-                  <View style={{...styles.grid, marginBottom: 10}}>
-                    {classrooms.filter(filterQueuedClassrooms).map(classroom => (
-                      <ClassroomsCell key={classroom.id} classroom={classroom}
-                                      filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                      />
-                    ))}
-                  </View>
-              </>}
-              <Text style={styles.gridDivider}>Інші аудиторії: </Text>
-              <View style={styles.grid}>
-                {classrooms
-                  .filter(({id}) => !(minimalClassroomIds.includes(id)))
-                  .filter(filterHiddenClassrooms)
-                  .filter(filterDisabledClassrooms)
-                  .map(classroom => (
-                    <ClassroomsCell key={classroom.id} classroom={classroom}
-                                    filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
-                    />
-                  ))}
-              </View>
-            </>
-          )}
-        </ScrollView>
-
-        {mode === Mode.PRIMARY && !me.occupiedClassroom && (
-          <Button style={styles.getInLine} mode='contained' color='#2b5dff'
-                  onPress={getInQueueSetup}>
-            <Text>Стати в чергу</Text>
-          </Button>
+  return (
+    <ImageBackground source={require('../../assets/images/bg.jpg')}
+                     style={{width: '100%', height: screenHeight}}>
+      {/*<Log data={me}/>*/}
+      <Appbar style={styles.top}>
+        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                       color='#fff'
+        />
+        {mode === Mode.PRIMARY && (
+          <Appbar.Content style={{marginLeft: -10}} title={title} subtitle={'Вільних аудиторій: ' +
+          freeClassroomsAmount} color='#fff'/>
         )}
         {mode === Mode.QUEUE_SETUP && (
           <>
-            <Button style={styles.approve} mode='contained' color='#2b5dff'
-                    onPress={handleReady} disabled={!minimalClassroomIds.length}
-            >
-              <Text>Готово ({queueSize + 1}-й)</Text>
-            </Button>
-            <Button style={styles.getOutLine} mode='contained' color='#f91354'
-                    onPress={handleCancelQueueSetup}>
-              <Text>Скасувати</Text>
-            </Button>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '88%'}}>
+              <View style={styles.queueSwitcher}>
+                <Button mode={isMinimalSetup ? 'contained' : 'text'}
+                        style={{position: 'relative', width: '45%'}}
+                        color='#fff'
+                        onPress={() => isMinimalSetupVar(true)}
+                >
+                  Мінімальні
+                </Button>
+                <Button
+                  mode={!isMinimalSetup ? 'contained' : 'text'}
+                  style={{position: 'relative', width: '35%'}}
+                  color='#fff'
+                  onPress={() => isMinimalSetupVar(false)}
+                >
+                  Бажані
+                </Button>
+              </View>
+            </View>
+            <Appbar.Action icon="content-save" onPress={showModalSavedFilters} color='#fff'
+                           style={{position: 'absolute', right: 40, top: 28}}/>
+            <Appbar.Action icon="filter" onPress={showModal} color='#fff'
+                           style={{position: 'absolute', right: 0, top: 28}}/>
           </>
         )}
         {mode === Mode.INLINE && (
-          <Button style={styles.getOutLineSingle} mode='contained' color='#f91354'
-                  onPress={showConfirmLineOut}
-          >
-            <Text>Вийти з черги</Text>
-          </Button>
+          <Appbar.Content style={{marginLeft: -10}} title={inlineTitle} color='#fff'/>
         )}
-      </> : <ActivityIndicator animating color='#fff'/>}
-      <SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters} />
-      <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter}/>
-      <InlineDialog visible={visibleModalInline} hideDialog={hideModalInline}/>
-      <ConfirmLineOut hideDialog={hideConfirmLineOut} visible={visibleLineOut}/>
-    </View>
-  </ImageBackground>
+      </Appbar>
+
+      <View style={styles.wrapper}>
+        {classrooms?.length ? <>
+
+          <ScrollView>
+            <MyClassroomCell me={me} classrooms={classrooms} isMinimalSetup={isMinimalSetup}
+                             minimalClassroomIds={minimalClassroomIds}
+                             desirableClassroomIds={desirableClassroomIds}
+            />
+            {(mode === Mode.PRIMARY || mode === Mode.QUEUE_SETUP || mode === Mode.OWNER) && (
+              <>
+                {me.occupiedClassroom && <Text style={styles.gridDivider}>
+                    Всі аудиторії:
+                </Text>}
+                <View style={styles.grid}>
+                  {classrooms && classrooms
+                    .filter(filterHiddenClassrooms)
+                    .filter(filterDisabledClassrooms)
+                    .filter(filterAllAnotherClassrooms)
+                    .map(classroom => (
+                        <ClassroomsCell key={classroom.id} classroom={classroom}
+                                        filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                        />
+                      )
+                    )}
+                </View>
+              </>
+            )}
+            {mode === Mode.INLINE && (
+              <>
+                {!!classrooms.filter(filterMyPendingClassrooms)?.length && (
+                  <>
+                    <Text style={styles.gridDivider}>
+                      Аудиторії, що очікують підтвердження:
+                    </Text>
+                    <View style={{...styles.grid, marginBottom: 10}}>
+                      {classrooms.filter(filterMyPendingClassrooms).map(classroom => (
+                        <ClassroomsCell key={classroom.id} classroom={classroom}
+                                        filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                        />
+                      ))}
+                    </View>
+                  </>
+                )}
+                {!!(classrooms.filter(filterQueuedClassrooms).length) && <>
+                    <Text style={styles.gridDivider}>Аудиторії, за якими я стою в черзі:</Text>
+                    <View style={{...styles.grid, marginBottom: 10}}>
+                      {classrooms.filter(filterQueuedClassrooms).map(classroom => (
+                        <ClassroomsCell key={classroom.id} classroom={classroom}
+                                        filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                        />
+                      ))}
+                    </View>
+                </>}
+                <Text style={styles.gridDivider}>Інші аудиторії: </Text>
+                <View style={styles.grid}>
+                  {classrooms
+                    .filter(({id}) => !(minimalClassroomIds.includes(id)))
+                    .filter(filterHiddenClassrooms)
+                    .filter(filterDisabledClassrooms)
+                    .map(classroom => (
+                      <ClassroomsCell key={classroom.id} classroom={classroom}
+                                      filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
+                      />
+                    ))}
+                </View>
+              </>
+            )}
+          </ScrollView>
+
+          {mode === Mode.PRIMARY && !me.occupiedClassroom && (
+            <Button style={styles.getInLine} mode='contained' color='#2b5dff'
+                    onPress={getInQueueSetup}>
+              <Text>Стати в чергу</Text>
+            </Button>
+          )}
+          {mode === Mode.QUEUE_SETUP && (
+            <>
+              <Button style={styles.approve} mode='contained' color='#2b5dff'
+                      onPress={handleReady} disabled={!minimalClassroomIds.length}
+              >
+                <Text>Готово ({queueSize + 1}-й)</Text>
+              </Button>
+              <Button style={styles.getOutLine} mode='contained' color='#f91354'
+                      onPress={handleCancelQueueSetup}>
+                <Text>Скасувати</Text>
+              </Button>
+            </>
+          )}
+          {mode === Mode.INLINE && (
+            <Button style={styles.getOutLineSingle} mode='contained' color='#f91354'
+                    onPress={showConfirmLineOut}
+            >
+              <Text>Вийти з черги</Text>
+            </Button>
+          )}
+        </> : <ActivityIndicator animating color='#fff'/>}
+        <SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters}/>
+        <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter}/>
+        <InlineDialog visible={visibleModalInline} hideDialog={hideModalInline}/>
+        <ConfirmLineOut hideDialog={hideConfirmLineOut} visible={visibleLineOut}/>
+      </View>
+    </ImageBackground>
+  )
 }
 
 const styles = StyleSheet.create(
@@ -388,7 +401,7 @@ const styles = StyleSheet.create(
     getInLine: {
       position: 'absolute',
       zIndex: 1,
-      bottom: 90,
+      bottom: 15,
       width: '55%',
       height: 50,
       justifyContent: 'center',
@@ -399,7 +412,7 @@ const styles = StyleSheet.create(
     getOutLine: {
       position: 'absolute',
       zIndex: 1,
-      bottom: 90,
+      bottom: 15,
       left: 20,
       width: '43%',
       height: 50,
@@ -411,7 +424,7 @@ const styles = StyleSheet.create(
     getOutLineSingle: {
       position: 'absolute',
       zIndex: 1,
-      bottom: 90,
+      bottom: 15,
       width: '55%',
       height: 50,
       justifyContent: 'center',
@@ -423,7 +436,7 @@ const styles = StyleSheet.create(
       position: 'absolute',
       zIndex: 1,
       right: 20,
-      bottom: 90,
+      bottom: 15,
       width: '43%',
       height: 50,
       justifyContent: 'center',
@@ -437,8 +450,8 @@ const styles = StyleSheet.create(
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',
-      marginTop: 80,
-      paddingBottom: 70,
+      paddingTop: 80,
+      // paddingBottom: 70,
     }
     ,
     queueSwitcher: {

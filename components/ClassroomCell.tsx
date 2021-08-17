@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
-import {ClassroomType, DisabledInfo, Mode, OccupiedInfo, OccupiedState} from "../models/models";
+import {ClassroomType, DisabledInfo, DisabledState, Mode, OccupiedInfo, OccupiedState} from "../models/models";
 import {fullName, isOccupiedOnSchedule, isPendingForMe, typeStyle} from "../helpers/helpers";
 import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "./InstrumentItem";
@@ -40,8 +40,8 @@ export default function ClassroomsCell({
   const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo, occupiedTotalTime);
 
   const handleTouch = (disabled: DisabledInfo | null) => {
-    !disabled && navigation.navigate('ClassroomInfo', {classroom});
-    disabled && setVisible(true);
+    disabled?.state === DisabledState.NOT_DISABLED && navigation.navigate('ClassroomInfo', {classroom});
+    disabled?.state === DisabledState.NOT_DISABLED && setVisible(true);
   };
 
   const ProgressBackground = () => (
@@ -56,12 +56,12 @@ export default function ClassroomsCell({
       ? () => addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds)
       : () => handleTouch(disabled)
     }
-    underlayColor={disabled ? '#f91354' : '#2b5dff'}
+    underlayColor={disabled?.state === DisabledState.DISABLED ? '#f91354' : '#2b5dff'}
     style={{borderRadius: 4}}
     onLongPress={mode === Mode.QUEUE_SETUP ? () => handleTouch(disabled) : null}
   >
     <Surface style={[styles.cell,
-      disabled ? styles.disabled : occupied ? styles.occupied : styles.free]}
+      disabled?.state === DisabledState.DISABLED ? styles.disabled : occupied ? styles.occupied : styles.free]}
     >
       {filteredList.includes(id) && mode === Mode.QUEUE_SETUP && (
         <IconButton icon='check-bold' style={styles.checkMark} color='#0f0'/>
@@ -87,7 +87,7 @@ export default function ClassroomsCell({
         <Text style={styles.timeLeft}>{timeLeft}</Text>
       ) : (
         <Text style={[styles.occupationInfo, typeStyle(occupied as OccupiedInfo)]} numberOfLines={1}>
-          {disabled ? disabled.comment : occupied
+          {disabled?.state === DisabledState.DISABLED ? disabled?.comment : occupied
             ? userFullName
             : occupiedOnSchedule ? 'Зайнято за розкладом' : 'Вільно'}
         </Text>

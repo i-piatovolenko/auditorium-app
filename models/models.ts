@@ -175,7 +175,13 @@ export type InstrumentType = {
   classroom: ClassroomType;
 };
 
+export enum DisabledState {
+  DISABLED = 'DISABLED',
+  NOT_DISABLED = 'NOT_DISABLED'
+}
+
 export type DisabledInfo = {
+  state: DisabledState;
   comment: string;
   until: Date;
 };

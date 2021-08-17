@@ -24,7 +24,6 @@ export default function App() {
 
   return (
     <ApolloProvider client={client}>
-      {/*<PushNotification/>*/}
       <SafeAreaProvider>
         <Provider theme={theme}>
           <Navigation colorScheme={colorScheme}/>

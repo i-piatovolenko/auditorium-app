@@ -8,6 +8,7 @@ export const ENABLE_CLASSROOM = gql`
                 disabled {
                     comment
                     until
+                    state
                 }
             }
             userErrors {

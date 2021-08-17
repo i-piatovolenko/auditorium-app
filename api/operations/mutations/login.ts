@@ -17,12 +17,13 @@ export const LOGIN = gql`
                   id
                   name  
                 }
-                occupiedClassroom: classroom {
-                  id
-                  name
-                  occupied {
-                    state
-                  }
+                occupiedClassrooms {
+                state
+                until
+                classroom {
+                 id
+                 name
+                }
                 }
                 studentInfo {
                   degree {
