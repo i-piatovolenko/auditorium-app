@@ -1,16 +1,17 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Image, ImageBackground, StyleSheet} from 'react-native';
+import {Image, ImageBackground, StyleSheet, TouchableHighlight} from 'react-native';
 import {Button, Surface, TextInput} from 'react-native-paper';
 import {Text, View} from '../components/Themed';
-import {useMutation} from "@apollo/client";
+import {useMutation, useQuery} from "@apollo/client";
 import {LOGIN} from "../api/operations/mutations/login";
 import WaitDialog from "../components/WaitDialog";
-import {setItem} from "../api/asyncStorage";
+import {getItem, setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
-import {ErrorCodes, ErrorCodesUa, Mode, QueueState, QueueType, User} from "../models/models";
-import {desirableClassroomIdsVar, meVar, minimalClassroomIdsVar, modeVar} from "../api/client";
+import {ErrorCodes, ErrorCodesUa, Langs, Mode, QueueState, QueueType, User} from "../models/models";
+import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar} from "../api/client";
 import PushNotification from "./PushNotification";
+import {GET_LANG} from "../api/operations/queries/lang";
 
 export default function Login({route, navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
@@ -20,12 +21,29 @@ export default function Login({route, navigation}: any) {
   const [modalActivator, setModalActivator] = useState<boolean | null>(null);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [pushNotificationToken, setPushNotificationToken] = useState('');
+  const {data: {lang}} = useQuery(GET_LANG);
 
   useEffect(() => {
     if (modalActivator !== null) {
       setShowError(true);
     }
   }, [modalActivator]);
+
+  useEffect(() => {
+    getItem('lang').then(res => {
+      if (res) {
+        langVar(res);
+      } else {
+        setItem('lang', lang);
+      }
+    });
+  }, []);
+
+  const handleChangeLang = async (lng: Langs) => {
+    await setItem('lang', lng);
+    langVar(lng);
+  };
 
   const hideError = () => {
     setShowError(false);
@@ -39,7 +57,8 @@ export default function Login({route, navigation}: any) {
           variables: {
             input: {
               email: email,
-              password: password
+              password: password,
+              notificationToken: pushNotificationToken
             }
           }
         });
@@ -48,7 +67,9 @@ export default function Login({route, navigation}: any) {
           setModalActivator(prevState => !prevState);
         } else {
           const user: User = result?.data.login.user;
+          const token: string = result?.data.login.token;
           await setItem('user', user);
+          await setItem('token', token);
           if (user.queue.length) {
             const minimal = user.queue.filter(({type, state}) => {
               return type === QueueType.MINIMAL && state === QueueState.ACTIVE;
@@ -71,9 +92,21 @@ export default function Login({route, navigation}: any) {
 
   return (
     <View style={styles.container}>
-      <PushNotification/>
+      {/*<PushNotification setPushNotificationToken={setPushNotificationToken}/>*/}
       <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
         <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
+        <View style={styles.langSwitcher}>
+          <TouchableHighlight onPress={() => handleChangeLang(Langs.UA)}>
+            <Image source={require('../assets/images/ua.png')}
+                   style={lang === Langs.UA ? styles.langImageSelected : styles.langImage}
+            />
+          </TouchableHighlight>
+          <TouchableHighlight onPress={() => handleChangeLang(Langs.EN)}>
+            <Image source={require('../assets/images/en.png')}
+                   style={lang === Langs.EN ? styles.langImageSelected : styles.langImage}
+            />
+          </TouchableHighlight>
+        </View>
         <Text style={styles.title}>Вхід</Text>
         <Surface style={styles.inputs}>
           <TextInput label='Логін'
@@ -90,22 +123,22 @@ export default function Login({route, navigation}: any) {
                      />}
           />
 
-        <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
-                style={styles.button} disabled={(!email || !password) || loading}>
-          Увійти
-        </Button>
-        <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'
-                style={styles.button}>
-          Реєстрація
-        </Button>
+          <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
+                  style={styles.button} disabled={(!email || !password) || loading}>
+            Увійти
+          </Button>
+          <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'
+                  style={styles.button}>
+            Реєстрація
+          </Button>
         </Surface>
         <Button onPress={() => navigation.navigate('ForgotPassword')} uppercase={false}
                 labelStyle={{color: '#fff'}} style={styles.button}>
           Відновити пароль
         </Button>
         <View style={styles.footer}>
-        <Text style={{color: '#fff'}}>Національна музична академія України ім. П. І. Чайковського</Text>
-        <Text style={{color: '#fff', marginTop: 16}}>Auditorium © 2021</Text>
+          <Text style={{color: '#fff'}}>Національна музична академія України ім. П. І. Чайковського</Text>
+          <Text style={{color: '#fff', marginTop: 16}}>Auditorium © 2021</Text>
         </View>
       </ImageBackground>
       <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
@@ -165,5 +198,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: .5,
     marginBottom: 16
+  },
+  langSwitcher: {
+    justifyContent: 'center',
+    flexDirection: "row",
+    marginBottom: 16
+  },
+  langImage: {
+    width: 50,
+    height: 35,
+    opacity: .3
+  },
+  langImageSelected: {
+    width: 50,
+    height: 35,
   }
 });

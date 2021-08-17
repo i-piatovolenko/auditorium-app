@@ -25,7 +25,16 @@ export const OCCUPY_CLASSROOM = gql`
                 occupied {
                     user {
                         id
+                        firstName
+                        patronymic
+                        lastName
+                        type
+                        department {
+                            name
+                        }
                     }
+                    until
+                    state
                 }
             }
             userErrors {

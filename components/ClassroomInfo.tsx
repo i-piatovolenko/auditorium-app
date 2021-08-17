@@ -24,7 +24,7 @@ import {useQuery} from "@apollo/client";
 import {GET_SCHEDULE_UNIT} from "../api/operations/queries/schedule";
 import {
   fullName,
-  getTimeHHMM,
+  getTimeHHMM, isNotFree,
   isOccupiedOnSchedule,
   ISODateString,
   isOwnClassroom,
@@ -58,16 +58,15 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
     },
   });
   const {data: {me}} = useQuery(GET_ME);
-  const userFullName = occupied?.user.nameTemp === null ? fullName(occupied?.user) :
-    occupied?.user.nameTemp;
-  const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
+  const userFullName = isNotFree(occupied) ? fullName(occupied?.user) : '';
+  // const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
   const [visible, setVisible] = useState(false);
   const {data: {mode}} = useLocal('mode');
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
-  const occupiedTotalTime = occupied?.state === OccupiedState.OCCUPIED ? 180 : 2;
-  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo, occupiedTotalTime);
+  const occupiedTotalTime = occupied.state === OccupiedState.OCCUPIED ? 180 : 2;
+  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, occupiedTotalTime);
   const [visibleBanner, setVisibleBanner] = useState(true);
   const [skips, setSkips] = useState(0);
 
@@ -174,16 +173,16 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
             <Divider style={styles.divider}/>
         </>}
       </View>
-      <Text style={styles.scheduleHeader}>Розклад на сьогодні</Text>
-      {!loading && !error ? data.schedule
-          ?.map((scheduleUnit: ScheduleUnitType) => (
-            <ScheduleItem scheduleUnit={scheduleUnit} key={scheduleUnit.id}/>
-          )) :
-        <ActivityIndicator animating={true} color='#2e287c'/>}
+      {/*<Text style={styles.scheduleHeader}>Розклад на сьогодні</Text>*/}
+      {/*{!loading && !error ? data.schedule*/}
+      {/*    ?.map((scheduleUnit: ScheduleUnitType) => (*/}
+      {/*      <ScheduleItem scheduleUnit={scheduleUnit} key={scheduleUnit.id}/>*/}
+      {/*    )) :*/}
+      {/*  <ActivityIndicator animating={true} color='#2e287c'/>}*/}
       <Divider style={styles.divider}/>
-      {!occupied
-        ? <Text style={styles.freeText}>{occupiedOnSchedule ? 'Зайнято за розкладом' : 'Вільно'}</Text>
-        : !isPendingForMe(occupied, me as User, mode) && (
+      {!isNotFree(occupied)
+        ? <Text style={styles.freeText}>Вільно</Text>
+        : !isPendingForMe(occupied, me, mode) && (
         <Surface style={[{elevation: visible ? 0 : 4}, styles.occupationInfo]}
                  onTouchEnd={showModal}
         >
@@ -211,7 +210,7 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
         </Surface>
       )}
       <View style={styles.queueSetupButtons}>
-        {mode === Mode.INLINE && occupied && occupied.user.id !== me.id && <>
+        {mode === Mode.INLINE && isNotFree(occupied) && occupied.user.id !== me.id && <>
           {minimalClassroomIds.includes(id) ? (
             <Button mode='contained' style={{marginBottom: 8}}>
               Видалити з черги (мінімальні)
@@ -238,6 +237,7 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
         {!occupied && <Button mode='contained'>
             Взяти аудиторію
         </Button>}
+        {/*TODO occupiedClassrooms*/}
         {mode === Mode.PRIMARY && !me.occupiedClassroom && (
           occupied && (
             <Button mode='contained'
@@ -245,14 +245,16 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
             >Стати в чергу за цією аудиторією</Button>
           )
         )}
+        {/*TODO occupiedClassrooms*/}
+
         {mode === Mode.QUEUE_SETUP && !me.occupiedClassroom && (
-          occupied && (
+          isNotFree(occupied) && (
             <Button mode='contained' onPress={handleAddToLine}>
               {isAlreadyFilteredClassroom(id) ? 'Видалити з черги' : 'Додати до черги'}
             </Button>
           )
         )}
-        {occupied && occupied.state === OccupiedState.RESERVED &&
+        {occupied.state === OccupiedState.RESERVED &&
         occupied.user.id === me.id && mode === Mode.INLINE && (
           <>
             {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
@@ -272,7 +274,7 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
             </View>}
           </>
         )}
-        {occupied && occupied.state === OccupiedState.PENDING &&
+        {occupied.state === OccupiedState.PENDING &&
         occupied.user.id === me.id && mode === Mode.INLINE && (
           <>
             {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>

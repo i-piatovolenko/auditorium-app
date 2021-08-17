@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text, View} from "react-native";
 import {ActivityIndicator, Appbar, Button} from "react-native-paper";
 import useClassrooms from "../../hooks/useClassrooms";
@@ -20,23 +20,14 @@ import ClassroomInfo from "../../components/ClassroomInfo";
 import {DrawerActions, useNavigation} from '@react-navigation/native';
 import {getClassroomsFilteredByInstruments} from "./helpers";
 import {useLocal} from "../../hooks/useLocal";
-import {
-  client,
-  desirableClassroomIdsVar,
-  isMinimalSetupVar,
-  meVar,
-  minimalClassroomIdsVar,
-  modeVar
-} from "../../api/client";
+import {desirableClassroomIdsVar, isMinimalSetupVar, meVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
 import getInLine from "../../helpers/queue/getInLine";
 import InlineDialog from "../../components/InlineDialog";
 import ConfirmLineOut from "../../components/ConfirmLineOut";
-import {GET_CLASSROOMS} from "../../api/operations/queries/classrooms";
-import {ISODateString} from "../../helpers/helpers";
+import {getIsMeOccupied, isNotFree} from "../../helpers/helpers";
 import {useQuery} from "@apollo/client";
 import {GET_ME} from "../../api/operations/queries/me";
 import MyClassroomCell from "./MyClassroomCell";
-import {GET_GENERAL_QUEUE} from "../../api/operations/queries/generalQueue";
 import SavedFilters from "./SavedFilters";
 import {getItem} from "../../api/asyncStorage";
 import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
@@ -60,7 +51,7 @@ export default function Home() {
 }
 
 function ClassroomsList() {
-  const classrooms: ClassroomType[] = useClassrooms();
+  const [classrooms, followClassrooms] = useClassrooms();
   const [visible, setVisible] = useState(false);
   const [visibleSavedFilters, setVisibleSavedFilters] = useState(false);
   const [visibleModalInline, setVisibleModalInline] = useState(false);
@@ -75,35 +66,14 @@ function ClassroomsList() {
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
   const {data: {me}} = useQuery(GET_ME);
+  const unsubscribeRef = useRef(null);
 
   useEffect(() => {
-    client.watchQuery({
-      query: GET_CLASSROOMS,
-      variables: {
-        date: ISODateString(new Date()),
-      },
-      fetchPolicy: 'network-only',
-      pollInterval: 3000
-    }).subscribe({
-      next: ({data}) => {
-      },
-    });
-
-    client.watchQuery({
-      query: GET_GENERAL_QUEUE,
-      fetchPolicy: 'network-only',
-      pollInterval: 3000
-    }).subscribe({
-      next: ({data}) => {
-        setQueueSize(data.generalQueue.length)
-      },
-    });
-
-    if (meVar()?.queue.length) {
-      const minimal = meVar()?.queue.filter(({type, state}) => {
+    if (me?.queue.length) {
+      const minimal = me?.queue.filter(({type, state}: { type: QueueType, state: QueueState }) => {
         return type === QueueType.MINIMAL && state === QueueState.ACTIVE;
       });
-      const desired = meVar()?.queue.filter(({type, state}) => {
+      const desired = me?.queue.filter(({type, state}: { type: QueueType, state: QueueState }) => {
         return type === QueueType.DESIRED && state === QueueState.ACTIVE;
       });
       modeVar(Mode.INLINE);
@@ -115,16 +85,24 @@ function ClassroomsList() {
   useEffect(() => {
     if (classrooms) {
       const myClassroom = classrooms.find(({occupied}) => {
-        return occupied?.user.id === me.id && occupied?.state === OccupiedState.OCCUPIED;
+        return occupied.state === OccupiedState.OCCUPIED && occupied.user.id === me.id;
       });
-      meVar({...me, occupiedClassroom: myClassroom || null});
-      setFreeClassroomsAmount(classrooms?.filter(classroom => !classroom.occupied).length);
+      if (me && myClassroom) {
+        meVar({...me, occupiedClassrooms: [...me.occupiedClassrooms, myClassroom]});
+      }
+      setFreeClassroomsAmount(classrooms?.filter(({occupied}) => occupied.state === OccupiedState.FREE).length);
     }
   }, [classrooms]);
 
   useEffect(() => {
-    console.log('classrooms list render')
-  })
+    if (followClassrooms) {
+      unsubscribeRef.current = followClassrooms();
+    }
+  }, [followClassrooms]);
+
+  useEffect(() => {
+    return () => unsubscribeRef.current();
+  }, []);
 
   const showModalInline = () => setVisibleModalInline(true);
 
@@ -171,16 +149,6 @@ function ClassroomsList() {
     }
   };
 
-  const setAll = () => {
-    const allIds = classrooms.map(({id}) => id);
-
-    if (isMinimalSetup) {
-      minimalClassroomIdsVar(allIds);
-    } else {
-      desirableClassroomIdsVar(allIds);
-    }
-  };
-
   const handleReady = async () => {
     await getInLine(minimalClassroomIds, desirableClassroomIds);
     showModalInline();
@@ -204,29 +172,30 @@ function ClassroomsList() {
     isMinimalSetupVar(true);
   }
 
-  const filterHiddenClassrooms = useCallback(() => ({isHidden, occupied}: ClassroomType) => {
-    return mode === Mode.PRIMARY ? (!(isHidden && !occupied)) : !isHidden;
-  }, [classrooms, mode]);
+  const filterHiddenClassrooms = ({isHidden, occupied}: ClassroomType) => {
+    return mode === Mode.PRIMARY ? (!(isHidden && !isNotFree(occupied))) : !isHidden;
+  };
 
-  const filterDisabledClassrooms = useCallback(() => ({disabled}: ClassroomType) => {
+  const filterDisabledClassrooms = ({disabled}: ClassroomType) => {
     return mode === Mode.QUEUE_SETUP || mode === Mode.INLINE ?
       disabled?.state === DisabledState.NOT_DISABLED
       : true;
-  }, [classrooms, mode]);
+  };
 
-  const filterMyPendingClassrooms = useCallback(() => ({id, occupied}: ClassroomType) => {
-    return minimalClassroomIds.includes(id) && occupied && (
+  const filterMyPendingClassrooms = ({id, occupied}: ClassroomType) => {
+    return minimalClassroomIds.includes(id) && (
       occupied.state === OccupiedState.PENDING || occupied.state === OccupiedState.RESERVED
     );
-  }, [classrooms, mode, minimalClassroomIds])
+  };
 
-  const filterAllAnotherClassrooms = useCallback(() => {
-    return ({id}: ClassroomType) => id !== me?.occupiedClassroom?.id;
-  }, [classrooms, me]);
+  const filterAllAnotherClassrooms = () => {
+    //TODO occupiedClassrooms
+    return ({id}: ClassroomType) => !!me?.occupiedClassroom.find((classroom: ClassroomType) => classroom.id === id);
+  };
 
-  const filterQueuedClassrooms = useCallback(() => ({id, occupied}: ClassroomType) => {
-    return minimalClassroomIds.includes(id) && occupied && me?.id !== occupied.user.id;
-  }, [classrooms, minimalClassroomIds, me])
+  const filterQueuedClassrooms = ({id, occupied}: ClassroomType) => {
+    return minimalClassroomIds.includes(id) && isNotFree(occupied) && me?.id !== occupied.user.id;
+  };
 
   return (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
@@ -282,9 +251,11 @@ function ClassroomsList() {
             />
             {(mode === Mode.PRIMARY || mode === Mode.QUEUE_SETUP || mode === Mode.OWNER) && (
               <>
-                {me.occupiedClassroom && <Text style={styles.gridDivider}>
+                {getIsMeOccupied(me, classrooms) && (
+                  <Text style={styles.gridDivider}>
                     Всі аудиторії:
-                </Text>}
+                  </Text>
+                )}
                 <View style={styles.grid}>
                   {classrooms && classrooms
                     .filter(filterHiddenClassrooms)
@@ -340,8 +311,7 @@ function ClassroomsList() {
               </>
             )}
           </ScrollView>
-
-          {mode === Mode.PRIMARY && !me.occupiedClassroom && (
+          {mode === Mode.PRIMARY && !getIsMeOccupied(me, classrooms) && (
             <Button style={styles.getInLine} mode='contained' color='#2b5dff'
                     onPress={getInQueueSetup}>
               <Text>Стати в чергу</Text>
@@ -378,9 +348,9 @@ function ClassroomsList() {
 }
 
 const styles = StyleSheet.create(
-  {
-    top: {
-      position: 'absolute',
+{
+  top: {
+    position: 'absolute',
       left: 0,
       right: 0,
       top: 0,
@@ -388,29 +358,26 @@ const styles = StyleSheet.create(
       height: 80,
       backgroundColor: 'transparent',
       zIndex: 1
-    }
-    ,
-    grid: {
-      marginBottom: 80,
+  },
+  grid: {
+    marginBottom: 80,
       marginLeft: 2,
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'flex-start'
-    }
-    ,
-    getInLine: {
-      position: 'absolute',
+  },
+  getInLine: {
+    position: 'absolute',
       zIndex: 1,
       bottom: 15,
       width: '55%',
       height: 50,
-      justifyContent: 'center',
+      justifyContent:'center',
       flexDirection: 'row',
       alignItems: 'center'
-    }
-    ,
-    getOutLine: {
-      position: 'absolute',
+  },
+  getOutLine: {
+    position: 'absolute',
       zIndex: 1,
       bottom: 15,
       left: 20,
@@ -419,10 +386,9 @@ const styles = StyleSheet.create(
       justifyContent: 'center',
       flexDirection: 'row',
       alignItems: 'center'
-    }
-    ,
-    getOutLineSingle: {
-      position: 'absolute',
+  },
+  getOutLineSingle: {
+    position: 'absolute',
       zIndex: 1,
       bottom: 15,
       width: '55%',
@@ -430,10 +396,9 @@ const styles = StyleSheet.create(
       justifyContent: 'center',
       flexDirection: 'row',
       alignItems: 'center'
-    }
-    ,
-    approve: {
-      position: 'absolute',
+  },
+  approve: {
+    position: 'absolute',
       zIndex: 1,
       right: 20,
       bottom: 15,
@@ -442,29 +407,26 @@ const styles = StyleSheet.create(
       justifyContent: 'center',
       flexDirection: 'row',
       alignItems: 'center'
-    }
-    ,
-    wrapper: {
-      width: '100%',
+  },
+  wrapper: {
+    width: '100%',
       height: '100%',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',
       paddingTop: 80,
-      // paddingBottom: 70,
-    }
-    ,
-    queueSwitcher: {
-      flexDirection: 'row',
+    // paddingBottom: 70,
+  },
+  queueSwitcher: {
+    flexDirection: 'row',
       width: '76%',
       justifyContent: 'center',
       paddingHorizontal: 5,
       marginHorizontal: 20,
       alignItems: 'center',
-    }
-    ,
-    gridDivider: {
-      color: '#fff',
+  },
+  gridDivider: {
+    color: '#fff',
       marginBottom: 10,
       marginLeft: 3,
       marginRight: 3,
@@ -472,7 +434,6 @@ const styles = StyleSheet.create(
       borderBottomWidth: 1,
       borderBottomColor: '#ffffff77',
       paddingBottom: 10
-    }
   }
-  )
-;
+}
+);

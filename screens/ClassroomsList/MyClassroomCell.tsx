@@ -1,7 +1,7 @@
-import {Text, StyleSheet, View} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import ClassroomsCell from "../../components/ClassroomCell";
-import {ClassroomType, CurrentUser, User} from "../../models/models";
-import React from "react";
+import {ClassroomType, CurrentUser, OccupiedState} from "../../models/models";
+import React, {useEffect, useState} from "react";
 
 type PropTypes = {
   me: CurrentUser;
@@ -11,19 +11,30 @@ type PropTypes = {
   desirableClassroomIds: number[];
 }
 
-export default function MyClassroomCell({me, classrooms, isMinimalSetup, minimalClassroomIds,
-                                          desirableClassroomIds}: PropTypes) {
-  const {occupiedClassroom: classroom} = me;
+export default function MyClassroomCell({
+                                          me, classrooms, isMinimalSetup, minimalClassroomIds,
+                                          desirableClassroomIds
+                                        }: PropTypes) {
+  const [ownClassroom, setOwnClassroom] = useState(null);
 
-  return classroom ? (
+  useEffect(() => {
+    const own = classrooms.find(({occupied}) => {
+      return occupied.state === OccupiedState.OCCUPIED && me.id === occupied.user.id;
+    });
+    if (own) {
+      setOwnClassroom(own);
+    } else {
+      setOwnClassroom(null);
+    }
+  }, [classrooms, me]);
+
+  return ownClassroom ? (
     <View style={styles.container}>
       <Text style={styles.gridDivider}>
         Моя аудиторія:
       </Text>
       <View style={styles.grid}>
-        <ClassroomsCell key={classroom.id}
-                        classroom={classrooms
-                          .find(({id}) => id === classroom.id) as ClassroomType}
+        <ClassroomsCell key={ownClassroom.id} classroom={ownClassroom}
                         filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
         />
       </View>

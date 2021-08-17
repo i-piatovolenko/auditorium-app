@@ -1,22 +1,17 @@
+import {HOUR, MINUTE, TIME_SNIPPETS, WORKING_DAY_END, WORKING_DAY_START,} from "./constants";
 import {
-  HOUR,
-  MINUTE,
-  TIME_SNIPPETS,
-  WORKING_DAY_END,
-  WORKING_DAY_START,
-} from "./constants";
-import {
-  ACCESS_RIGHTS, Mode,
-  OccupiedInfo, OccupiedState,
+  ACCESS_RIGHTS,
+  ClassroomType, CurrentUser,
+  Mode,
+  OccupiedInfo,
+  OccupiedState,
   ScheduleUnitType,
   User,
   UserTypes,
 } from "../models/models";
 import moment from "moment";
-import React, {ReactElement} from "react";
+import {ReactElement} from "react";
 import {accessRightsVar} from "../api/client";
-import {Image} from "react-native";
-import {TWO_MINUTES} from "../constants/constants";
 
 export const getScheduleTimeline = (start: number, end: number): string[] => {
   let timeSnippets: string[] = [];
@@ -76,8 +71,9 @@ export const formatMinutesToMM = (value: number) => {
   else return value;
 };
 
-export const fullName = (user: User | undefined, withInitials = false) => {
-  if (user !== undefined) {
+export const fullName = (user: User, withInitials = false) => {
+  if (user) {
+    if (user.nameTemp) return user.nameTemp
     if (withInitials) {
       return `${user.lastName} ${user.firstName.charAt(0)}. ${
         user.patronymic ? user.patronymic.charAt(0) + "." : ""
@@ -92,13 +88,13 @@ export const fullName = (user: User | undefined, withInitials = false) => {
 };
 
 export const typeStyle = (occupied: OccupiedInfo) => {
-  const student = { backgroundColor: "#2e287c", color: "#fff" };
-  const employee = { backgroundColor: "#ffc000", color: "#fff" };
+  const student = {backgroundColor: "#2e287c", color: "#fff"};
+  const employee = {backgroundColor: "#ffc000", color: "#fff"};
   const vacant = {
     backgroundColor: "transparent",
     color: "#000",
   };
-  if (occupied !== null) {
+  if (isNotFree(occupied)) {
     switch (occupied.user.type) {
       case UserTypes.STUDENT:
         return student;
@@ -161,6 +157,7 @@ export const ISODateString = (d: Date) => {
   function pad(n: any) {
     return n < 10 ? "0" + n : n;
   }
+
   return (
     d.getUTCFullYear() +
     "-" +
@@ -243,11 +240,21 @@ export const getTimeFromUntil = (until: string, minutesDuration = 2) => {
 };
 
 export const isPendingForMe = (occupied: OccupiedInfo, me: User, mode: Mode) => {
-  return occupied && occupied.user.id === me.id &&
+  return (
     (occupied.state === OccupiedState.PENDING || occupied.state === OccupiedState.RESERVED) &&
-    mode === Mode.INLINE;
+    occupied.user.id === me.id
+    && mode === Mode.INLINE
+  );
 }
 
 export const isOwnClassroom = (occupied: OccupiedInfo, me: User) => {
-  return occupied && occupied.user.id === me.id && occupied.state === OccupiedState.OCCUPIED;
+  return occupied.state === OccupiedState.OCCUPIED && occupied.user.id === me.id;
+};
+
+export const isNotFree = (occupied: OccupiedInfo) => {
+  return occupied.state !== OccupiedState.FREE;
+};
+
+export const getIsMeOccupied = (me: CurrentUser, classrooms: ClassroomType[]) => {
+  return !!classrooms.find(({occupied}) => occupied.state === OccupiedState.OCCUPIED && me.id === occupied.user.id);
 };

@@ -11,14 +11,21 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default function PushNotification() {
+type PropTypes = {
+  setPushNotificationToken: (token: string) => void;
+}
+
+export default function PushNotification({setPushNotificationToken}: PropTypes) {
   const [expoPushToken, setExpoPushToken] = useState<any>('');
   const [notification, setNotification] = useState<any>(false);
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    registerForPushNotificationsAsync().then(token => {
+      setPushNotificationToken(token);
+      setExpoPushToken(token);
+    });
 
     // This listener is fired whenever a notification is received while the app is foregrounded
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {

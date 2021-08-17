@@ -131,7 +131,13 @@ export type CurrentUser = {
   studentInfo: StudentInfo;
   employeeInfo: EmployeeInfo;
   expireDate: Date | null;
-  occupiedClassroom: ClassroomType;
+  occupiedClassrooms: {
+    id: number;
+    state: OccupiedState;
+    until: string;
+    classroom: ClassroomType;
+    user: User;
+  }[];
   queue: QueueRecord[];
 }
 
@@ -147,12 +153,13 @@ export type EmployeeInfo = {
 };
 
 export type OccupiedInfo = {
-  user: User;
-  until: Date;
-  state: OccupiedState | null;
+  user: User | null;
+  until: Date | null;
+  state: OccupiedState;
 };
 
 export enum OccupiedState {
+  FREE = 'FREE',
   OCCUPIED = 'OCCUPIED',
   PENDING = 'PENDING',
   RESERVED = 'RESERVED'
@@ -207,7 +214,7 @@ export type ClassroomType = {
   isWing: boolean;
   isOperaStudio: boolean;
   description: string | null;
-  occupied: OccupiedInfo | null;
+  occupied: OccupiedInfo;
   instruments: Array<InstrumentType>;
   disabled: DisabledInfo | null;
   schedule: Array<ScheduleUnitType>;
@@ -287,4 +294,9 @@ export type SavedFilterT = {
   desirableClassroomIds: number[];
   name: string;
   main: boolean;
+}
+
+export enum Langs {
+  EN = 'EN',
+  UA = 'UA'
 }

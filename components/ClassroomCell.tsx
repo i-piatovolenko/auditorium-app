@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
 import {ClassroomType, DisabledInfo, DisabledState, Mode, OccupiedInfo, OccupiedState} from "../models/models";
-import {fullName, isOccupiedOnSchedule, isPendingForMe, typeStyle} from "../helpers/helpers";
+import {fullName, isNotFree, isOccupiedOnSchedule, isOwnClassroom, isPendingForMe, typeStyle} from "../helpers/helpers";
 import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "./InstrumentItem";
 import {useNavigation} from '@react-navigation/native';
@@ -27,32 +27,33 @@ export default function ClassroomsCell({
                                        }: PropTypes) {
   const {name, occupied, schedule, special, instruments, disabled, id} = classroom;
   const navigation = useNavigation();
-  const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
-  const userFullName = occupied?.user.nameTemp === null ? fullName(occupied?.user, true) :
-    occupied?.user.nameTemp;
+  // const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
+  const userFullName = isNotFree(occupied) ? fullName(occupied.user, true) : '';
   const [visible, setVisible] = useState(false);
   const {data: {mode}} = useLocal('mode');
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
   const {data: {me}} = useQuery(GET_ME);
-  const occupiedTotalTime = occupied?.state === OccupiedState.OCCUPIED ? 180 : 2;
-  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied as OccupiedInfo, occupiedTotalTime);
+  const occupiedTotalTime = occupied.state === OccupiedState.OCCUPIED ? 180 : 2;
+  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, occupiedTotalTime);
 
-  const handleTouch = (disabled: DisabledInfo | null) => {
+  const handleTouch = (disabled: DisabledInfo) => {
     disabled?.state === DisabledState.NOT_DISABLED && navigation.navigate('ClassroomInfo', {classroom});
     disabled?.state === DisabledState.NOT_DISABLED && setVisible(true);
   };
 
   const ProgressBackground = () => (
     <View
-      style={{...styles.timeLeftProgress,
-        width: (cellWidth / 100) * (timeLeftInPer as number)}}
+      style={{
+        ...styles.timeLeftProgress,
+        width: (cellWidth / 100) * (timeLeftInPer as number)
+      }}
     />
   );
 
   return <TouchableHighlight
-    onPress={mode === Mode.QUEUE_SETUP && occupied
+    onPress={mode === Mode.QUEUE_SETUP && isNotFree(occupied)
       ? () => addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds)
       : () => handleTouch(disabled)
     }
@@ -61,35 +62,33 @@ export default function ClassroomsCell({
     onLongPress={mode === Mode.QUEUE_SETUP ? () => handleTouch(disabled) : null}
   >
     <Surface style={[styles.cell,
-      disabled?.state === DisabledState.DISABLED ? styles.disabled : occupied ? styles.occupied : styles.free]}
+      disabled?.state === DisabledState.DISABLED ? styles.disabled : isNotFree(occupied) ?
+        styles.occupied : styles.free]}
     >
       {filteredList.includes(id) && mode === Mode.QUEUE_SETUP && (
         <IconButton icon='check-bold' style={styles.checkMark} color='#0f0'/>
       )}
-      {isPendingForMe(occupied as OccupiedInfo, me, mode) && (
+      {isPendingForMe(occupied, me, mode) && (
         <>
           {occupied?.state === OccupiedState.RESERVED && (
-            <Image source={require('../assets/images/key.png')} style={styles.keyImage} />
+            <Image source={require('../assets/images/key.png')} style={styles.keyImage}/>
           )}
           <ProgressBackground/>
         </>
       )}
-      {occupied && occupied.user.id === me.id && occupied.state === OccupiedState.OCCUPIED && (
-        <ProgressBackground/>
-      )}
+      {isOwnClassroom(occupied, me) && <ProgressBackground/>}
       <View style={styles.cellHeader}>
         <Text style={styles.name}>{name}</Text>
         <Image source={require('./../assets/images/specialPiano.png')}
                style={[special ? styles.special : styles.notSpecial]}/>
       </View>
-      {isPendingForMe(occupied as OccupiedInfo, me, mode) ||
-      occupied && occupied.user.id === me.id && occupied.state === OccupiedState.OCCUPIED ? (
+      {isPendingForMe(occupied, me, mode) ||
+      isOwnClassroom(occupied, me) ? (
         <Text style={styles.timeLeft}>{timeLeft}</Text>
       ) : (
-        <Text style={[styles.occupationInfo, typeStyle(occupied as OccupiedInfo)]} numberOfLines={1}>
-          {disabled?.state === DisabledState.DISABLED ? disabled?.comment : occupied
-            ? userFullName
-            : occupiedOnSchedule ? 'Зайнято за розкладом' : 'Вільно'}
+        <Text style={[styles.occupationInfo, typeStyle(occupied)]} numberOfLines={1}>
+          {disabled?.state === DisabledState.DISABLED ? disabled?.comment : isNotFree(occupied)
+            ? userFullName : 'Вільно'}
         </Text>
       )}
       <View style={styles.instruments}>
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
     width: 30,
-    height:30,
+    height: 30,
     resizeMode: "stretch",
     tintColor: Colors.red
   }

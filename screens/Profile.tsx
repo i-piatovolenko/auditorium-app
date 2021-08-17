@@ -1,13 +1,21 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Text} from "react-native";
 import {Appbar, Divider, Title} from "react-native-paper";
 import {useQuery} from "@apollo/client";
 import {GET_ME} from "../api/operations/queries/me";
 import {fullName} from "../helpers/helpers";
 import {UserTypes, UserTypesUa} from "../models/models";
+import {getItem} from "../api/asyncStorage";
 
 export default function Profile({navigation}: any) {
   const {data: {me}} = useQuery(GET_ME);
+  const [user, setUser] = useState();
+
+  useEffect(() => {
+    getItem('user').then(res => {
+      setUser(JSON.stringify(res))
+    })
+  }, [])
 
   const goBack = () => navigation.goBack();
 
@@ -45,6 +53,9 @@ export default function Profile({navigation}: any) {
         <Title>Термін дії аккаунту</Title>
         <Text style={{marginBottom: 10}}>{me.expireDate}</Text>
         <Divider/>
+        <Text>
+          {user}
+        </Text>
       </View>
     </View>
   )

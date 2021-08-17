@@ -1,5 +1,9 @@
-import {ClassroomType} from "../models/models";
+import {ClassroomType, DisabledState, OccupiedState} from "../models/models";
 
 export const filterDisabledForQueue = (classroom: ClassroomType) => {
-  return !!classroom.occupied && !classroom.disabled && !classroom.isHidden;
+  return (
+    classroom.occupied.state === OccupiedState.FREE &&
+    classroom.disabled.state === DisabledState.DISABLED &&
+    !classroom.isHidden
+  );
 };
