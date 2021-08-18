@@ -34,7 +34,7 @@ export default function MyClassroomCell({
         Моя аудиторія:
       </Text>
       <View style={styles.grid}>
-        <ClassroomsCell key={ownClassroom.id} classroom={ownClassroom}
+        <ClassroomsCell key={ownClassroom.id} classroom={ownClassroom} classrooms={classrooms}
                         filteredList={isMinimalSetup ? minimalClassroomIds : desirableClassroomIds}
         />
       </View>

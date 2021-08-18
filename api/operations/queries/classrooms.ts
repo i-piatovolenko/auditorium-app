@@ -46,3 +46,43 @@ export const GET_CLASSROOMS = gql`
     }
   }
 `;
+
+export const GET_CLASSROOMS_NO_SCHEDULE = gql`
+  query getClassroomsNoSchedule {
+    classrooms {
+      id
+      name
+      special
+      isHidden
+      chair {
+          name
+      }
+      isWing
+      isOperaStudio
+      occupied {
+        user {
+          id
+          firstName
+          patronymic
+          lastName
+          type
+          nameTemp
+        }
+        until
+        state
+      }
+      instruments {
+        id
+        name
+        type
+        rate
+      }
+      disabled {
+        id
+        comment
+        until
+        state
+      }
+    }
+  }
+`;

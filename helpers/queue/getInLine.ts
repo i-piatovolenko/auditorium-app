@@ -1,5 +1,5 @@
 import {client, meVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
-import {Mode, QueueState, QueueType, User} from "../../models/models";
+import {EnqueuedBy, Mode, QueueState, QueueType, User} from "../../models/models";
 import {ADD_USER_TO_QUEUE} from "../../api/operations/mutations/addUserToQueue";
 
 const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: number[]) => {
@@ -8,23 +8,24 @@ const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: 
   const allClassroomIds = [...(new Set([...minimalClassroomsIds, ...desirableClassroomIds]))];
 
   const minimalData = allClassroomIds.map(id => ({
-    userId: (user as unknown as User).id,
     classroomId: id,
-    state: QueueState.ACTIVE,
     type: QueueType.MINIMAL
   }));
 
   const desirableData = desirableClassroomIds.map(id => ({
-    userId: (user as unknown as User).id,
     classroomId: id,
-    state: QueueState.ACTIVE,
     type: QueueType.DESIRED
   }));
 
   try {
+    alert(JSON.stringify([...minimalData, ...desirableData]))
     await client.mutate({
       mutation: ADD_USER_TO_QUEUE, variables: {
-        input: [...minimalData, ...desirableData]
+        input: {
+          userId: user.id,
+          data: [...minimalData, ...desirableData],
+          enqueuedBy: EnqueuedBy.SELF
+        }
       }
     })
     modeVar(Mode.INLINE);

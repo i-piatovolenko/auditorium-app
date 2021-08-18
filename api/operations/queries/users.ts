@@ -41,6 +41,24 @@ export const GET_USER_BY_ID = gql`
       department {
         name
       }
+      occupiedClassrooms {
+        id
+        state 
+        classroom {
+          id
+          name
+        }
+      }
+      queueInfo {
+        id
+        sanctionedUntil
+        currentSession {
+          id
+          state
+          skips
+          generalQueuePosition
+        }
+      }
       email
       phoneNumber
       extraPhoneNumbers

@@ -5,7 +5,9 @@ export const GET_USERS_SKIPS = gql`
     user(where: $where) {
       id
       queueInfo {
-        skips
+        currentSession {
+          skips
+        }
       }
     }
   }

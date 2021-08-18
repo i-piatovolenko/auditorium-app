@@ -39,8 +39,8 @@ export default function ClassroomsCell({
   const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, occupiedTotalTime);
 
   const handleTouch = (disabled: DisabledInfo) => {
-    disabled?.state === DisabledState.NOT_DISABLED && navigation.navigate('ClassroomInfo', {classroom});
-    disabled?.state === DisabledState.NOT_DISABLED && setVisible(true);
+    disabled.state === DisabledState.NOT_DISABLED && navigation.navigate('ClassroomInfo', {classroom});
+    disabled.state === DisabledState.DISABLED && setVisible(true);
   };
 
   const ProgressBackground = () => (

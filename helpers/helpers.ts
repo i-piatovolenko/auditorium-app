@@ -1,7 +1,8 @@
 import {HOUR, MINUTE, TIME_SNIPPETS, WORKING_DAY_END, WORKING_DAY_START,} from "./constants";
 import {
   ACCESS_RIGHTS,
-  ClassroomType, CurrentUser,
+  ClassroomType,
+  CurrentUser,
   Mode,
   OccupiedInfo,
   OccupiedState,
@@ -87,13 +88,18 @@ export const fullName = (user: User, withInitials = false) => {
   return "";
 };
 
-export const typeStyle = (occupied: OccupiedInfo) => {
+export const typeStyle = (occupied: OccupiedInfo, isDisabled = false) => {
   const student = {backgroundColor: "#2e287c", color: "#fff"};
   const employee = {backgroundColor: "#ffc000", color: "#fff"};
   const vacant = {
     backgroundColor: "transparent",
     color: "#000",
   };
+  const disabled = {
+    backgroundColor: "#00000011",
+    color: "#454545",
+  };
+  if (isDisabled) return disabled;
   if (isNotFree(occupied)) {
     switch (occupied.user.type) {
       case UserTypes.STUDENT:
@@ -257,4 +263,9 @@ export const isNotFree = (occupied: OccupiedInfo) => {
 
 export const getIsMeOccupied = (me: CurrentUser, classrooms: ClassroomType[]) => {
   return !!classrooms.find(({occupied}) => occupied.state === OccupiedState.OCCUPIED && me.id === occupied.user.id);
+};
+
+export const hasOwnClassroom = (occupiedClassrooms: any) => {
+  const ownClassroom = occupiedClassrooms.find((classroom: any) => classroom.state === OccupiedState.OCCUPIED);
+  return ownClassroom ? ownClassroom.classroom.id : null;
 };

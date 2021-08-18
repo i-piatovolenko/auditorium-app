@@ -234,16 +234,15 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
             </Button>
           )}
         </>}
-        {!occupied && <Button mode='contained'>
+        {!isNotFree(occupied) && <Button mode='contained'>
             Взяти аудиторію
         </Button>}
         {/*TODO occupiedClassrooms*/}
-        {mode === Mode.PRIMARY && !me.occupiedClassroom && (
-          occupied && (
+        {mode === Mode.PRIMARY && classroom.occupied.state !== OccupiedState.FREE
+        && !me.id !== classroom.occupied.user.id && (
             <Button mode='contained'
                     onPress={() => getInLine([id], [])}
             >Стати в чергу за цією аудиторією</Button>
-          )
         )}
         {/*TODO occupiedClassrooms*/}
 

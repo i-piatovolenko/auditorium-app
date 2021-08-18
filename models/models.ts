@@ -300,3 +300,8 @@ export enum Langs {
   EN = 'EN',
   UA = 'UA'
 }
+
+export enum EnqueuedBy {
+  SELF = 'SELF',
+  DISPATCHER = 'DISPATCHER'
+}

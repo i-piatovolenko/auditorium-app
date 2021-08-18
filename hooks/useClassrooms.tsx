@@ -12,9 +12,6 @@ const useClassrooms = (props?: any): [Array<ClassroomType>, any] => {
       date: ISODateString(props?.date ? props.date : new Date()),
     }
   })
-  const followClassrooms = () => subscribeToMore({
-    document: FOLLOW_CLASSROOMS
-  });
 
   useEffect(() => {
     !loading && !error && setClassrooms(
@@ -27,7 +24,7 @@ const useClassrooms = (props?: any): [Array<ClassroomType>, any] => {
     );
   }, [data, loading, error]);
 
-  return [classrooms, followClassrooms];
+  return classrooms;
 };
 
 export default useClassrooms;

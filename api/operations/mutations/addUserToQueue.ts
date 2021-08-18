@@ -1,9 +1,27 @@
 import {gql} from "@apollo/client";
 
 export const ADD_USER_TO_QUEUE = gql`
-    mutation addUserToQueue($input: [AddUserToQueueInputType!]!) {
+    mutation addUserToQueue($input: AddUserToQueueInputType!) {
         addUserToQueue(input: $input) {
-          count
+          user {
+            id
+            occupiedClassrooms {
+              id
+              state
+              until
+              classroom {
+                id
+              }
+            }
+            queueInfo {
+              id
+              currentSession {
+                id
+                state
+                skips
+              }
+            }
+          }
         }
     }
 `;
