@@ -55,7 +55,14 @@ export const GET_CLASSROOMS_NO_SCHEDULE = gql`
       special
       isHidden
       chair {
+          id
           name
+          exclusivelyQueueAllowedDepartmentsInfo {
+            department {
+              id
+              name
+            }
+          }
       }
       isWing
       isOperaStudio

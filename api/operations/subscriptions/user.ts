@@ -13,6 +13,13 @@ export const FOLLOW_USER = gql`
           name
         }
       }
+      queue {
+        id
+        state
+        classroom {
+          id
+        }
+      }
       queueInfo {
         id
         sanctionedUntil

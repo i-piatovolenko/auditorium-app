@@ -232,7 +232,6 @@ function ClassroomsList() {
       </Appbar>
 
       <View style={styles.wrapper}>
-      <ClassroomsBrowser/>
         {classrooms?.length ? <>
 
           <ScrollView style={{display: 'none'}}>

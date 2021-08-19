@@ -1,20 +1,23 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {StyleSheet, Text, View} from "react-native";
-import {useQuery} from "@apollo/client";
-import {GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
-import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
-import {ActivityIndicator} from "react-native-paper";
-import {ClassroomType, DisabledState, OccupiedState} from "../../models/models";
+import {ClassroomType, OccupiedState, User} from "../../models/models";
 import sortAB from "../../helpers/sortAB";
 import FreeClassroomCell from "./FreeClassroomCell";
 import OccupiedClassroomCell from "./OccupiedClassroomCell";
+import ReservedClassroomCell from "./ReservedClassroomCell";
+import PendingClassroomCell from "./PendingClassroomCell";
+import {isEnabledForCurrentDepartment} from "../../helpers/helpers";
 
 type PropTypes = {
   classrooms: ClassroomType[];
+  currentUser: User;
   title?: string;
 }
 
-const ClassroomsBrowser: React.FC<PropTypes> = ({classrooms, title}) => {
+const ClassroomsBrowser: React.FC<PropTypes> = ({
+                                                  classrooms, title,
+                                                  currentUser
+                                                }) => {
   if (!classrooms.length) return null;
   return (
     <>
@@ -23,14 +26,22 @@ const ClassroomsBrowser: React.FC<PropTypes> = ({classrooms, title}) => {
       </Text>}
       <View style={styles.grid}>
         {classrooms.slice().sort(sortAB).map(classroom => {
-          const isFree = classroom.occupied.state === OccupiedState.FREE;
-          const isOccupied = classroom.occupied.state === OccupiedState.OCCUPIED;
-          const isPending = classroom.occupied.state === OccupiedState.PENDING;
-          const isReserved = classroom.occupied.state === OccupiedState.RESERVED;
+          const {occupied: {state, user}, id} = classroom;
+          const isEnabledForCurrentUser = isEnabledForCurrentDepartment(classroom, currentUser);
 
-          if (isFree) return <FreeClassroomCell key={classroom.id} classroom={classroom}/>
-          if (isOccupied) return <OccupiedClassroomCell key={classroom.id} classroom={classroom}/>
-          else return <></>;
+          const isFree = state === OccupiedState.FREE;
+          const isOccupied = state === OccupiedState.OCCUPIED || OccupiedState.PENDING || OccupiedState.RESERVED;
+          const isPending = state === OccupiedState.PENDING && user.id === currentUser.id;
+          const isReserved = state === OccupiedState.RESERVED && user.id === currentUser.id;
+
+          if (isFree) return <FreeClassroomCell key={id} classroom={classroom}
+                                                isEnabledForCurrentUser={isEnabledForCurrentUser}
+          />
+          if (isOccupied) return <OccupiedClassroomCell key={id} classroom={classroom}
+                                                        isEnabledForCurrentUser={isEnabledForCurrentUser}
+          />
+          if (isReserved) return <ReservedClassroomCell key={id} classroom={classroom}/>
+          if (isPending) return <PendingClassroomCell key={id} classroom={classroom}/>
         })}
       </View>
     </>
@@ -50,7 +61,7 @@ const styles = StyleSheet.create(
       zIndex: 1
     },
     grid: {
-      marginBottom: 10,
+      marginBottom: 8,
       marginLeft: 2,
       flexDirection: 'row',
       flexWrap: 'wrap',

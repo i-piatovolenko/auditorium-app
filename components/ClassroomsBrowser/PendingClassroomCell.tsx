@@ -4,36 +4,47 @@ import {ClassroomType, DisabledState} from "../../models/models";
 import Colors from "../../constants/Colors";
 import {Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
-import { useNavigation } from "@react-navigation/native";
+import useTimeLeft from "../../hooks/useTimeLeft";
+import {useNavigation} from "@react-navigation/native";
 
 const windowWidth = Dimensions.get('window').width;
 const cellWidth = ((windowWidth - 10) / 3);
 
 type PropTypes = {
   classroom: ClassroomType;
-  isEnabledForCurrentUser: boolean;
 }
 
-const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentUser}) => {
+const PendingClassroomCell: React.FC<PropTypes> = ({classroom}) => {
   const navigation = useNavigation();
   const special = !!classroom.special;
-  const {instruments, disabled} = classroom;
-  const isDisabled = disabled.state === DisabledState.DISABLED || !isEnabledForCurrentUser;
+  const {instruments, occupied, disabled} = classroom;
+  const isDisabled = disabled.state === DisabledState.DISABLED;
+  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, 2);
 
   const handlePress = () => {
     navigation.navigate('ClassroomInfo', {classroom});
   };
 
+  const ProgressBackground = () => (
+    <View
+      style={{
+        ...styles.timeLeftProgress,
+        width: (cellWidth / 100) * (timeLeftInPer as number)
+      }}
+    />
+  );
+
   return (
     <TouchableHighlight onPress={handlePress}>
-      <Surface style={[styles.cell, isDisabled ? styles.disabled : styles.free]}>
+      <Surface style={[styles.cell, isDisabled ? styles.disabled : styles.occupied]}>
+        <ProgressBackground/>
         <View style={styles.cellHeader}>
           <Text style={styles.name}>{classroom.name}</Text>
           <Image source={require('./../../assets/images/specialPiano.png')}
                  style={[special ? styles.special : styles.notSpecial]}/>
         </View>
-        <Text style={styles.occupationInfo} numberOfLines={1}>
-          {isDisabled ? !isEnabledForCurrentUser ? 'Для студентів кафедри' : disabled?.comment : 'Вільно'}
+        <Text style={styles.timeLeft} numberOfLines={1}>
+          {timeLeft}
         </Text>
         <View style={styles.instruments}>
           {instruments?.length
@@ -48,7 +59,7 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
   )
 }
 
-export default FreeClassroomCell;
+export default PendingClassroomCell;
 
 const styles = StyleSheet.create({
   cell: {
@@ -62,19 +73,16 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
+  occupied: {},
+  disabled: {
+    backgroundColor: '#ccc',
+  },
   occupationInfo: {
     width: cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,
-    textAlign: 'center',
-    backgroundColor: '#00000011'
-  },
-  free: {
-    backgroundColor: '#4bfd63'
-  },
-  disabled: {
-    backgroundColor: '#ccc',
+    textAlign: 'center'
   },
   cellHeader: {
     alignItems: 'center',

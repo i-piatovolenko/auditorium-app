@@ -266,6 +266,14 @@ export const getIsMeOccupied = (me: CurrentUser, classrooms: ClassroomType[]) =>
 };
 
 export const hasOwnClassroom = (occupiedClassrooms: any) => {
-  const ownClassroom = occupiedClassrooms.find((classroom: any) => classroom.state === OccupiedState.OCCUPIED);
+  const ownClassroom = occupiedClassrooms.find((classroom: any) => {
+    return classroom.state === OccupiedState.OCCUPIED || classroom.state === OccupiedState.RESERVED;
+  });
   return ownClassroom ? ownClassroom.classroom.id : null;
+};
+
+export const isEnabledForCurrentDepartment = (classroom: ClassroomType, currentUser: User) => {
+  return classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo.length ?
+    classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo
+      .some(({department }) => department.id === currentUser.department.id) : true;
 };

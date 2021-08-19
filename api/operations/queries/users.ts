@@ -39,6 +39,7 @@ export const GET_USER_BY_ID = gql`
       lastName
       type
       department {
+        id
         name
       }
       occupiedClassrooms {
@@ -47,6 +48,13 @@ export const GET_USER_BY_ID = gql`
         classroom {
           id
           name
+        }
+      }
+      queue {
+        id
+        state
+        classroom {
+          id
         }
       }
       queueInfo {

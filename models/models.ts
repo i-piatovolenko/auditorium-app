@@ -208,7 +208,14 @@ export type ScheduleUnitType = {
 export type ClassroomType = {
   id: number;
   name: string;
-  chair: Department | null;
+  chair: {
+    id: number;
+    name: string;
+    faculty: Faculty;
+    users: User[];
+    exclusivelyQueueAllowedDepartmentsInfo: {
+      department: Department | null }[];
+  } | null;
   special: string | null;
   floor: number;
   isWing: boolean;
