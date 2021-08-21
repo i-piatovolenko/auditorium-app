@@ -5,21 +5,35 @@ import {getMainDefinition} from "@apollo/client/utilities";
 import {setContext} from "@apollo/client/link/context";
 import {getItem} from "./asyncStorage";
 
-const wsLink = new WebSocketLink({
-  uri: 'ws://54.75.17.229:4000/',
-  options: {
-    reconnect: true,
-    // connectionParams: {
-    //   authToken: user.authToken,
-    // },
+const wsLink: any = new WebSocketLink({
+    uri: 'ws://54.75.17.229:4000/',
+    options: {
+      reconnect: true,
+      connectionParams: async () => {
+        const token = await getItem('token');
+        return {
+          authorization: token ? `Bearer ${token}` : "",
+        }
+      }
+    }
   }
-});
+);
+
+const subscriptionMiddleware = {
+  applyMiddleware: async (options: any, next: any) => {
+    const token = await getItem('token');
+    options.authorization = token ? `Bearer ${token}` : ""
+    next()
+  },
+}
+
+wsLink.subscriptionClient.use([subscriptionMiddleware]);
 
 const httpLink = createHttpLink({
   uri: 'http://54.75.17.229:4000/'
 });
 
-const authLink = setContext(async function(_, { headers }) {
+const authLink = setContext(async function (_, {headers}) {
   const token = await getItem('token');
   return {
     headers: {
@@ -30,7 +44,7 @@ const authLink = setContext(async function(_, { headers }) {
 });
 
 const splitLink = split(
-  ({ query }) => {
+  ({query}) => {
     const definition = getMainDefinition(query);
     return (
       definition.kind === 'OperationDefinition' &&

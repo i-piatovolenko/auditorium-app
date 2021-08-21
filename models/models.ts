@@ -190,7 +190,7 @@ export enum DisabledState {
 export type DisabledInfo = {
   state: DisabledState;
   comment: string;
-  until: Date;
+  until: string;
 };
 
 export type ScheduleUnitType = {

@@ -9,7 +9,7 @@ import WaitDialog from "../components/WaitDialog";
 import {getItem, setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
 import {ErrorCodes, ErrorCodesUa, Langs, Mode, QueueState, QueueType, User} from "../models/models";
-import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar} from "../api/client";
+import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar, wsLink} from "../api/client";
 import PushNotification from "./PushNotification";
 import {GET_LANG} from "../api/operations/queries/lang";
 

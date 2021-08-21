@@ -25,6 +25,7 @@ const CustomSidebarMenu = (props: any) => {
 
   const logout = async () => {
     await removeItem('user');
+    await removeItem('token');
     meVar(null);
     hideDialog();
   };

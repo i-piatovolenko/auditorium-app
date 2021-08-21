@@ -275,5 +275,5 @@ export const hasOwnClassroom = (occupiedClassrooms: any) => {
 export const isEnabledForCurrentDepartment = (classroom: ClassroomType, currentUser: User) => {
   return classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo.length ?
     classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo
-      .some(({department }) => department.id === currentUser.department.id) : true;
+      .some(({department }) => department.id === currentUser?.department?.id) : true;
 };

@@ -21,7 +21,7 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
   const isDisabled = disabled.state === DisabledState.DISABLED || !isEnabledForCurrentUser;
 
   const handlePress = () => {
-    navigation.navigate('ClassroomInfo', {classroom});
+    navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
   };
 
   return (

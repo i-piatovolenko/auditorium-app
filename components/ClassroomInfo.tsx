@@ -1,118 +1,61 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet} from "react-native";
-import {
-  InstrumentType, Mode, OccupiedInfo, OccupiedState, QueueState, QueueType,
-  ScheduleUnitType, User,
-  UserTypeColors,
-  UserTypes,
-  UserTypesUa
-} from "../models/models";
-import {
-  ActivityIndicator,
-  Appbar, Banner,
-  Button,
-  Chip,
-  Divider,
-  Paragraph,
-  ProgressBar,
-  Surface
-} from "react-native-paper";
-import InstrumentItem from "./InstrumentItem";
+import {StyleSheet, View, Text} from "react-native";
+import {ClassroomType, DisabledState, InstrumentType, QueueState, QueueType} from "../models/models";
+import {ActivityIndicator, Appbar, Chip, Divider, Subheading, Title} from "react-native-paper";
 import {useNavigation} from "@react-navigation/native";
-import ScheduleItem from "./ScheduleItem";
 import {useQuery} from "@apollo/client";
-import {GET_SCHEDULE_UNIT} from "../api/operations/queries/schedule";
-import {
-  fullName,
-  getTimeHHMM, isNotFree,
-  isOccupiedOnSchedule,
-  ISODateString,
-  isOwnClassroom,
-  isPendingForMe
-} from "../helpers/helpers";
-import UserInfo from "./UserInfo";
+import {isEnabledForCurrentDepartment} from "../helpers/helpers";
 import {useLocal} from "../hooks/useLocal";
-import getInLine from "../helpers/queue/getInLine";
-import addToFilteredList from "../helpers/queue/addToFilteredList";
-import {GET_ME} from "../api/operations/queries/me";
 import {client} from "../api/client";
 import {ADD_USER_TO_QUEUE} from "../api/operations/mutations/addUserToQueue";
-import useTimeLeft from "../hooks/useTimeLeft";
-import colors from "../constants/Colors";
-import {GET_USERS_SKIPS} from "../api/operations/queries/usersSkips";
+import Colors from "../constants/Colors";
+import {GET_CLASSROOM} from "../api/operations/queries/classroom";
+import {GET_USER_BY_ID} from "../api/operations/queries/users";
+import moment from "moment";
+import InstrumentItem from "./InstrumentItem";
+import OccupantInfo from "./OccupantInfo";
 
 interface PropTypes {
   route: any;
 }
 
-export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes) {
-  const {
-    name, id, isWing, isOperaStudio, chair, description, special, floor, instruments,
-    schedule, occupied
-  } = classroom;
+export default function ClassroomInfo({route: {params: {classroomId, currentUserId}}}: PropTypes) {
   const navigation = useNavigation();
-  const {data, loading, error} = useQuery(GET_SCHEDULE_UNIT, {
+  const [classroom, setClassroom] = useState<ClassroomType | null>(null);
+  const {
+    data: userData,
+    loading: userLoading,
+    error: userError,
+  } = useQuery(GET_USER_BY_ID, {
     variables: {
-      classroomName: name,
-      date: ISODateString(new Date()),
-    },
+      where: {
+        id: currentUserId
+      }
+    }
   });
-  const {data: {me}} = useQuery(GET_ME);
-  const userFullName = isNotFree(occupied) ? fullName(occupied?.user) : '';
-  // const occupiedOnSchedule = isOccupiedOnSchedule(schedule);
-  const [visible, setVisible] = useState(false);
   const {data: {mode}} = useLocal('mode');
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
-  const occupiedTotalTime = occupied.state === OccupiedState.OCCUPIED ? 180 : 2;
-  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, occupiedTotalTime);
-  const [visibleBanner, setVisibleBanner] = useState(true);
-  const [skips, setSkips] = useState(0);
 
-  const getUsersSkips = async () => {
+  useEffect(() => {
     try {
-      const data: any = await client.query({
-        query: GET_USERS_SKIPS,
+      client.query({
+        query: GET_CLASSROOM,
         variables: {
           where: {
-            id: me.id
+            id: classroomId
           }
         }
+      }).then(({data}: any) => {
+        setClassroom(data.classroom);
       });
-      setSkips(data.data.user.queueInfo.skips)
     } catch (e) {
       alert(JSON.stringify(e));
     }
-  };
-
-  useEffect(() => {
-    setVisibleBanner(true);
-  }, [])
-
-  useEffect(() => {
-    me && getUsersSkips();
-  }, [me]);
-
-  const showModal = () => setVisible(true);
-
-  const hideModal = () => setVisible(false);
+  }, []);
 
   const goBack = () => navigation.goBack();
-
-  const isAlreadyFilteredClassroom = (classroomId: number) => {
-    if (isMinimalSetup) {
-      return minimalClassroomIds.includes(classroomId);
-    } else {
-      return desirableClassroomIds.includes(classroomId);
-    }
-  };
-
-  const handleAddToLine = () => {
-    addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds);
-    isAlreadyFilteredClassroom(id);
-    goBack();
-  };
 
   const addOneClassroomToQueue = async (isMinimal: boolean) => {
     try {
@@ -120,190 +63,82 @@ export default function ClassroomInfo({route: {params: {classroom}}}: PropTypes)
         mutation: ADD_USER_TO_QUEUE,
         variables: {
           input: [{
-            userId: me.id,
-            classroomId: id,
+            userId: currentUserId.id,
+            classroomId: classroomId,
             state: QueueState.ACTIVE,
             type: isMinimal ? QueueType.MINIMAL : QueueType.DESIRED
           }]
         }
       });
-      addToFilteredList(id, isMinimal, minimalClassroomIds, desirableClassroomIds);
-      goBack();
     } catch (e) {
       alert(JSON.stringify(e));
     }
   };
 
-  const removeOneClassroomFromQueue = (isMinimal: boolean) => {
-    //TODO remove classroom from queue mutation
-  };
-
   return <View style={styles.container}>
     <Appbar style={styles.top}>
       <Appbar.BackAction onPress={goBack}/>
-      <Appbar.Content
-        title={`${isOwnClassroom(occupied, me) ? 'Моя аудиторія' : 'Аудиторія'} ${name}`}
-        subtitle={chair ? chair.name : ''}
-      />
+      {classroom && userData && (
+        <Appbar.Content
+          title={`Аудиторія ${classroom.name}`}
+          subtitle={classroom.chair ? classroom.chair.name : ''}
+        />
+      )}
     </Appbar>
     <View style={styles.wrapper}>
-      {(isWing || isOperaStudio || special) && <>
+      {(!classroom || !userData) ? <ActivityIndicator animating color='#fff' size={64}/> : (
+        <View>
+          {!isEnabledForCurrentDepartment(classroom, userData.user) && (
+            <View style={styles.warning}>
+              <Title style={styles.warningText}>Аудиторія недоступна для вашої кафедри</Title>
+            </View>
+          )}
+          {classroom.disabled.state === DisabledState.DISABLED && (
+            <View style={styles.warning}>
+              <Title style={styles.warningText}>Аудиторія відключена від системи</Title>
+              <Title style={styles.warningText}>{classroom.disabled.comment}</Title>
+              <Title style={styles.warningText}>
+                до {moment((classroom.disabled.until)
+                .slice(0, classroom.disabled.until.length - 1))
+                .format('DD-MM-YYYY HH:mm')}
+              </Title>
+            </View>
+          )}
+          {classroom.isHidden && (
+            <View style={styles.warning}>
+              <Title style={styles.warningText}>Аудиторія недоступна</Title>
+            </View>
+          )}
           <View style={styles.tags}>
-            {isWing && <Chip selected selectedColor='#00f' mode='outlined'
-                             style={styles.tag}>Флігель</Chip>}
-            {isOperaStudio && <Chip selected selectedColor='#00f' mode='outlined'
-                                    style={styles.tag}>Оперна студія</Chip>}
-            {special && <Chip selected selectedColor='#00f' mode='outlined'
-                              style={styles.tag}>Спеціалізована</Chip>}
+            {classroom.isWing && <Chip selected selectedColor='#00f' mode='outlined'
+                                       style={styles.tag}>Флігель</Chip>}
+            {classroom.isOperaStudio && <Chip selected selectedColor='#00f' mode='outlined'
+                                              style={styles.tag}>Оперна студія</Chip>}
+            {classroom.special && <Chip selected selectedColor='#00f' mode='outlined'
+                                        style={styles.tag}>Спеціалізована</Chip>}
           </View>
           <Divider style={styles.divider}/>
-      </>}
-      <Text style={styles.description}>
-        {description}
-      </Text>
-      <Divider style={styles.divider}/>
-      <Text style={styles.description}>
-        Поверх: {floor}
-      </Text>
-      <Divider style={styles.divider}/>
-      <View>
-        {!!instruments.length && <>
-          {instruments?.map((instrument: InstrumentType) => <InstrumentItem
-            key={instrument.id} instrument={instrument} expanded/>)}
-            <Divider style={styles.divider}/>
-        </>}
-      </View>
-      {/*<Text style={styles.scheduleHeader}>Розклад на сьогодні</Text>*/}
-      {/*{!loading && !error ? data.schedule*/}
-      {/*    ?.map((scheduleUnit: ScheduleUnitType) => (*/}
-      {/*      <ScheduleItem scheduleUnit={scheduleUnit} key={scheduleUnit.id}/>*/}
-      {/*    )) :*/}
-      {/*  <ActivityIndicator animating={true} color='#2e287c'/>}*/}
-      <Divider style={styles.divider}/>
-      {!isNotFree(occupied)
-        ? <Text style={styles.freeText}>Вільно</Text>
-        : !isPendingForMe(occupied, me, mode) && (
-        <Surface style={[{elevation: visible ? 0 : 4}, styles.occupationInfo]}
-                 onTouchEnd={showModal}
-        >
-          <Text style={styles.occupantName}>{userFullName}</Text>
-          <Text style={[{
-            backgroundColor: UserTypeColors[occupied.user.type as UserTypes]},
-            styles.occupantType
-          ]}
-          >
-            {UserTypesUa[occupied.user.type as UserTypes]}
-          </Text>
-          {isOwnClassroom(occupied, me) ? (
-            timeLeftInPer > 0 && <View style={{marginTop: 30}}>
-                <Paragraph>
-                    Часу на заняття залишилось: {timeLeft}
-                </Paragraph>
-                <ProgressBar progress={timeLeftInPer as number / 100} visible color={colors.red}
-                             style={styles.progressBar}
-                />
-            </View>
-          ) : (
-            <Text style={styles.occupiedUntil}>Зайнято до {getTimeHHMM(new Date(occupied.until))}</Text>
-          )}
-          <UserInfo userId={occupied.user.id} hideModal={hideModal} visible={visible}/>
-        </Surface>
+          <View>
+            <Text style={{textAlign: 'center'}}>{classroom.description}</Text>
+          </View>
+          <Divider style={styles.divider}/>
+          <View>
+            <Text style={{textAlign: 'center'}}>Поверх: {classroom.floor}</Text>
+          </View>
+          <Divider style={styles.divider}/>
+          <View>
+            {!!classroom.instruments.length && (
+              <>
+                {classroom.instruments?.map((instrument: InstrumentType) => (
+                  <InstrumentItem key={instrument.id} instrument={instrument} expanded/>
+                ))}
+                <Divider style={styles.divider}/>
+              </>
+            )}
+          </View>
+          <OccupantInfo classroom={classroom} user={userData.user}/>
+        </View>
       )}
-      <View style={styles.queueSetupButtons}>
-        {mode === Mode.INLINE && isNotFree(occupied) && occupied.user.id !== me.id && <>
-          {minimalClassroomIds.includes(id) ? (
-            <Button mode='contained' style={{marginBottom: 8}}>
-              Видалити з черги (мінімальні)
-            </Button>
-          ) : (
-            <Button mode='contained' style={{marginBottom: 8}}
-                    onPress={() => addOneClassroomToQueue(true)}
-            >
-              Додати до черги (мінімальні)
-            </Button>
-          )}
-          {desirableClassroomIds.includes(id) ? (
-            <Button mode='contained'>
-              Видалити з черги (бажані)
-            </Button>
-          ) : (
-            <Button mode='contained'
-                    onPress={() => addOneClassroomToQueue(false)}
-            >
-              Додати до черги (бажані)
-            </Button>
-          )}
-        </>}
-        {!isNotFree(occupied) && <Button mode='contained'>
-            Взяти аудиторію
-        </Button>}
-        {/*TODO occupiedClassrooms*/}
-        {mode === Mode.PRIMARY && classroom.occupied.state !== OccupiedState.FREE
-        && !me.id !== classroom.occupied.user.id && (
-            <Button mode='contained'
-                    onPress={() => getInLine([id], [])}
-            >Стати в чергу за цією аудиторією</Button>
-        )}
-        {/*TODO occupiedClassrooms*/}
-
-        {mode === Mode.QUEUE_SETUP && !me.occupiedClassroom && (
-          isNotFree(occupied) && (
-            <Button mode='contained' onPress={handleAddToLine}>
-              {isAlreadyFilteredClassroom(id) ? 'Видалити з черги' : 'Додати до черги'}
-            </Button>
-          )
-        )}
-        {occupied.state === OccupiedState.RESERVED &&
-        occupied.user.id === me.id && mode === Mode.INLINE && (
-          <>
-            {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
-                <Banner visible={visibleBanner} actions={[{
-                  label: 'Зрозуміло',
-                  onPress: () => setVisibleBanner(false)
-                }]}
-                        style={styles.spaceBottom30}
-                >Заберіть ключі від аудиторії в учбовій частині. Максимальний час знаходження в аудиторії - 3 години.
-                </Banner>
-                <Paragraph>
-                    Часу на прийняття рішення залишилось: {timeLeft}
-                </Paragraph>
-                <ProgressBar progress={timeLeftInPer as number / 100} visible color={colors.red}
-                             style={styles.progressBar}
-                />
-            </View>}
-          </>
-        )}
-        {occupied.state === OccupiedState.PENDING &&
-        occupied.user.id === me.id && mode === Mode.INLINE && (
-          <>
-            {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
-                <Banner visible={visibleBanner} actions={[{
-                  label: 'Зрозуміло',
-                  onPress: () => setVisibleBanner(false)
-                }]}
-                        style={styles.spaceBottom30}
-                >
-                  {
-                    `Ви можете відхилити аудиторію ${skips} раз${skips === 2 || skips === 3 || skips === 4 ? 'и.' : '.'
-                    } Якщо аудиторія не буде підтверджена на протязі визначеного часу, вона буде відхилена автоматично. Якщо показник допустимих відхилень дорівнює нулю і Ви не підтверджуєте та не відхиляєте аудиторію, вона автоматично відхиляється і Ви вибуваєте з черги.`
-                  }
-                </Banner>
-                <Paragraph>
-                    Часу на прийняття рішення залишилось: {timeLeft}
-                </Paragraph>
-                <ProgressBar progress={timeLeftInPer as number / 100} visible color={colors.red}
-                             style={styles.progressBar}
-                />
-            </View>}
-            <View>
-              <Button mode='contained' style={{marginBottom: 8}} color='#f91354'>
-                Відхилити аудиторію
-              </Button>
-              <Button mode='contained'>Підтвердити аудиторію</Button>
-            </View>
-          </>
-        )}
-      </View>
     </View>
   </View>
 };
@@ -327,6 +162,19 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     backgroundColor: '#fff',
     height: '100%'
+  },
+  warning: {
+    backgroundColor: '#f9135411',
+    borderColor: Colors.red,
+    borderWidth: 2,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16
+  },
+  warningText: {
+    fontWeight: "bold",
+    color: Colors.red,
+    textAlign: "center"
   },
   divider: {
     marginTop: 16,

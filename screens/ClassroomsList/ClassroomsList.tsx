@@ -16,7 +16,7 @@ import {getItem} from "../../api/asyncStorage";
 import {hasOwnClassroom, isEnabledForCurrentDepartment} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
-import {modeVar} from "../../api/client";
+import {client, modeVar} from "../../api/client";
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -38,6 +38,7 @@ export default function Home() {
     <Stack.Screen
       name={'ClassroomInfo' as any}
       component={ClassroomInfo}
+      initialParams={{currentUserId}}
     />
   </Stack.Navigator>
 }
@@ -50,7 +51,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const navigation = useNavigation();
   const {data: {mode}} = useLocal('mode');
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
-  const {data: genQueueSizeData, loading: genQueueLoading, error: genQueueError} = useQuery(GENERAL_QUEUE_SIZE);
+  const [generalQueueSize, setGeneralQueueSize] = useState(0);
   const {
     data,
     loading,
@@ -72,7 +73,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
 
   useEffect(() => {
     const unsubscribeClassrooms = subscribeToMore({
-      document: FOLLOW_CLASSROOMS
+      document: FOLLOW_CLASSROOMS,
     });
     const unsubscribeUser = subscribeToMoreUser({
       document: FOLLOW_USER,
@@ -103,6 +104,14 @@ const ClassroomsList: React.FC = ({route}: any) => {
       if (!userData.user.queue.length && mode === Mode.INLINE) modeVar(Mode.PRIMARY);
     }
   }, [userData]);
+
+  useEffect(() => {
+    client.query({
+      query: GENERAL_QUEUE_SIZE
+    }).then((data: any) => {
+      setGeneralQueueSize(data.data.generalQueueSize);
+    });
+  }, [data]);
 
   // const applyGeneralFilter = (instruments: InstrumentType[], withWing: boolean,
   //                             operaStudioOnly: boolean, special: SpecialT) => {
@@ -164,7 +173,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
     const ownClassroomId = hasOwnClassroom(userData.user.occupiedClassrooms);
 
     return classroom.id !== ownClassroomId && !classroom.isHidden &&
-      classroom.occupied.state !== OccupiedState.FREE &&
       classroom.disabled.state === DisabledState.NOT_DISABLED &&
       isEnabledForCurrentDepartment(classroom, userData.user) &&
       !(userData.user.occupiedClassrooms.some((data: any) => {
@@ -209,7 +217,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
         <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
                        color='#fff'
         />
-        <Appbar.Content title={`Людей в черзі: ${genQueueSizeData || 0}`}
+        <Appbar.Content title={`Людей в черзі: ${generalQueueSize}`}
                         subtitle={`Вільних аудиторій: ${freeClassroomsAmount}`}
                         color='#fff'
         />

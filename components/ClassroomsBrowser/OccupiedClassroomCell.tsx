@@ -42,7 +42,11 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurr
   }
 
   const handlePress = () => {
-    mode === Mode.QUEUE_SETUP ? handleCheck() : navigation.navigate('ClassroomInfo', {classroom});
+    if (mode === Mode.QUEUE_SETUP) {
+      handleCheck();
+    } else {
+      navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
+    }
   };
 
   const handleLongPress = () => {

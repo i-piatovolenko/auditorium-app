@@ -22,7 +22,7 @@ const PendingClassroomCell: React.FC<PropTypes> = ({classroom}) => {
   const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, 2);
 
   const handlePress = () => {
-    navigation.navigate('ClassroomInfo', {classroom});
+    navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
   };
 
   const ProgressBackground = () => (
