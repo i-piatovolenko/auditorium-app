@@ -8,6 +8,7 @@ import {fullName, isNotFree, typeStyle} from "../../helpers/helpers";
 import {useNavigation} from "@react-navigation/native";
 import {useLocal} from "../../hooks/useLocal";
 import {minimalClassroomIdsVar} from "../../api/client";
+import useTimeLeft from "../../hooks/useTimeLeft";
 
 const windowWidth = Dimensions.get('window').width;
 const cellWidth = ((windowWidth - 10) / 3);

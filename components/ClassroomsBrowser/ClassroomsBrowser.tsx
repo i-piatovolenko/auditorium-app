@@ -7,6 +7,7 @@ import OccupiedClassroomCell from "./OccupiedClassroomCell";
 import ReservedClassroomCell from "./ReservedClassroomCell";
 import PendingClassroomCell from "./PendingClassroomCell";
 import {isEnabledForCurrentDepartment} from "../../helpers/helpers";
+import OccupiedByCurrentUserClassroomCell from "./OccupiedByCurrentUserClassroomCell";
 
 type PropTypes = {
   classrooms: ClassroomType[];
@@ -30,6 +31,7 @@ const ClassroomsBrowser: React.FC<PropTypes> = ({
           const isEnabledForCurrentUser = isEnabledForCurrentDepartment(classroom, currentUser);
 
           const isFree = state === OccupiedState.FREE;
+          const isOccupiedByCurrentUser = state === OccupiedState.OCCUPIED && user.id === currentUser.id;
           const isOccupied = state === OccupiedState.OCCUPIED || OccupiedState.PENDING || OccupiedState.RESERVED;
           const isPending = state === OccupiedState.PENDING && user.id === currentUser.id;
           const isReserved = state === OccupiedState.RESERVED && user.id === currentUser.id;
@@ -37,11 +39,12 @@ const ClassroomsBrowser: React.FC<PropTypes> = ({
           if (isFree) return <FreeClassroomCell key={id} classroom={classroom}
                                                 isEnabledForCurrentUser={isEnabledForCurrentUser}
           />
+          if (isReserved) return <ReservedClassroomCell key={id} classroom={classroom}/>
+          if (isPending) return <PendingClassroomCell key={id} classroom={classroom}/>
+          if (isOccupiedByCurrentUser) return <OccupiedByCurrentUserClassroomCell key={id} classroom={classroom}/>
           if (isOccupied) return <OccupiedClassroomCell key={id} classroom={classroom}
                                                         isEnabledForCurrentUser={isEnabledForCurrentUser}
           />
-          if (isReserved) return <ReservedClassroomCell key={id} classroom={classroom}/>
-          if (isPending) return <PendingClassroomCell key={id} classroom={classroom}/>
         })}
       </View>
     </>

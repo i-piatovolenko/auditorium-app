@@ -1,11 +1,14 @@
-import React from "react";
+import React, {CSSProperties} from "react";
 import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
-import {ClassroomType, DisabledState} from "../../models/models";
+import {ClassroomType, DisabledState, Mode} from "../../models/models";
 import Colors from "../../constants/Colors";
-import {Surface} from "react-native-paper";
+import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
-import useTimeLeft from "../../hooks/useTimeLeft";
+import {fullName, isNotFree, typeStyle} from "../../helpers/helpers";
 import {useNavigation} from "@react-navigation/native";
+import {useLocal} from "../../hooks/useLocal";
+import {minimalClassroomIdsVar} from "../../api/client";
+import useTimeLeft from "../../hooks/useTimeLeft";
 
 const windowWidth = Dimensions.get('window').width;
 const cellWidth = ((windowWidth - 10) / 3);
@@ -14,16 +17,18 @@ type PropTypes = {
   classroom: ClassroomType;
 }
 
-const ReservedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
+const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
   const navigation = useNavigation();
-  const special = !!classroom.special;
-  const {instruments, occupied, disabled} = classroom;
-  const isDisabled = disabled.state === DisabledState.DISABLED;
-  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, 15);
+  const {data: {mode}} = useLocal('mode');
+  const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
+  const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
+  const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
 
-  const handlePress = () => {
-    navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
-  };
+  const special = !!classroom.special;
+  const {instruments, occupied, disabled, isHidden} = classroom;
+  const isDisabled = disabled.state === DisabledState.DISABLED;
+  const userFullName = fullName(occupied.user, true);
+  const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, 180);
 
   const ProgressBackground = () => (
     <View
@@ -34,10 +39,29 @@ const ReservedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
     />
   );
 
+  const handlePress = () => {
+      navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
+  };
+
+  const cellStyle = StyleSheet.create({
+    cell: {
+      width: cellWidth,
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: 100,
+      margin: 1,
+      elevation: 2,
+      borderRadius: 4,
+      position: 'relative',
+      overflow: 'hidden',
+      opacity: isHidden ? .5 : 1,
+      backgroundColor: isDisabled ? '#ccc' : '#fff'
+    }
+  });
+
   return (
     <TouchableHighlight onPress={handlePress}>
-      <Surface style={[styles.cell, isDisabled ? styles.disabled : styles.occupied]}>
-        <Image source={require('../../assets/images/key.png')} style={styles.keyImage}/>
+      <Surface style={cellStyle.cell}>
         <ProgressBackground/>
         <View style={styles.cellHeader}>
           <Text style={styles.name}>{classroom.name}</Text>
@@ -60,24 +84,9 @@ const ReservedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
   )
 }
 
-export default ReservedClassroomCell;
+export default OccupiedClassroomCell;
 
 const styles = StyleSheet.create({
-  cell: {
-    width: cellWidth,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 100,
-    margin: 1,
-    elevation: 2,
-    borderRadius: 4,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  occupied: {},
-  disabled: {
-    backgroundColor: '#ccc',
-  },
   occupationInfo: {
     width: cellWidth,
     margin: 2,
@@ -139,9 +148,8 @@ const styles = StyleSheet.create({
   },
   keyImage: {
     position: "absolute",
-    zIndex: 2,
     top: 8,
-    right: cellWidth / 2 - 15,
+    right: 8,
     width: 30,
     height: 30,
     resizeMode: "stretch",

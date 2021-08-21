@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {ImageBackground, ScrollView, StyleSheet, View} from "react-native";
-import {ActivityIndicator, Appbar} from "react-native-paper";
+import {ActivityIndicator} from "react-native-paper";
 import {ClassroomType, DisabledState, Mode, OccupiedState, User} from "../../models/models";
 import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
-import {DrawerActions, useNavigation} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {useQuery} from "@apollo/client";
 import ClassroomsBrowser from "../../components/ClassroomsBrowser/ClassroomsBrowser";
 import {GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
@@ -16,8 +16,8 @@ import {getItem} from "../../api/asyncStorage";
 import {hasOwnClassroom, isEnabledForCurrentDepartment} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
-import {client, modeVar} from "../../api/client";
-import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
+import {modeVar} from "../../api/client";
+import ClassroomsAppBar from "./ClassroomsAppBar";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -51,7 +51,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const navigation = useNavigation();
   const {data: {mode}} = useLocal('mode');
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
-  const [generalQueueSize, setGeneralQueueSize] = useState(0);
   const {
     data,
     loading,
@@ -105,43 +104,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
     }
   }, [userData]);
 
-  useEffect(() => {
-    client.query({
-      query: GENERAL_QUEUE_SIZE
-    }).then((data: any) => {
-      setGeneralQueueSize(data.data.generalQueueSize);
-    });
-  }, [data]);
-
-  // const applyGeneralFilter = (instruments: InstrumentType[], withWing: boolean,
-  //                             operaStudioOnly: boolean, special: SpecialT) => {
-  //
-  //   const filteredClassroomsByInstruments = instruments.length ?
-  //     getClassroomsFilteredByInstruments(classrooms, instruments) : classrooms;
-  //
-  //   const filteredIds = filteredClassroomsByInstruments
-  //     .filter(filterDisabledForQueue)
-  //     .filter(classroom => withWing ? true : !classroom.isWing)
-  //     .filter(classroom => operaStudioOnly ? classroom.isOperaStudio : true)
-  //     .filter(classroom => {
-  //       switch (special) {
-  //         case "with":
-  //           return true;
-  //         case "only":
-  //           return classroom.special;
-  //         case "without":
-  //           return !classroom.special;
-  //       }
-  //     })
-  //     .map(classroom => classroom.id);
-  //
-  //   if (isMinimalSetup) {
-  //     minimalClassroomIdsVar(filteredIds);
-  //   } else {
-  //     desirableClassroomIdsVar(filteredIds);
-  //   }
-  // };
-
   /**
    * Find occupied classroom for current user (OCCUPIED or RESERVED)
    * */
@@ -185,10 +147,9 @@ const ClassroomsList: React.FC = ({route}: any) => {
    * Filter chosen classrooms in queue setup mode (MINIMAl and DESIRED)
    * */
   const chosen = (classroom: ClassroomType) => {
-    const ownClassroomId = hasOwnClassroom(userData.user.occupiedClassrooms);
 
-    return userData.user.queue.some(({classroom: {id}}: any) => classroom.id === id) &&
-      classroom.id !== ownClassroomId;
+    return userData.user.queue.some(({classroom: {id}}: any) => classroom.id === id)
+      && !(userData.user.occupiedClassrooms.some(({id}: ClassroomType) => classroom.id === id));
   };
 
   /**
@@ -213,15 +174,9 @@ const ClassroomsList: React.FC = ({route}: any) => {
   return (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
                      style={{width: '100%', height: '100%'}}>
-      <Appbar style={styles.top}>
-        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-                       color='#fff'
-        />
-        <Appbar.Content title={`Людей в черзі: ${generalQueueSize}`}
-                        subtitle={`Вільних аудиторій: ${freeClassroomsAmount}`}
-                        color='#fff'
-        />
-      </Appbar>
+      {!loading && !error && (
+        <ClassroomsAppBar freeClassroomsAmount={freeClassroomsAmount} classrooms={data.classrooms}/>
+      )}
 
       <View style={styles.wrapper}>
         {!loading && !error && !userLoading && !userError && (
@@ -295,16 +250,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
 
 const styles = StyleSheet.create(
   {
-    top: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      paddingTop: 26,
-      height: 80,
-      backgroundColor: 'transparent',
-      zIndex: 1
-    },
     grid: {
       marginBottom: 80,
       marginLeft: 2,

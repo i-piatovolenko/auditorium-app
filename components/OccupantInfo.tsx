@@ -16,7 +16,8 @@ type PropTypes = {
 const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
   const {data: {mode}} = useLocal('mode');
   const userFullName = isNotFree(classroom?.occupied) ? fullName(classroom.occupied?.user) : '';
-  const occupiedTotalTime = classroom.occupied.state === OccupiedState.OCCUPIED ? 180 : 2;
+  const occupiedTotalTime = classroom.occupied.state === OccupiedState.OCCUPIED ? 180 :
+    classroom.occupied.state === OccupiedState.RESERVED ? 15 : 2;
   const [timeLeft, timeLeftInPer] = useTimeLeft(classroom?.occupied, occupiedTotalTime);
   const [visibleBanner, setVisibleBanner] = useState(true);
   const [visible, setVisible] = useState(false);
@@ -57,7 +58,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
     </Surface>
   )}
     {classroom.occupied.state === OccupiedState.RESERVED &&
-    classroom.occupied.user.id === user.id && mode === Mode.INLINE && (
+    classroom.occupied.user.id === user.id && (
       <>
         {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
             <Banner visible={visibleBanner} actions={[{
@@ -68,7 +69,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
             >Заберіть ключі від аудиторії в учбовій частині. Максимальний час знаходження в аудиторії - 3 години.
             </Banner>
             <Paragraph>
-                Часу на прийняття рішення залишилось: {timeLeft}
+                Час на прийняття рішення: {timeLeft}
             </Paragraph>
             <ProgressBar progress={timeLeftInPer as number / 100} visible color={colors.red}
                          style={styles.progressBar}
