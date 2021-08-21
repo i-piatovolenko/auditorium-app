@@ -113,7 +113,32 @@ export type User = {
   expireDate: Date | null;
   classroom: ClassroomType;
   queue: QueueRecord[];
+  queueInfo: UserQueueInfo;
 };
+
+export type UserQueueInfo = {
+  id: number;
+  user: User;
+  sanctionedUntil: string;
+  currentSession: QueueSession
+}
+
+export type QueueSession = {
+  id: number;
+  queueInfo: UserQueueInfo;
+  state: UserQueueState;
+  enqueuedBy: EnqueuedBy;
+  skips: number;
+  remainingOccupationTime: string;
+  generalQueuePosition: number;
+}
+
+export enum UserQueueState {
+  IN_QUEUE_MINIMAL = 'IN_QUEUE_MINIMAL',
+  IN_QUEUE_DESIRED_AND_OCCUPYING = 'IN_QUEUE_DESIRED_AND_OCCUPYING',
+  QUEUE_RESERVED_NOT_OCCUPYING = 'QUEUE_RESERVED_NOT_OCCUPYING',
+  OCCUPYING = 'OCCUPYING',
+}
 
 export type CurrentUser = {
   id: number;

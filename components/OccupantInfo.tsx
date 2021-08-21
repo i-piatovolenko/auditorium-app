@@ -21,7 +21,6 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
   const [timeLeft, timeLeftInPer] = useTimeLeft(classroom?.occupied, occupiedTotalTime);
   const [visibleBanner, setVisibleBanner] = useState(true);
   const [visible, setVisible] = useState(false);
-  const [skips, setSkips] = useState(0);
 
   const showModal = () => setVisible(true);
 
@@ -88,7 +87,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
                     style={styles.spaceBottom30}
             >
               {
-                `Ви можете відхилити аудиторію ${skips} раз${skips === 2 || skips === 3 || skips === 4 ? 'и.' : '.'
+                `Ви можете відхилити аудиторію ${user.queueInfo.currentSession.skips} раз${user.queueInfo.currentSession.skips === 2 || user.queueInfo.currentSession.skips === 3 || user.queueInfo.currentSession.skips === 4 ? 'и.' : '.'
                 } Якщо аудиторія не буде підтверджена на протязі визначеного часу, вона буде відхилена автоматично. Якщо показник допустимих відхилень дорівнює нулю і Ви не підтверджуєте та не відхиляєте аудиторію, вона автоматично відхиляється і Ви вибуваєте з черги.`
               }
             </Banner>

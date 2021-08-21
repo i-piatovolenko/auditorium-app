@@ -27,7 +27,6 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
   const special = !!classroom.special;
   const {instruments, occupied, disabled, isHidden} = classroom;
   const isDisabled = disabled.state === DisabledState.DISABLED;
-  const userFullName = fullName(occupied.user, true);
   const [timeLeft, timeLeftInPer] = useTimeLeft(occupied, 180);
 
   const ProgressBackground = () => (

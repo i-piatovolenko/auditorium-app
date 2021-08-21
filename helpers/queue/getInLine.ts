@@ -18,7 +18,6 @@ const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: 
   }));
 
   try {
-    alert(JSON.stringify([...minimalData, ...desirableData]))
     await client.mutate({
       mutation: ADD_USER_TO_QUEUE, variables: {
         input: {

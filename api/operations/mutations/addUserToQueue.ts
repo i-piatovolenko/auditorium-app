@@ -5,6 +5,8 @@ export const ADD_USER_TO_QUEUE = gql`
         addUserToQueue(input: $input) {
           user {
             id
+            firstName
+            lastName
             occupiedClassrooms {
               id
               state
@@ -22,6 +24,10 @@ export const ADD_USER_TO_QUEUE = gql`
               }
             }
           }
+          userErrors {
+              message
+              code
+            }
         }
     }
 `;
