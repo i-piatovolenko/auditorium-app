@@ -1,11 +1,11 @@
 {
   "files": {
-    "app.js": "/auditorium-app/static/js/app.b2553716.chunk.js",
-    "app.js.map": "/auditorium-app/static/js/app.b2553716.chunk.js.map",
+    "app.js": "/auditorium-app/static/js/app.4006a7a0.chunk.js",
+    "app.js.map": "/auditorium-app/static/js/app.4006a7a0.chunk.js.map",
     "runtime~app.js": "/auditorium-app/static/js/runtime~app.25d9251d.js",
     "runtime~app.js.map": "/auditorium-app/static/js/runtime~app.25d9251d.js.map",
-    "static/js/2.dbee138a.chunk.js": "/auditorium-app/static/js/2.dbee138a.chunk.js",
-    "static/js/2.dbee138a.chunk.js.map": "/auditorium-app/static/js/2.dbee138a.chunk.js.map",
+    "static/js/2.ce447c80.chunk.js": "/auditorium-app/static/js/2.ce447c80.chunk.js",
+    "static/js/2.ce447c80.chunk.js.map": "/auditorium-app/static/js/2.ce447c80.chunk.js.map",
     "fonts/MaterialCommunityIcons.ttf": "/auditorium-app/./fonts/MaterialCommunityIcons.ttf",
     "favicon-16.png": "/auditorium-app/favicon-16.png",
     "favicon-32.png": "/auditorium-app/favicon-32.png",
@@ -13,7 +13,7 @@
     "index.html": "/auditorium-app/index.html",
     "manifest.json": "/auditorium-app/manifest.json",
     "serve.json": "/auditorium-app/serve.json",
-    "static/js/2.dbee138a.chunk.js.LICENSE.txt": "/auditorium-app/static/js/2.dbee138a.chunk.js.LICENSE.txt",
+    "static/js/2.ce447c80.chunk.js.LICENSE.txt": "/auditorium-app/static/js/2.ce447c80.chunk.js.LICENSE.txt",
     "static/media/Chembalo.png": "/auditorium-app/static/media/Chembalo.5e053f8a.png",
     "static/media/GrandPiano.png": "/auditorium-app/static/media/GrandPiano.5e053f8a.png",
     "static/media/UpRightPiano.png": "/auditorium-app/static/media/UpRightPiano.791ce387.png",
@@ -27,7 +27,7 @@
   },
   "entrypoints": [
     "static/js/runtime~app.25d9251d.js",
-    "static/js/2.dbee138a.chunk.js",
-    "static/js/app.b2553716.chunk.js"
+    "static/js/2.ce447c80.chunk.js",
+    "static/js/app.4006a7a0.chunk.js"
   ]
 }
