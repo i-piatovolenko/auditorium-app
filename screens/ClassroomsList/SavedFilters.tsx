@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, Dimensions, TextInput} from "react-native";
 import {Button, Checkbox, Headline, IconButton, Modal, Portal} from "react-native-paper";
-import {ClassroomType, SavedFilterT} from "../../models/models";
+import {ClassroomType, SavedFilterT, User} from "../../models/models";
 import {getItem, setItem} from "../../api/asyncStorage";
 import {useLocal} from "../../hooks/useLocal";
 import Colors from "../../constants/Colors";
@@ -13,11 +13,12 @@ export type SpecialT = 'with' | 'only' | 'without';
 interface PropTypes {
   hideModal: () => void;
   visible: boolean;
+  currentUser: User;
 }
 
 const windowWidth = Dimensions.get('window').width;
 
-export default function SavedFilters({hideModal, visible}: PropTypes) {
+export default function SavedFilters({hideModal, visible, currentUser}: PropTypes) {
   const classrooms: ClassroomType[] = useClassrooms();
   const [savedFilters, setSavedFilters] = useState<SavedFilterT[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -69,7 +70,7 @@ export default function SavedFilters({hideModal, visible}: PropTypes) {
   };
 
   const handleSelectFilter = (filterItem: any, index: number) => {
-    filterSavedFilter(filterItem, classrooms)
+    filterSavedFilter(filterItem, classrooms, currentUser)
     setSelectedFilter(index);
     hideModal();
   };
@@ -139,25 +140,24 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     width: '100%',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    marginBottom: 5,
   },
   item: {
-    paddingBottom: 10,
     fontSize: 16,
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
-    marginBottom: 10,
     color: '#000',
     width: '80%',
+    marginTop: 10
   },
   selectedItem: {
-    paddingBottom: 10,
     fontSize: 16,
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
-    marginBottom: 10,
     color: Colors.blue,
     width: '80%',
+    marginTop: 10
   },
   bin: {
     width: '20%',

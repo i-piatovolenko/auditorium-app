@@ -98,9 +98,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
               <Title style={styles.warningText}>Аудиторія відключена від системи</Title>
               <Title style={styles.warningText}>{classroom.disabled.comment}</Title>
               <Title style={styles.warningText}>
-                до {moment((classroom.disabled.until)
-                .slice(0, classroom.disabled.until.length - 1))
-                .format('DD-MM-YYYY HH:mm')}
+                до {moment(classroom.disabled.until).format('DD-MM-YYYY HH:mm')}
               </Title>
             </View>
           )}

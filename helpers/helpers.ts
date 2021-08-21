@@ -234,8 +234,7 @@ export const isTeacherType = (type: UserTypes) => {
 
 export const getTimeFromUntil = (until: string, minutesDuration = 2) => {
   if (until) {
-    const lastIndex = until.length - 5;
-    const differenceInMs = moment(until.slice(0, lastIndex)).diff(moment());
+    const differenceInMs = moment(until).diff(moment());
     const tempTime = moment.duration(differenceInMs);
 
     const resultHHMMSS = tempTime.hours() + ':' + tempTime.minutes() + ':' + tempTime.seconds();

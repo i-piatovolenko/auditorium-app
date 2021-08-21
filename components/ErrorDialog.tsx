@@ -14,7 +14,7 @@ export default function ErrorDialog({visible, hideDialog, message}: PropTypes) {
       <Dialog visible={visible} onDismiss={hideDialog}>
         <Dialog.Title style={{color: '#f91354'}}>Упс!</Dialog.Title>
         <Dialog.Content>
-          <Text style={{marginBottom: -20}}>{!message ? 'Щось пішло не так' : message}!</Text>
+          <Text style={{marginBottom: -20}}>{!message ? 'Щось пішло не так' : message}</Text>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={hideDialog}>Закрити</Button>

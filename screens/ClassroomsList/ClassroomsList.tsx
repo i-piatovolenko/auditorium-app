@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {ImageBackground, ScrollView, StyleSheet, View} from "react-native";
-import {ActivityIndicator} from "react-native-paper";
+import {Dimensions, ImageBackground, ScrollView, StyleSheet, View} from "react-native";
+import {ActivityIndicator, Divider} from "react-native-paper";
 import {ClassroomType, DisabledState, Mode, OccupiedState, User} from "../../models/models";
 import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../../types";
@@ -20,6 +20,8 @@ import {modeVar} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
 
 const Stack = createStackNavigator<RootStackParamList>();
+
+const windowHeight = Dimensions.get('window').height;
 
 export default function Home() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -174,8 +176,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
   return (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
                      style={{width: '100%', height: '100%'}}>
-      {!loading && !error && (
-        <ClassroomsAppBar freeClassroomsAmount={freeClassroomsAmount} classrooms={data.classrooms}/>
+      {!loading && !error && !userLoading && !userError && (
+        <ClassroomsAppBar freeClassroomsAmount={freeClassroomsAmount} classrooms={data.classrooms}
+                          currentUser={userData.user}
+        />
       )}
 
       <View style={styles.wrapper}>
@@ -242,8 +246,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
           </ScrollView>
         )}
         {loading && <ActivityIndicator animating color='#fff' size={64}/>}
-        {!!userData && <Buttons currentUser={userData.user}/>}
       </View>
+      {!!userData && !loading && !error && (
+        <Buttons currentUser={userData.user} classrooms={data.classrooms}/>
+      )}
     </ImageBackground>
   )
 }
@@ -324,6 +330,6 @@ const styles = StyleSheet.create(
       borderBottomWidth: 1,
       borderBottomColor: '#ffffff77',
       paddingBottom: 10
-    }
+    },
   }
 );

@@ -6,7 +6,7 @@ import {useQuery} from "@apollo/client";
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import {FOLLOW_GENERAL_QUEUE_SIZE} from "../../api/operations/subscriptions/generalQueueSize";
 import {useLocal} from "../../hooks/useLocal";
-import {ClassroomType, InstrumentType, Mode} from "../../models/models";
+import {ClassroomType, InstrumentType, Mode, User} from "../../models/models";
 import {desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar} from "../../api/client";
 import SavedFilters from "./SavedFilters";
 import Filters, {SpecialT} from "./Filters";
@@ -16,22 +16,37 @@ import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 type PropTypes = {
   freeClassroomsAmount: number;
   classrooms: ClassroomType[];
+  currentUser: User;
 }
 
-const ClassroomsAppBar: React.FC<PropTypes> = ({freeClassroomsAmount, classrooms}) => {
+const ClassroomsAppBar: React.FC<PropTypes> = (
+  {
+    freeClassroomsAmount, classrooms, currentUser
+  }
+) => {
   const navigation = useNavigation();
   const {data, loading, error, subscribeToMore} = useQuery(GENERAL_QUEUE_SIZE);
   const {data: {mode}} = useLocal('mode');
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const [visible, setVisible] = useState(false);
   const [visibleSavedFilters, setVisibleSavedFilters] = useState(false);
+  const [generalQueueSize, setGeneralQueueSize] = useState(0);
 
   useEffect(() => {
     const unsubscribe = subscribeToMore({
-      document: FOLLOW_GENERAL_QUEUE_SIZE
-    });
+      document: FOLLOW_GENERAL_QUEUE_SIZE,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        setGeneralQueueSize(subscriptionData.data.generalQueueSize);
+        return subscriptionData.data.generalQueueSize
+    }}
+  )
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!loading && !error) setGeneralQueueSize(data.generalQueueSize);
+  }, [data, loading, error]);
 
   const applyGeneralFilter = (instruments: InstrumentType[], withWing: boolean,
                               operaStudioOnly: boolean, special: SpecialT) => {
@@ -40,7 +55,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = ({freeClassroomsAmount, classrooms
       getClassroomsFilteredByInstruments(classrooms, instruments) : classrooms;
 
     const filteredIds = filteredClassroomsByInstruments
-      .filter(filterDisabledForQueue)
+      .filter(classroom => filterDisabledForQueue(classroom, currentUser))
       .filter(classroom => withWing ? true : !classroom.isWing)
       .filter(classroom => operaStudioOnly ? classroom.isOperaStudio : true)
       .filter(classroom => {
@@ -76,7 +91,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = ({freeClassroomsAmount, classrooms
                      color='#fff'
       />
       {mode === Mode.PRIMARY && (
-        <Appbar.Content title={`Людей в черзі: ${!loading && !error ? data.generalQueueSize : 0}`}
+        <Appbar.Content title={`Людей в черзі: ${generalQueueSize}`}
                         subtitle={`Вільних аудиторій: ${freeClassroomsAmount}`}
                         color='#fff'
         />
@@ -108,7 +123,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = ({freeClassroomsAmount, classrooms
                          style={{position: 'absolute', right: 0, top: 28}}/>
         </>
       )}
-      <SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters}/>
+      <SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters} currentUser={currentUser}/>
       <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter}/>
     </Appbar>
   );

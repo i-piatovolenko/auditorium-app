@@ -7,7 +7,7 @@ import InstrumentItem from "../InstrumentItem";
 import {fullName, isNotFree, typeStyle} from "../../helpers/helpers";
 import {useNavigation} from "@react-navigation/native";
 import {useLocal} from "../../hooks/useLocal";
-import {minimalClassroomIdsVar} from "../../api/client";
+import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
 import useTimeLeft from "../../hooks/useTimeLeft";
 
 const windowWidth = Dimensions.get('window').width;
@@ -38,9 +38,9 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurr
     } else {
       const desiredSet = new Set([...desirableClassroomIds]);
       desiredSet.has(classroom.id) ? desiredSet.delete(classroom.id) : desiredSet.add(classroom.id)
-      minimalClassroomIdsVar([...desiredSet]);
+      desirableClassroomIdsVar([...desiredSet]);
     }
-  }
+  };
 
   const handlePress = () => {
     if (mode === Mode.QUEUE_SETUP) {

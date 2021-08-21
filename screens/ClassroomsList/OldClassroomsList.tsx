@@ -117,7 +117,7 @@ function ClassroomsList() {
       getClassroomsFilteredByInstruments(classrooms, instruments) : classrooms;
 
     const filteredIds = filteredClassroomsByInstruments
-      .filter(filterDisabledForQueue)
+      // .filter(filterDisabledForQueue)
       .filter(classroom => withWing ? true : !classroom.isWing)
       .filter(classroom => operaStudioOnly ? classroom.isOperaStudio : true)
       .filter(classroom => {
@@ -149,7 +149,7 @@ function ClassroomsList() {
     if (savedFilters) {
       const mainFilter = savedFilters!.find(filter => filter.main);
       if (mainFilter) {
-        filterSavedFilter(mainFilter, classrooms)
+        // filterSavedFilter(mainFilter, classrooms)
       }
     }
     modeVar(Mode.QUEUE_SETUP);
@@ -328,7 +328,7 @@ function ClassroomsList() {
             </Button>
           )}
         </> : <ActivityIndicator animating color='#fff'/>}
-        <SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters}/>
+        {/*<SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters}/>*/}
         <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter}/>
         <InlineDialog visible={visibleModalInline} hideDialog={hideModalInline}/>
         <ConfirmLineOut hideDialog={hideConfirmLineOut} visible={visibleLineOut}/>

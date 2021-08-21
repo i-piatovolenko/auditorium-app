@@ -1,11 +1,11 @@
 import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../api/client";
-import {ClassroomType, SavedFilterT} from "../models/models";
+import {ClassroomType, SavedFilterT, User} from "../models/models";
 import {filterDisabledForQueue} from "./filterDisabledForQueue";
 
-export const filterSavedFilter = (savedFilter: SavedFilterT, classrooms: ClassroomType[]) => {
+export const filterSavedFilter = (savedFilter: SavedFilterT, classrooms: ClassroomType[], currentUser: User) => {
   const enabledClassrooms = (classroom: ClassroomType, isMinimal: boolean) => {
     return savedFilter[isMinimal ? 'minimalClassroomIds': 'desirableClassroomIds'].includes(classroom.id)
-      && filterDisabledForQueue(classroom)
+      && filterDisabledForQueue(classroom, currentUser)
   };
 
   const minimalIds = classrooms
