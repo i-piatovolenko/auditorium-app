@@ -1,7 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Text} from "react-native";
-import {ClassroomType, DisabledState, InstrumentType, QueueState, QueueType} from "../models/models";
-import {ActivityIndicator, Appbar, Chip, Divider, Subheading, Title} from "react-native-paper";
+import {
+  ClassroomType,
+  DisabledState,
+  InstrumentType,
+  Mode, OccupiedState,
+  QueueState,
+  QueueType
+} from "../models/models";
+import {ActivityIndicator, Appbar, Button, Chip, Divider, Subheading, Title} from "react-native-paper";
 import {useNavigation} from "@react-navigation/native";
 import {useQuery} from "@apollo/client";
 import {isEnabledForCurrentDepartment} from "../helpers/helpers";
@@ -14,6 +21,7 @@ import {GET_USER_BY_ID} from "../api/operations/queries/users";
 import moment from "moment";
 import InstrumentItem from "./InstrumentItem";
 import OccupantInfo from "./OccupantInfo";
+import ClassroomQueueControlButtons from "./ClassroomQueueControlButtons";
 
 interface PropTypes {
   route: any;
@@ -135,6 +143,17 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
             )}
           </View>
           <OccupantInfo classroom={classroom} user={userData.user}/>
+          {mode === Mode.QUEUE_SETUP && classroom.occupied.state !== OccupiedState.FREE && (
+            <ClassroomQueueControlButtons classroomId={classroomId} currentUserId={currentUserId}/>
+          )}
+          {/*{mode === Mode.PRIMARY && classroom.occupied.state === OccupiedState.FREE && (*/}
+          {/*  <>*/}
+          {/*    <Divider style={styles.divider}/>*/}
+          {/*    <Button mode='contained'*/}
+          {/*            onPress={() => getInLine([classroom.id], [])}*/}
+          {/*    >Стати в чергу за цією аудиторією</Button>*/}
+          {/*  </>*/}
+          {/*)}*/}
         </View>
       )}
     </View>

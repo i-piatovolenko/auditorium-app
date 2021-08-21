@@ -10,17 +10,14 @@ export default async function removeFromLine() {
     await client.mutate({
       mutation: REMOVE_USER_FROM_QUEUE,
       variables: {
-        where: {
-          userId: {
-            equals: (user as unknown as User).id
-          }
+        input: {
+          userId: user.id
         }
       }
     });
     minimalClassroomIdsVar([]);
     desirableClassroomIdsVar([]);
     isMinimalSetupVar(true);
-    modeVar(Mode.PRIMARY);
   } catch (e) {
     alert(JSON.stringify(e))
   }

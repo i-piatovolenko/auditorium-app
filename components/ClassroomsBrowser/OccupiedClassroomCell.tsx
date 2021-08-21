@@ -51,7 +51,7 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurr
   };
 
   const handleLongPress = () => {
-    navigation.navigate('ClassroomInfo', {classroom});
+    navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
   };
 
   const isChecked = () => {

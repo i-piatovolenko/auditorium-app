@@ -12,6 +12,7 @@ import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
 import getInLine from "../../helpers/queue/getInLine";
 import ErrorDialog from "../../components/ErrorDialog";
 import moment from "moment";
+import removeFromLine from "../../helpers/queue/removeFromLine";
 
 type PropTypes = {
   currentUser: any;
@@ -50,7 +51,10 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
       minimalClassroomIdsVar([]);
       desirableClassroomIdsVar([]);
     }
-    if (mode === Mode.INLINE) modeVar(Mode.PRIMARY);
+    if (mode === Mode.INLINE) {
+      await removeFromLine();
+      modeVar(Mode.PRIMARY);
+    }
   };
 
   const handleReady = async () => {

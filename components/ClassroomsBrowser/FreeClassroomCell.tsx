@@ -2,9 +2,10 @@ import React from "react";
 import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
 import {ClassroomType, DisabledState} from "../../models/models";
 import Colors from "../../constants/Colors";
-import {Surface} from "react-native-paper";
+import {Button, Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
-import { useNavigation } from "@react-navigation/native";
+import {useNavigation} from "@react-navigation/native";
+import {useLocal} from "../../hooks/useLocal";
 
 const windowWidth = Dimensions.get('window').width;
 const cellWidth = ((windowWidth - 10) / 3);
