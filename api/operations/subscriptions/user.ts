@@ -16,6 +16,7 @@ export const FOLLOW_USER = gql`
       queue {
         id
         state
+        type
         classroom {
           id
         }
@@ -27,7 +28,6 @@ export const FOLLOW_USER = gql`
           id
           state
           skips
-          generalQueuePosition
         }
       }
     }

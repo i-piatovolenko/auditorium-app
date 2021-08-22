@@ -12,6 +12,8 @@ import SavedFilters from "./SavedFilters";
 import Filters, {SpecialT} from "./Filters";
 import {getClassroomsFilteredByInstruments} from "./helpers";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
+import {GENERAL_QUEUE_POSITION} from "../../api/operations/queries/generalQueuePosition";
+import {FOLLOW_GENERAL_QUEUE_POSITION} from "../../api/operations/subscriptions/generalQueuePosition";
 
 type PropTypes = {
   freeClassroomsAmount: number;
@@ -26,22 +28,49 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
 ) => {
   const navigation = useNavigation();
   const {data, loading, error, subscribeToMore} = useQuery(GENERAL_QUEUE_SIZE);
+  const {
+    data: dataPosition, loading: loadingPosition,
+    error: errorPosition, subscribeToMore: subscribeToMorePosition
+  } = useQuery(GENERAL_QUEUE_POSITION, {
+    variables: {
+      userId: currentUser.id
+    }
+  });
   const {data: {mode}} = useLocal('mode');
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const [visible, setVisible] = useState(false);
   const [visibleSavedFilters, setVisibleSavedFilters] = useState(false);
   const [generalQueueSize, setGeneralQueueSize] = useState(0);
+  const [generalQueuePosition, setGeneralQueuePosition] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = subscribeToMore({
-      document: FOLLOW_GENERAL_QUEUE_SIZE,
-      updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data) return prev;
-        setGeneralQueueSize(subscriptionData.data.generalQueueSize);
-        return subscriptionData.data.generalQueueSize
-    }}
-  )
-    return () => unsubscribe();
+    const unsubscribeSize = subscribeToMore({
+        document: FOLLOW_GENERAL_QUEUE_SIZE,
+        updateQuery: (prev, {subscriptionData}) => {
+          if (!subscriptionData.data) return prev;
+          setGeneralQueueSize(subscriptionData.data.generalQueueSize);
+          return subscriptionData.data.generalQueueSize
+        }
+      }
+      )
+    ;
+    const unsubscribePosition = subscribeToMorePosition({
+        document: FOLLOW_GENERAL_QUEUE_POSITION,
+        variables: {
+          userId: currentUser.id
+        },
+        updateQuery: (prev, {subscriptionData}) => {
+          if (!subscriptionData.data) return prev;
+          setGeneralQueuePosition(subscriptionData.data.generalQueuePosition);
+          return subscriptionData.data.generalQueuePosition
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeSize();
+      unsubscribePosition();
+    }
   }, []);
 
   useEffect(() => {
@@ -90,6 +119,11 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
       <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
                      color='#fff'
       />
+      {mode === Mode.INLINE && (
+        <Appbar.Content title={`Ваша позиція в черзі: ${generalQueuePosition}`}
+                        color='#fff'
+        />
+      )}
       {mode === Mode.PRIMARY && (
         <Appbar.Content title={`Людей в черзі: ${generalQueueSize}`}
                         subtitle={`Вільних аудиторій: ${freeClassroomsAmount}`}

@@ -4,14 +4,14 @@ import {
   ClassroomType,
   DisabledState,
   InstrumentType,
-  Mode, OccupiedState,
+  OccupiedState,
   QueueState,
-  QueueType
+  QueueType, UserQueueState
 } from "../models/models";
 import {ActivityIndicator, Appbar, Button, Chip, Divider, Subheading, Title} from "react-native-paper";
 import {useNavigation} from "@react-navigation/native";
 import {useQuery} from "@apollo/client";
-import {isEnabledForCurrentDepartment} from "../helpers/helpers";
+import {isEnabledForCurrentDepartment, isOccupiedOrPendingByCurrentUser} from "../helpers/helpers";
 import {useLocal} from "../hooks/useLocal";
 import {client} from "../api/client";
 import {ADD_USER_TO_QUEUE} from "../api/operations/mutations/addUserToQueue";
@@ -64,6 +64,11 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   }, []);
 
   const goBack = () => navigation.goBack();
+
+  const getReservedClassroom = () => {
+    //TODO: get FREE classroom with RESERVED state
+    alert('TODO: get FREE classroom with RESERVED state')
+  };
 
   const addOneClassroomToQueue = async (isMinimal: boolean) => {
     try {
@@ -143,17 +148,21 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
             )}
           </View>
           <OccupantInfo classroom={classroom} user={userData.user}/>
-          {mode === Mode.QUEUE_SETUP && classroom.occupied.state !== OccupiedState.FREE && (
-            <ClassroomQueueControlButtons classroomId={classroomId} currentUserId={currentUserId}/>
+          {classroom.occupied.state !== OccupiedState.FREE
+          && !isOccupiedOrPendingByCurrentUser(classroom.occupied, userData.user)
+          && <ClassroomQueueControlButtons classroom={classroom} currentUser={userData.user}/>
+          }
+          {classroom.occupied.state === OccupiedState.FREE
+          && userData.user.queueInfo.currentSession.state !== UserQueueState.OCCUPYING
+          && userData.user.queueInfo.currentSession.state !== UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
+          && (
+            <>
+              <Divider style={styles.divider}/>
+              <Button mode='contained' onPress={getReservedClassroom}>
+                Взяти аудиторію
+              </Button>
+            </>
           )}
-          {/*{mode === Mode.PRIMARY && classroom.occupied.state === OccupiedState.FREE && (*/}
-          {/*  <>*/}
-          {/*    <Divider style={styles.divider}/>*/}
-          {/*    <Button mode='contained'*/}
-          {/*            onPress={() => getInLine([classroom.id], [])}*/}
-          {/*    >Стати в чергу за цією аудиторією</Button>*/}
-          {/*  </>*/}
-          {/*)}*/}
         </View>
       )}
     </View>

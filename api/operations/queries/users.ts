@@ -53,6 +53,7 @@ export const GET_USER_BY_ID = gql`
       queue {
         id
         state
+        type
         classroom {
           id
         }
@@ -64,7 +65,6 @@ export const GET_USER_BY_ID = gql`
           id
           state
           skips
-          generalQueuePosition
         }
       }
       email

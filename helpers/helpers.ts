@@ -2,7 +2,7 @@ import {HOUR, MINUTE, TIME_SNIPPETS, WORKING_DAY_END, WORKING_DAY_START,} from "
 import {
   ACCESS_RIGHTS,
   ClassroomType,
-  CurrentUser,
+  CurrentUser, DisabledState,
   Mode,
   OccupiedInfo,
   OccupiedState,
@@ -12,7 +12,7 @@ import {
 } from "../models/models";
 import moment from "moment";
 import {ReactElement} from "react";
-import {accessRightsVar} from "../api/client";
+import {accessRightsVar, desirableClassroomIdsVar, minimalClassroomIdsVar} from "../api/client";
 
 export const getScheduleTimeline = (start: number, end: number): string[] => {
   let timeSnippets: string[] = [];
@@ -256,6 +256,14 @@ export const isOwnClassroom = (occupied: OccupiedInfo, me: User) => {
   return occupied.state === OccupiedState.OCCUPIED && occupied.user.id === me.id;
 };
 
+export const isOccupiedOrPendingByCurrentUser = (occupied: OccupiedInfo, currentUser: User) => {
+  return (
+    occupied.state === OccupiedState.OCCUPIED
+    || occupied.state === OccupiedState.PENDING
+    || occupied.state === OccupiedState.RESERVED
+        ) && occupied.user.id === currentUser.id;
+}
+
 export const isNotFree = (occupied: OccupiedInfo) => {
   return occupied.state !== OccupiedState.FREE;
 };
@@ -274,5 +282,16 @@ export const hasOwnClassroom = (occupiedClassrooms: any) => {
 export const isEnabledForCurrentDepartment = (classroom: ClassroomType, currentUser: User) => {
   return classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo.length ?
     classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo
-      .some(({department }) => department.id === currentUser?.department?.id) : true;
+      .some(({department}) => department.id === currentUser?.department?.id) : true;
+};
+
+export const isEnabledForQueue = (classroom: ClassroomType, user: any) => {
+    const ownClassroomId = hasOwnClassroom(user.occupiedClassrooms);
+
+    return classroom.id !== ownClassroomId && !classroom.isHidden &&
+      classroom.disabled.state === DisabledState.NOT_DISABLED &&
+      isEnabledForCurrentDepartment(classroom, user) &&
+      !(user.occupiedClassrooms.some((data: any) => {
+        return data.classroom.id === classroom.id && data.state === OccupiedState.PENDING
+      }));
 };

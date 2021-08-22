@@ -21,7 +21,6 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
   const [onlyOperaStudio, setOnlyOperaStudio] = useState(false);
   const [visibleInstrumentFilters, setVisibleInstrumentFilters] = useState(false);
 
-
   const showModalInstrumentFilters = () => setVisibleInstrumentFilters(true);
 
   const hideModalInstrumentFilters= () => setVisibleInstrumentFilters(false);
@@ -83,7 +82,6 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
         </RadioButton.Group>
         <Divider style={styles.divider}/>
         <View style={styles.buttons}>
-          <Button mode='contained'>Збережені фільтри</Button>
           <Button mode='contained' onPress={handleApply}>Застосувати</Button>
         </View>
         <InstrumentFilters hideModal={hideModalInstrumentFilters} visible={visibleInstrumentFilters}
@@ -134,6 +132,6 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'center'
   }
 });

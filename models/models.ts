@@ -110,7 +110,7 @@ export type User = {
   startYear: number;
   studentInfo: StudentInfo;
   employeeInfo: EmployeeInfo;
-  expireDate: Date | null;
+  expireDate: string | null;
   classroom: ClassroomType;
   queue: QueueRecord[];
   queueInfo: UserQueueInfo;
@@ -130,7 +130,6 @@ export type QueueSession = {
   enqueuedBy: EnqueuedBy;
   skips: number;
   remainingOccupationTime: string;
-  generalQueuePosition: number;
 }
 
 export enum UserQueueState {

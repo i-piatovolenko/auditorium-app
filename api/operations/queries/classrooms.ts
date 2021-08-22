@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 export const GET_CLASSROOMS = gql`
-  query getClassrooms($date: Date!, $where: ClassroomWhereInput) {
+  query getClassrooms($where: ClassroomWhereInput) {
     classrooms(where: $where) {
       id
       description
@@ -27,11 +27,6 @@ export const GET_CLASSROOMS = gql`
         }
         until
         state
-      }
-      schedule(date: $date) {
-        from
-        to
-        activity
       }
       instruments {
         name

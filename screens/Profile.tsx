@@ -9,13 +9,6 @@ import {getItem} from "../api/asyncStorage";
 
 export default function Profile({navigation}: any) {
   const {data: {me}} = useQuery(GET_ME);
-  const [user, setUser] = useState();
-
-  useEffect(() => {
-    getItem('user').then(res => {
-      setUser(JSON.stringify(res))
-    })
-  }, [])
 
   const goBack = () => navigation.goBack();
 
@@ -53,9 +46,6 @@ export default function Profile({navigation}: any) {
         <Title>Термін дії аккаунту</Title>
         <Text style={{marginBottom: 10}}>{me.expireDate}</Text>
         <Divider/>
-        <Text>
-          {user}
-        </Text>
       </View>
     </View>
   )

@@ -13,6 +13,8 @@ import getInLine from "../../helpers/queue/getInLine";
 import ErrorDialog from "../../components/ErrorDialog";
 import moment from "moment";
 import removeFromLine from "../../helpers/queue/removeFromLine";
+import WaitDialog from "../../components/WaitDialog";
+import ConfirmLineOut from "../../components/ConfirmLineOut";
 
 type PropTypes = {
   currentUser: any;
@@ -27,8 +29,12 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
   const [visibleModalError, setVisibleModalError] = useState(false);
   const queueErrorMessage = `Ви не можете ставати в чергу через накладені санкції до ${sanctionedUntil ? moment(sanctionedUntil)
     .format('DD-MM-YYYY HH:mm') : ''}. До закінчення санкційного терміну ви можете брати вільні аудиторії.`;
+  const [loading, setLoading] = useState(false);
+  const [visibleLineOut, setVisibleLineOut] = useState(false);
+
 
   const handlePress = async () => {
+    setLoading(true);
     if (sanctionedUntil) return setVisibleModalError(true);
     if (mode === Mode.PRIMARY) {
       const availableClassroomsIds = classrooms.filter(classroom => {
@@ -44,6 +50,9 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
           minimalClassroomIdsVar(availableClassroomsIds);
           desirableClassroomIdsVar([]);
         }
+      } else {
+        minimalClassroomIdsVar(availableClassroomsIds);
+        desirableClassroomIdsVar([]);
       }
     }
     if (mode === Mode.QUEUE_SETUP) {
@@ -51,14 +60,13 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
       minimalClassroomIdsVar([]);
       desirableClassroomIdsVar([]);
     }
-    if (mode === Mode.INLINE) {
-      await removeFromLine();
-      modeVar(Mode.PRIMARY);
-    }
+    setLoading(false);
   };
 
   const handleReady = async () => {
+    setLoading(true);
     await getInLine(minimalClassroomIds, desirableClassroomIds);
+    setLoading(false);
   };
 
   return (
@@ -84,13 +92,15 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
       )}
       {mode === Mode.INLINE && (
         <Button style={styles.getOutLine} mode='contained' color={Colors.red}
-                onPress={handlePress}>
+                onPress={() => setVisibleLineOut(true)}>
           <Text>Вийти з черги</Text>
         </Button>
       )}
       <ErrorDialog visible={visibleModalError} hideDialog={() => setVisibleModalError(false)}
         message={queueErrorMessage}
       />
+      <WaitDialog visible={loading}/>
+      <ConfirmLineOut hideDialog={() => setVisibleLineOut(false)} visible={visibleLineOut}/>
     </View>
   );
 }

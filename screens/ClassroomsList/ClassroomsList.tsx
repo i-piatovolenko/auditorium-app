@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions, ImageBackground, ScrollView, StyleSheet, View} from "react-native";
-import {ActivityIndicator, Divider} from "react-native-paper";
-import {ClassroomType, DisabledState, Mode, OccupiedState, User} from "../../models/models";
+import {Dimensions, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
+import {ActivityIndicator} from "react-native-paper";
+import {ClassroomType, DisabledState, Mode, OccupiedState, User, UserQueueState} from "../../models/models";
 import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
@@ -13,15 +13,15 @@ import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {FOLLOW_USER} from "../../api/operations/subscriptions/user";
 import {getItem} from "../../api/asyncStorage";
-import {hasOwnClassroom, isEnabledForCurrentDepartment} from "../../helpers/helpers";
+import {hasOwnClassroom, isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
 import {modeVar} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
+import Log from "../../components/Log";
+import ConfirmContinueDesiredQueue from "../../components/ConfirmContinueDesiredQueue";
 
 const Stack = createStackNavigator<RootStackParamList>();
-
-const windowHeight = Dimensions.get('window').height;
 
 export default function Home() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -52,6 +52,7 @@ type QueryClassroomsData = {
 const ClassroomsList: React.FC = ({route}: any) => {
   const navigation = useNavigation();
   const {data: {mode}} = useLocal('mode');
+  const [showLog, setShowLog] = useState(false);
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
   const {
     data,
@@ -70,7 +71,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
         id: route.params.currentUserId
       }
     }
-  })
+  });
 
   useEffect(() => {
     const unsubscribeClassrooms = subscribeToMore({
@@ -129,28 +130,12 @@ const ClassroomsList: React.FC = ({route}: any) => {
   };
 
   /**
-   * Filter classrooms for queue setup
-   * Without disabled, disabled for current user department, hidden
-   * and occupied by current user
-   * */
-  const forQueue = (classroom: ClassroomType) => {
-    const ownClassroomId = hasOwnClassroom(userData.user.occupiedClassrooms);
-
-    return classroom.id !== ownClassroomId && !classroom.isHidden &&
-      classroom.disabled.state === DisabledState.NOT_DISABLED &&
-      isEnabledForCurrentDepartment(classroom, userData.user) &&
-      !(userData.user.occupiedClassrooms.some((data: any) => {
-        return data.classroom.id === classroom.id && data.state === OccupiedState.PENDING
-      }));
-  };
-
-  /**
    * From BE queue data
    * Filter chosen classrooms in queue setup mode (MINIMAl and DESIRED)
    * */
   const chosen = (classroom: ClassroomType) => {
 
-    return userData.user.queue.some(({classroom: {id}}: any) => classroom.id === id)
+    return userData.user.queue.some(({classroom: {id}, ...queueRecord}: any) => classroom.id === id)
       && !(userData.user.occupiedClassrooms.some(({id}: ClassroomType) => classroom.id === id));
   };
 
@@ -173,9 +158,21 @@ const ClassroomsList: React.FC = ({route}: any) => {
     });
   };
 
+  const handleShowLog = () => {
+    setShowLog(prevState => !prevState);
+  }
+
   return (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
                      style={{width: '100%', height: '100%'}}>
+      {!loading && !error && !userLoading && !userError
+      && userData.user.queueInfo.currentSession?.state === UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
+      && <ConfirmContinueDesiredQueue/>}
+      {mode !== Mode.QUEUE_SETUP && (
+        <TouchableOpacity style={styles.hiddenLogButton} onLongPress={handleShowLog}
+                          delayLongPress={3000}>
+        </TouchableOpacity>
+      )}
       {!loading && !error && !userLoading && !userError && (
         <ClassroomsAppBar freeClassroomsAmount={freeClassroomsAmount} classrooms={data.classrooms}
                           currentUser={userData.user}
@@ -183,9 +180,11 @@ const ClassroomsList: React.FC = ({route}: any) => {
       )}
 
       <View style={styles.wrapper}>
+        {showLog && (
+          <Log data={JSON.stringify({...userData.user.queueInfo, ...userData.user.queue})}/>
+        )}
         {!loading && !error && !userLoading && !userError && (
           <ScrollView>
-            {/*<Log data={JSON.stringify(data.classrooms.filter(own))}/>*/}
             {/**
              My classroom: OCCUPIED or RESERVED classroom by current user
              Shown anytime except QUEUE_SETUP mode.
@@ -223,7 +222,9 @@ const ClassroomsList: React.FC = ({route}: any) => {
              hidden, free, disabled and disabled for current department
              */}
             {mode === Mode.QUEUE_SETUP && (
-              <ClassroomsBrowser classrooms={data.classrooms.filter(forQueue)} currentUser={userData.user}/>
+              <ClassroomsBrowser classrooms={data.classrooms.filter((classroom => {
+                return isEnabledForQueue(classroom, userData.user);
+              }))} currentUser={userData.user}/>
             )}
 
             {/**
@@ -331,5 +332,13 @@ const styles = StyleSheet.create(
       borderBottomColor: '#ffffff77',
       paddingBottom: 10
     },
+    hiddenLogButton: {
+      position: "absolute",
+      zIndex: 1000,
+      width: 100,
+      height: 50,
+      top: 16,
+      right: 16,
+    }
   }
 );

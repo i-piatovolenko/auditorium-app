@@ -1,12 +1,14 @@
-import {View, StyleSheet, Text} from "react-native";
+import {View, StyleSheet, Text, ScrollView, Dimensions} from "react-native";
 import React from "react";
 
 export default function Log({data}: any) {
   return JSON.stringify(data).length > 2 ?
     <View style={styles.container}>
-      <Text style={styles.text}>
-        {typeof data === 'object' ? JSON.stringify(data) : data}
-      </Text>
+      <ScrollView>
+        <Text style={styles.text}>
+          {typeof data === 'object' ? JSON.stringify(data) : data}
+        </Text>
+      </ScrollView>
     </View>
     : <></>
 }
@@ -20,7 +22,8 @@ const styles = StyleSheet.create({
     top: 70,
     elevation: 1000,
     right: 16,
-    padding: 16
+    padding: 16,
+    maxHeight: (Dimensions.get('window').height / 100) * 85
   },
   text: {
     color: '#00ff65'
