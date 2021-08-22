@@ -5,7 +5,6 @@ import {ClassroomType, DisabledState, Mode, OccupiedState, User, UserQueueState}
 import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
-import {useNavigation} from '@react-navigation/native';
 import {useQuery} from "@apollo/client";
 import ClassroomsBrowser from "../../components/ClassroomsBrowser/ClassroomsBrowser";
 import {GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
@@ -20,8 +19,13 @@ import {modeVar} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
 import Log from "../../components/Log";
 import ConfirmContinueDesiredQueue from "../../components/ConfirmContinueDesiredQueue";
+import {usePrevious} from "../../hooks/usePrevious";
+import InlineDialog from "../../components/InlineDialog";
+import QueueOutDialog from "../../components/QueueOutDialog";
 
 const Stack = createStackNavigator<RootStackParamList>();
+
+const windowHeight = Dimensions.get("window").height;
 
 export default function Home() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -50,10 +54,11 @@ type QueryClassroomsData = {
 }
 
 const ClassroomsList: React.FC = ({route}: any) => {
-  const navigation = useNavigation();
   const {data: {mode}} = useLocal('mode');
   const [showLog, setShowLog] = useState(false);
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
+  const [showQueueInSuccess, setShownQueueInSuccess] = useState(false);
+  const [showQueueOutSuccess, setShownQueueOutSuccess] = useState(false);
   const {
     data,
     loading,
@@ -72,6 +77,22 @@ const ClassroomsList: React.FC = ({route}: any) => {
       }
     }
   });
+  const prevUserData: { user: User } = usePrevious(userData);
+
+  useEffect(() => {
+    if (userData && prevUserData) {
+      const {currentSession} = userData.user.queueInfo;
+      const {currentSession: prevSession} = prevUserData.user.queueInfo;
+      if (!prevSession && currentSession?.state === UserQueueState.IN_QUEUE_MINIMAL) {
+        setShownQueueInSuccess(true);
+      }
+      if (!currentSession &&
+        (prevSession?.state === UserQueueState.IN_QUEUE_MINIMAL ||
+          prevSession?.state === UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING)) {
+        setShownQueueOutSuccess(true);
+      }
+    }
+  }, [userData]);
 
   useEffect(() => {
     const unsubscribeClassrooms = subscribeToMore({
@@ -168,6 +189,16 @@ const ClassroomsList: React.FC = ({route}: any) => {
       {!loading && !error && !userLoading && !userError
       && userData.user.queueInfo.currentSession?.state === UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
       && <ConfirmContinueDesiredQueue/>}
+      {!userLoading && !userError && (
+        <>
+          <InlineDialog visible={showQueueInSuccess}
+                        hideDialog={() => setShownQueueInSuccess(false)}
+          />
+          <QueueOutDialog visible={showQueueOutSuccess}
+                          hideDialog={() => setShownQueueOutSuccess(false)}
+          />
+        </>
+      )}
       {mode !== Mode.QUEUE_SETUP && (
         <TouchableOpacity style={styles.hiddenLogButton} onLongPress={handleShowLog}
                           delayLongPress={3000}>
@@ -308,7 +339,7 @@ const styles = StyleSheet.create(
     },
     wrapper: {
       width: '100%',
-      height: '100%',
+      height: windowHeight,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',

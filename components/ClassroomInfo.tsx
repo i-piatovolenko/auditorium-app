@@ -1,14 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Text} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import {
   ClassroomType,
   DisabledState,
   InstrumentType,
   OccupiedState,
   QueueState,
-  QueueType, UserQueueState
+  QueueType,
+  UserQueueState
 } from "../models/models";
-import {ActivityIndicator, Appbar, Button, Chip, Divider, Subheading, Title} from "react-native-paper";
+import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-native-paper";
 import {useNavigation} from "@react-navigation/native";
 import {useQuery} from "@apollo/client";
 import {isEnabledForCurrentDepartment, isOccupiedOrPendingByCurrentUser} from "../helpers/helpers";
@@ -152,9 +153,10 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
           && !isOccupiedOrPendingByCurrentUser(classroom.occupied, userData.user)
           && <ClassroomQueueControlButtons classroom={classroom} currentUser={userData.user}/>
           }
-          {classroom.occupied.state === OccupiedState.FREE
-          && userData.user.queueInfo.currentSession.state !== UserQueueState.OCCUPYING
-          && userData.user.queueInfo.currentSession.state !== UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
+          {classroom.disabled.state !== DisabledState.DISABLED
+          && classroom.occupied.state === OccupiedState.FREE
+          && userData.user.queueInfo.currentSession?.state !== UserQueueState.OCCUPYING
+          && userData.user.queueInfo.currentSession?.state !== UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
           && (
             <>
               <Divider style={styles.divider}/>
@@ -180,7 +182,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#2e287c',
   },
   container: {
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    height: '100%'
   },
   wrapper: {
     marginTop: 100,

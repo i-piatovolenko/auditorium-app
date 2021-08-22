@@ -8,13 +8,13 @@ interface PropTypes {
   hideDialog: () => void;
 }
 
-export default function InlineDialog({visible, hideDialog}: PropTypes) {
+export default function QueueOutDialog({visible, hideDialog}: PropTypes) {
   return (
     <Portal>
       <Modal visible={visible} onDismiss={hideDialog} contentContainerStyle={styles.containerStyle}>
         <View>
-          <Text style={styles.header}>Вітаємо!</Text>
-          <Text style={styles.paragraph}>Ви успішно стали в чергу!</Text>
+          <Text style={styles.header}>Увага!</Text>
+          <Text style={styles.paragraph}>Ви покинули чергу!</Text>
           <View style={styles.buttons}>
             <Button mode='contained' onPress={hideDialog}>Закрити</Button>
           </View>
