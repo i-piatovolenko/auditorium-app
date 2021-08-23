@@ -4,7 +4,7 @@
   "lang": "en",
   "name": "auditorium-app",
   "short_name": "auditorium-app",
-  "start_url": "https://i-piatovolenko.github.io/auditorium-app/",
+  "start_url": "/auditorium-app",
   "orientation": "portrait",
   "related_applications": [
     {
