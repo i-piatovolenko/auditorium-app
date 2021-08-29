@@ -45,6 +45,17 @@ export const GET_CLASSROOM = gql`
         until
         state
       }
+      queueInfo {
+        queuePolicy {
+          policy
+          queueAllowedDepartments {
+            department {
+              id
+              name
+            }
+          }
+        }
+      }
     }
   }
 `;

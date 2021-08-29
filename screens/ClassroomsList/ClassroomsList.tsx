@@ -1,5 +1,14 @@
-import React, {useEffect, useState} from 'react';
-import {Dimensions, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  AppState,
+  AppStateStatus,
+  Dimensions,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from "react-native";
 import {ActivityIndicator} from "react-native-paper";
 import {ClassroomType, DisabledState, Mode, OccupiedState, User, UserQueueState} from "../../models/models";
 import {createStackNavigator} from "@react-navigation/stack";
@@ -7,7 +16,7 @@ import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
 import {useQuery} from "@apollo/client";
 import ClassroomsBrowser from "../../components/ClassroomsBrowser/ClassroomsBrowser";
-import {GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
+import {GET_CLASSROOMS, GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
 import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {FOLLOW_USER} from "../../api/operations/subscriptions/user";
@@ -15,13 +24,16 @@ import {getItem} from "../../api/asyncStorage";
 import {hasOwnClassroom, isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
-import {modeVar} from "../../api/client";
+import {client, modeVar} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
 import Log from "../../components/Log";
 import ConfirmContinueDesiredQueue from "../../components/ConfirmContinueDesiredQueue";
 import {usePrevious} from "../../hooks/usePrevious";
 import InlineDialog from "../../components/InlineDialog";
 import QueueOutDialog from "../../components/QueueOutDialog";
+import {sendPushNotification} from "../PushNotification";
+import { useNavigation } from '@react-navigation/native';
+import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -29,10 +41,48 @@ const windowHeight = Dimensions.get("window").height;
 
 export default function Home() {
   const [currentUserId, setCurrentUserId] = useState(null);
+  const appState = useRef(AppState.currentState);
+  const {data: {me}} = useLocal('me');
 
   useEffect(() => {
     getItem('user').then((data: User) => setCurrentUserId(data.id));
+    AppState.addEventListener('change', _handleAppStateChange);
+    return () => {
+      AppState.removeEventListener('change', _handleAppStateChange);
+    }
   }, []);
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (
+      appState.current.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      try {
+        client.query({
+          query: GET_CLASSROOMS,
+          fetchPolicy: 'network-only'
+        });
+        client.query({
+          query: GET_USER_BY_ID,
+          variables: {
+            where: {
+              id: me.id
+            }
+          },
+          fetchPolicy: 'network-only'
+        });
+        client.query({
+          query: GENERAL_QUEUE_SIZE,
+          fetchPolicy: 'network-only'
+        });
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    appState.current = nextAppState;
+  };
+
   if (!currentUserId) return null;
   // @ts-ignore
   return <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='ClassroomsList'>
@@ -55,6 +105,8 @@ type QueryClassroomsData = {
 
 const ClassroomsList: React.FC = ({route}: any) => {
   const {data: {mode}} = useLocal('mode');
+  const navigation = useNavigation();
+  const {data: {pushNotificationToken}} = useLocal('pushNotificationToken');
   const [showLog, setShowLog] = useState(false);
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
   const [showQueueInSuccess, setShownQueueInSuccess] = useState(false);
@@ -78,11 +130,12 @@ const ClassroomsList: React.FC = ({route}: any) => {
     }
   });
   const prevUserData: { user: User } = usePrevious(userData);
+  const prevClassroomsData: { classrooms: ClassroomType[] } = usePrevious(data);
 
   useEffect(() => {
     if (userData && prevUserData) {
-      const {currentSession} = userData.user.queueInfo;
-      const {currentSession: prevSession} = prevUserData.user.queueInfo;
+      const {currentSession} = userData.user?.queueInfo;
+      const {currentSession: prevSession} = prevUserData.user?.queueInfo;
       if (!prevSession && currentSession?.state === UserQueueState.IN_QUEUE_MINIMAL) {
         setShownQueueInSuccess(true);
       }
@@ -93,6 +146,20 @@ const ClassroomsList: React.FC = ({route}: any) => {
       }
     }
   }, [userData]);
+
+  // useEffect(() => {
+  //   if (data && prevClassroomsData && userData) {
+  //     data.classrooms.forEach(({occupied, id, name}) => {
+  //       const prevClassroomOccupiedData = prevClassroomsData.classrooms
+  //         .find((classroom) => classroom.id === id)?.occupied;
+  //       if (prevClassroomOccupiedData.user?.id !== occupied.user?.id && occupied.state === OccupiedState.PENDING
+  //         && occupied.user?.id === userData.user.id) {
+  //         sendPushNotification(pushNotificationToken, `Аудиторія ${name} звільнена.`,
+  //           `Ви маєте 2 хв. щоб зарезервувати або пропустити ії.`);
+  //       }
+  //     })
+  //   }
+  // }, [data, userData]);
 
   useEffect(() => {
     const unsubscribeClassrooms = subscribeToMore({
@@ -115,7 +182,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
       const freeClassrooms = data.classrooms.filter(classroom => {
         return classroom.occupied.state === OccupiedState.FREE
           && classroom.disabled.state === DisabledState.NOT_DISABLED
-          && isEnabledForCurrentDepartment(classroom, userData.user)
+          && isEnabledForCurrentDepartment(classroom, userData.user);
       });
       setFreeClassroomsAmount(freeClassrooms.length);
     }
@@ -123,8 +190,8 @@ const ClassroomsList: React.FC = ({route}: any) => {
 
   useEffect(() => {
     if (userData) {
-      if (!!userData.user.queue.length) modeVar(Mode.INLINE);
-      if (!userData.user.queue.length && mode === Mode.INLINE) modeVar(Mode.PRIMARY);
+      if (!!userData.user?.queue.length) modeVar(Mode.INLINE);
+      if (!userData.user?.queue.length && mode === Mode.INLINE) modeVar(Mode.PRIMARY);
     }
   }, [userData]);
 
@@ -147,7 +214,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
     return classroom.id !== ownClassroomId && !fullHidden &&
       !(userData.user.occupiedClassrooms.some((data: any) => {
         return data.classroom.id === classroom.id && data.state === OccupiedState.PENDING
-      }))
+      }));
   };
 
   /**
@@ -185,7 +252,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
 
   return (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
-                     style={{width: '100%', height: '100%'}}>
+                     style={{width: '100%', height: windowHeight}}>
       {!loading && !error && !userLoading && !userError
       && userData.user.queueInfo.currentSession?.state === UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
       && <ConfirmContinueDesiredQueue/>}
@@ -215,7 +282,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
           <Log data={JSON.stringify({...userData.user.queueInfo, ...userData.user.queue})}/>
         )}
         {!loading && !error && !userLoading && !userError && (
-          <ScrollView>
+          <ScrollView style={styles.scrollView}>
             {/**
              My classroom: OCCUPIED or RESERVED classroom by current user
              Shown anytime except QUEUE_SETUP mode.
@@ -339,7 +406,7 @@ const styles = StyleSheet.create(
     },
     wrapper: {
       width: '100%',
-      height: windowHeight,
+      height: '100%',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',
@@ -353,16 +420,6 @@ const styles = StyleSheet.create(
       marginHorizontal: 20,
       alignItems: 'center',
     },
-    gridDivider: {
-      color: '#fff',
-      marginBottom: 10,
-      marginLeft: 3,
-      marginRight: 3,
-      paddingLeft: 17,
-      borderBottomWidth: 1,
-      borderBottomColor: '#ffffff77',
-      paddingBottom: 10
-    },
     hiddenLogButton: {
       position: "absolute",
       zIndex: 1000,
@@ -370,6 +427,10 @@ const styles = StyleSheet.create(
       height: 50,
       top: 16,
       right: 16,
+    },
+    scrollView: {
+      paddingTop: 8,
+      paddingBottom: 80
     }
   }
 );

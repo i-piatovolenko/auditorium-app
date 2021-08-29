@@ -9,6 +9,7 @@ export const GET_USERS = gql`
       lastName
       type
       department {
+        id
         name
       }
       email
@@ -17,6 +18,7 @@ export const GET_USERS = gql`
       nameTemp
       studentInfo {
         degree {
+          id
           name
         }
         startYear

@@ -250,7 +250,29 @@ export type ClassroomType = {
   disabled: DisabledInfo | null;
   schedule: Array<ScheduleUnitType>;
   isHidden: boolean;
+  queueInfo: ClassroomQueueInfo;
 };
+
+export type ClassroomQueueInfo = {
+  classroom: ClassroomType;
+  queuePolicy: QueuePolicyInfo;
+}
+
+export type QueuePolicyInfo = {
+  classroomQueueInfo: ClassroomQueueInfo;
+  policy: QueuePolicyTypes;
+  queueAllowedDepartments: ExclusivelyQueueAllowedDepartmentsInfo[];
+}
+
+export type ExclusivelyQueueAllowedDepartmentsInfo = {
+  department: Department;
+  queuePolicyInfo: QueuePolicyInfo;
+}
+
+export enum QueuePolicyTypes {
+  ALL_DEPARTMENTS = 'ALL_DEPARTMENTS',
+  SELECTED_DEPARTMENTS = 'SELECTED_DEPARTMENTS'
+}
 
 export type RegisterUnit = {
   id: number;

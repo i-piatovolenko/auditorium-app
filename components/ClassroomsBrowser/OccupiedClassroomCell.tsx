@@ -82,7 +82,8 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurr
     <TouchableHighlight onPress={handlePress} onLongPress={handleLongPress}>
       <Surface style={cellStyle.cell}>
         {isChecked() && (
-          <IconButton icon='check-bold' style={styles.checkMark} color='#0f0'/>
+          <IconButton icon='check-bold' style={styles.checkMark} color='#0f0'
+                      onPress={handlePress} onLongPress={handleLongPress}/>
         )}
         <View style={styles.cellHeader}>
           <Text style={styles.name}>{classroom.name}</Text>

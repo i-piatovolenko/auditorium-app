@@ -1,12 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from "react-native";
+import {Dimensions, StyleSheet, Text, View} from "react-native";
 import {
   ClassroomType,
   DisabledState,
   InstrumentType,
   OccupiedState,
-  QueueState,
-  QueueType,
   UserQueueState
 } from "../models/models";
 import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-native-paper";
@@ -15,7 +13,6 @@ import {useQuery} from "@apollo/client";
 import {isEnabledForCurrentDepartment, isOccupiedOrPendingByCurrentUser} from "../helpers/helpers";
 import {useLocal} from "../hooks/useLocal";
 import {client} from "../api/client";
-import {ADD_USER_TO_QUEUE} from "../api/operations/mutations/addUserToQueue";
 import Colors from "../constants/Colors";
 import {GET_CLASSROOM} from "../api/operations/queries/classroom";
 import {GET_USER_BY_ID} from "../api/operations/queries/users";
@@ -23,13 +20,17 @@ import moment from "moment";
 import InstrumentItem from "./InstrumentItem";
 import OccupantInfo from "./OccupantInfo";
 import ClassroomQueueControlButtons from "./ClassroomQueueControlButtons";
+import {RESERVE_FREE_CLASSROOM} from "../api/operations/mutations/reserveFreeClassroom";
 
 interface PropTypes {
   route: any;
 }
 
+const windowHeight = Dimensions.get("window").height;
+
 export default function ClassroomInfo({route: {params: {classroomId, currentUserId}}}: PropTypes) {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
   const [classroom, setClassroom] = useState<ClassroomType | null>(null);
   const {
     data: userData,
@@ -48,6 +49,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
 
   useEffect(() => {
+    setLoading(true);
     try {
       client.query({
         query: GET_CLASSROOM,
@@ -55,37 +57,41 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
           where: {
             id: classroomId
           }
-        }
+        },
       }).then(({data}: any) => {
         setClassroom(data.classroom);
+        setLoading(false);
       });
     } catch (e) {
       alert(JSON.stringify(e));
+      setLoading(false);
     }
   }, []);
 
   const goBack = () => navigation.goBack();
 
-  const getReservedClassroom = () => {
-    //TODO: get FREE classroom with RESERVED state
-    alert('TODO: get FREE classroom with RESERVED state')
-  };
-
-  const addOneClassroomToQueue = async (isMinimal: boolean) => {
+  const getReservedClassroom = async () => {
+    setLoading(true);
     try {
-      await client.mutate({
-        mutation: ADD_USER_TO_QUEUE,
-        variables: {
-          input: [{
-            userId: currentUserId.id,
-            classroomId: classroomId,
-            state: QueueState.ACTIVE,
-            type: isMinimal ? QueueType.MINIMAL : QueueType.DESIRED
-          }]
+    const result = await client.mutate({
+      mutation: RESERVE_FREE_CLASSROOM,
+      variables: {
+        input: {
+          classroomName: classroom.name
         }
-      });
+      }
+    });
+    if (result.data.reserveFreeClassroom.userErrors.length) {
+      result.data.reserveFreeClassroom.userErrors.forEach(({message}: any) => {
+        alert(JSON.stringify(message))
+      })
+    } else {
+      goBack();
+      setLoading(false);
+    }
     } catch (e) {
       alert(JSON.stringify(e));
+      setLoading(false);
     }
   };
 
@@ -155,12 +161,13 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
           }
           {classroom.disabled.state !== DisabledState.DISABLED
           && classroom.occupied.state === OccupiedState.FREE
-          && userData.user.queueInfo.currentSession?.state !== UserQueueState.OCCUPYING
-          && userData.user.queueInfo.currentSession?.state !== UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
+          && isEnabledForCurrentDepartment(classroom, userData.user)
+          && userData.user?.queueInfo.currentSession?.state !== UserQueueState.OCCUPYING
+          && userData.user?.queueInfo.currentSession?.state !== UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
           && (
             <>
               <Divider style={styles.divider}/>
-              <Button mode='contained' onPress={getReservedClassroom}>
+              <Button mode='contained' onPress={getReservedClassroom} disabled={!classroom || loading}>
                 Взяти аудиторію
               </Button>
             </>
@@ -183,14 +190,13 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: '#ffffff',
-    height: '100%'
+    height: windowHeight
   },
   wrapper: {
     marginTop: 100,
     paddingLeft: 16,
     paddingRight: 16,
     backgroundColor: '#fff',
-    height: '100%'
   },
   warning: {
     backgroundColor: '#f9135411',

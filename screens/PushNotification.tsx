@@ -2,6 +2,7 @@ import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, Button, Platform } from 'react-native';
+import {pushNotificationTokenVar} from "../api/client";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -25,6 +26,7 @@ export default function PushNotification({setPushNotificationToken}: PropTypes) 
     registerForPushNotificationsAsync().then(token => {
       setPushNotificationToken(token);
       setExpoPushToken(token);
+      pushNotificationTokenVar(token);
     });
 
     // This listener is fired whenever a notification is received while the app is foregrounded
@@ -63,12 +65,12 @@ export default function PushNotification({setPushNotificationToken}: PropTypes) 
 }
 
 // Can use this function below, OR use Expo's Push Notification Tool-> https://expo.io/notifications
-async function sendPushNotification(expoPushToken: string) {
+export async function sendPushNotification(expoPushToken: string, title: string, body: string) {
   const message = {
     to: expoPushToken,
     sound: 'default',
-    title: 'Original Title',
-    body: 'And here is the body!',
+    title,
+    body,
     data: { someData: 'goes here' },
   };
 
@@ -103,8 +105,8 @@ async function registerForPushNotificationsAsync() {
   }
 
   if (Platform.OS === 'android') {
-    Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
+    Notifications.setNotificationChannelAsync('classrooms', {
+      name: 'classrooms',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C',

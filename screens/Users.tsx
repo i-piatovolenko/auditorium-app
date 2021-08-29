@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView, Dimensions} from "react-native";
+import {StyleSheet, View, ScrollView, Dimensions, ImageBackground} from "react-native";
 import useUsers from "../hooks/useUsers";
-import {ActivityIndicator, DataTable, Searchbar} from "react-native-paper";
+import {ActivityIndicator, Appbar, DataTable, Searchbar} from "react-native-paper";
 import {UserTypes, UserTypesUa} from "../models/models";
 import {fullName, isTeacherType} from "../helpers/helpers";
 import UserInfo from "../components/UserInfo";
+import {DrawerActions, useNavigation} from '@react-navigation/native';
 
 const windowHeight = Dimensions.get('window').height;
 
 export default function Users() {
+  const navigation = useNavigation();
   const users = useUsers();
   const [pages, setPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,7 +33,16 @@ export default function Users() {
     setPages(users.length / 13)
   }, [users]);
 
-  return <View>
+  return <ImageBackground source={require('../assets/images/bg.jpg')}
+                          style={{width: '100%', height: windowHeight}}>
+    <Appbar style={styles.top}>
+      <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                     color='#fff'
+      />
+        <Appbar.Content
+          title='Довідник' color='#fff'
+        />
+    </Appbar>
     <Searchbar
       placeholder="Пошук"
       onChangeText={text => {
@@ -41,7 +52,7 @@ export default function Users() {
       value={searchText}
       style={styles.search}
     />
-    <DataTable>
+    <DataTable style={styles.dataTable}>
       <DataTable.Header style={styles.header}>
         <DataTable.Title>П.І.Б.</DataTable.Title>
         <DataTable.Title style={{alignSelf: 'center'}}>Статус</DataTable.Title>
@@ -71,13 +82,22 @@ export default function Users() {
       </> : <ActivityIndicator animating={true} color='#2e287c'/>}
     </DataTable>
     {currentUserId ? <UserInfo userId={currentUserId} hideModal={hideModal} visible={visible}/> : null}
-  </View>
+  </ImageBackground>
 }
 
 const styles = StyleSheet.create(({
+  top: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    paddingTop: 26,
+    height: 80,
+    backgroundColor: 'transparent',
+  },
   search: {
-    marginTop: 40,
-    marginBottom: -40
+    marginTop: 80,
+    borderRadius: 0
   },
   header: {
     marginTop: 40,
@@ -87,5 +107,8 @@ const styles = StyleSheet.create(({
   },
   pagination: {
     justifyContent: 'center',
+  },
+  dataTable: {
+    backgroundColor: '#fff'
   }
 }));

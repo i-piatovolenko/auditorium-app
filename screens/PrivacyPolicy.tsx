@@ -1,125 +1,270 @@
 import React from 'react';
-import {ScrollView, StyleSheet, View} from "react-native";
+import {ScrollView, StyleSheet, Text, ImageBackground, Dimensions} from "react-native";
 import {Appbar, Paragraph, Title} from "react-native-paper";
+import {DrawerActions} from "@react-navigation/native";
 
-export default function PrivacyPolicy({ navigation }: any) {
+const windowHeight = Dimensions.get('window').height;
 
-  const goBack = () => navigation.goBack();
-
+export default function PrivacyPolicy({navigation}: any) {
   return (
-    <View>
+    <ImageBackground source={require('../assets/images/bg.jpg')}
+                     style={{width: '100%', height: windowHeight}}>
       <Appbar style={styles.top}>
-        <Appbar.BackAction onPress={goBack}/>
+        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                       color='#fff'
+        />
         <Appbar.Content
-          title='Політика конфіденційності'
+          title='Політика конфіденційності' color='#fff'
         />
       </Appbar>
       <ScrollView style={styles.wrapper}>
-          <Title>Privacy Policy for Auditorium</Title>
-          <Paragraph>At auditorium, accessible from http://auditorium.com.ua, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by auditorium and how we use it.
+        <Title> Політика конфіденційності </Title>
+        <Paragraph> Останнє оновлення: 25 серпня 2021 р.</Paragraph>
+        <Paragraph> Ця Політика конфіденційності описує нашу політику та процедури щодо збору, використання та розкриття
+          вашої
+          інформації під час користування Сервісом та розповідає вам про ваші права на конфіденційність та про те, як
+          закон
+          захищає вас. </Paragraph>
+        <Paragraph> Ми використовуємо Ваші персональні дані для надання та покращення Послуги. Користуючись Послугою, ви
+          погоджуєтесь на
+          збір та використання інформації відповідно до цієї Політики конфіденційності.</Paragraph>
+        <Title> Інтерпретація та визначення </Title>
+        <Title> Інтерпретація </Title>
+        <Paragraph> Слова, у яких початкова буква написана з великої букви, мають значення, визначені за таких умов.
+          Наступні визначення
+          мають однакове значення незалежно від того, чи входять вони в однині чи множині. </Paragraph>
+        <Title style={{fontSize: 16}}> Визначення </Title>
+        <Paragraph> Для цілей цієї Політики конфіденційності: </Paragraph>
+
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Обліковий запис </Text> означає унікальний обліковий запис,
+            створений для доступу до нашого
+            Сервісу або частин нашого Сервісу. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Додаток </Text> означає програмне забезпечення, надане
+            Компанією, завантажене Вами на будь -якому
+            електронному пристрої під назвою Auditorium </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Компанія </Text> (в даній Угоді також згадується як "Компанія",
+            "Ми", "Ми" або "Наша" або
+            "Auditorium"). </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Країна </Text> відноситься до: Україна </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Пристрій </Text> означає будь -який пристрій, який має доступ до
+            Доатку, наприклад комп’ютер,
+            мобільний телефон або цифровий планшет. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Особисті дані </Text> - це будь -яка інформація, що стосується
+            ідентифікованої особи або особи, що
+            ідентифікується. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Послуга </Text> відноситься до Програми. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Постачальник послуг </Text> означає будь -яку фізичну або
+            юридичну особу, яка обробляє дані від
+            імені Компанії. Він відноситься до сторонніх компаній або приватних осіб, зайнятих Компанією для сприяння
+            Службі, надання Послуги від імені Компанії, для надання послуг, пов'язаних із Послугою, або для надання
+            допомоги Компанії в аналізі використання Сервісу. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Дані про використання </Text> відносяться до даних, зібраних
+            автоматично, або генерованих шляхом
+            використання Сервісу, або з інфраструктури самої Сервісу (наприклад, тривалість відвідування сторінки).
           </Paragraph>
-          <Paragraph>
-          If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Ви </Text> означає фізичну особу, яка отримує доступ або
+            користується Послугою, або компанію чи
+            іншу юридичну особу, від імені якої така особа отримує доступ або користується Службою, якщо це можливо.
           </Paragraph>
-          <Paragraph>
-          This Privacy Policy applies only to our online activities and is valid for visitors to our website with regards to the information that they shared and/or collect in auditorium. This policy is not applicable to any information collected offline or via channels other than this website. Our Privacy Policy was created with the help of the Privacy Policy Generator.
+        </Paragraph>
+
+        <Title> Збір та використання ваших особистих даних </Title>
+        <Title style={{fontSize: 16}}> Типи зібраних даних </Title>
+        <Title style={{fontSize: 14}}>Особисті дані </Title>
+        <Paragraph> Під час користування нашим Сервісом ми можемо попросити вас надати нам певну особисту інформацію,
+          яка може бути
+          використана для зв’язку або ідентифікації вас. Інформація, що ідентифікує особу, може включати, але не
+          обмежуватися
+          ними: </Paragraph>
+
+        <Paragraph>
+          <Paragraph> Адреса електронної пошти </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph> Ім'я та прізвище </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph> Номер телефону </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph> Дані про місце Вашого навчання або роботи </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph> Дані використання </Paragraph>
+        </Paragraph>
+
+        <Title style={{fontSize: 14}}>Дані використання </Title>
+        <Paragraph> Дані про використання збираються автоматично під час використання Сервісу. </Paragraph>
+        <Paragraph> Дані про використання можуть включати таку інформацію, як адреса Інтернет -протоколу вашого пристрою
+          (наприклад, IP
+          -адреса), тип веб -переглядача, версія браузера, сторінки нашої Служби, які ви відвідуєте, час і дата вашого
+          відвідування, час, витрачений на ці сторінки , унікальні ідентифікатори пристрою та інші діагностичні
+          дані. </Paragraph>
+        <Paragraph> Коли ви отримуєте доступ до Служби через або через мобільний пристрій, ми можемо автоматично збирати
+          певну
+          інформацію, включаючи, але не обмежуючись, тип мобільного пристрою, яким ви користуєтесь, унікальний
+          ідентифікатор
+          вашого мобільного пристрою, IP -адресу вашого мобільного пристрою , Ваша мобільна операційна система, тип
+          мобільного
+          Інтернет -браузера, який ви використовуєте, унікальні ідентифікатори пристрою та інші діагностичні
+          дані. </Paragraph>
+        <Paragraph> Ми також можемо збирати інформацію, яку надсилає ваш веб -переглядач, коли ви відвідуєте наш Сервіс
+          або коли ви
+          отримуєте доступ до Служби за допомогою мобільного пристрою або через нього. </Paragraph>
+        <Title style={{fontSize: 16}}> Використання ваших особистих даних </Title>
+        <Paragraph> Компанія може використовувати Персональні дані для таких цілей: </Paragraph>
+
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Для надання та підтримки нашого Застосунку </Text>, зокрема для
+            контролю за його використанням.
           </Paragraph>
-          <Paragraph>
-          Consent
-          By using our website, you hereby consent to our Privacy Policy and agree to its terms.
-          </Paragraph>
-          <Paragraph>
-          Information we collect
-          The personal information that you are asked to provide, and the reasons why you are asked to provide it, will be made clear to you at the point we ask you to provide your personal information.
-          </Paragraph>
-          <Paragraph>
-          If you contact us directly, we may receive additional information about you such as your name, email address, phone number, the contents of the message and/or attachments you may send us, and any other information you may choose to provide.
-          </Paragraph>
-          <Paragraph>
-          When you register for an Account, we may ask for your contact information, including items such as name, company name, address, email address, and telephone number.
-          </Paragraph>
-          <Paragraph>
-          How we use your information
-          We use the information we collect in various ways, including to:
-          </Paragraph>
-          <Paragraph>
-          Provide, operate, and maintain our website
-          Improve, personalize, and expand our website
-          Understand and analyze how you use our website
-          Develop new products, services, features, and functionality
-          Communicate with you, either directly or through one of our partners, including for customer service, to provide you with updates and other information relating to the website, and for marketing and promotional purposes
-          Send you emails
-          Find and prevent fraud
-          Log Files
-          auditorium follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable. The purpose of the information is for analyzing trends, administering the site, tracking users' movement on the website, and gathering demographic information.
-          </Paragraph>
-          <Paragraph>
-          Advertising Partners Privacy Policies
-          You may consult this list to find the Privacy Policy for each of the advertising partners of auditorium.
-          </Paragraph>
-          <Paragraph>
-          Third-party ad servers or ad networks uses technologies like cookies, JavaScript, or Web Beacons that are used in their respective advertisements and links that appear on auditorium, which are sent directly to users' browser. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see on websites that you visit.
-          </Paragraph>
-          <Paragraph>
-          Note that auditorium has no access to or control over these cookies that are used by third-party advertisers.
-          </Paragraph>
-          <Paragraph>
-          Third Party Privacy Policies
-          auditorium's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt-out of certain options.
-          </Paragraph>
-          <Paragraph>
-          You can choose to disable cookies through your individual browser options. To know more detailed information about cookie management with specific web browsers, it can be found at the browsers' respective websites.
-          </Paragraph>
-          <Paragraph>
-          CCPA Privacy Rights (Do Not Sell My Personal Information)
-          Under the CCPA, among other rights, California consumers have the right to:
-          </Paragraph>
-          <Paragraph>
-          Request that a business that collects a consumer's personal data disclose the categories and specific pieces of personal data that a business has collected about consumers.
-          </Paragraph>
-          <Paragraph>
-          Request that a business delete any personal data about the consumer that a business has collected.
-          </Paragraph>
-          <Paragraph>
-          Request that a business that sells a consumer's personal data, not sell the consumer's personal data.
-          </Paragraph>
-          <Paragraph>
-          If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us.
-          </Paragraph>
-          <Paragraph>
-          GDPR Data Protection Rights
-          We would like to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:
-          </Paragraph>
-          <Paragraph>
-          The right to access – You have the right to request copies of your personal data. We may charge you a small fee for this service.
-          </Paragraph>
-          <Paragraph>
-          The right to rectification – You have the right to request that we correct any information you believe is inaccurate. You also have the right to request that we complete the information you believe is incomplete.
-          </Paragraph>
-          <Paragraph>
-          The right to erasure – You have the right to request that we erase your personal data, under certain conditions.
-          </Paragraph>
-          <Paragraph>
-          The right to restrict processing – You have the right to request that we restrict the processing of your personal data, under certain conditions.
-          </Paragraph>
-          <Paragraph>
-          The right to object to processing – You have the right to object to our processing of your personal data, under certain conditions.
-          </Paragraph>
-          <Paragraph>
-          The right to data portability – You have the right to request that we transfer the data that we have collected to another organization, or directly to you, under certain conditions.
-          </Paragraph>
-          <Paragraph>
-          If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us.
-          </Paragraph>
-          <Paragraph>
-          Children's Information
-          Another part of our priority is adding protection for children while using the internet. We encourage parents and guardians to observe, participate in, and/or monitor and guide their online activity.
-          </Paragraph>
-          <Paragraph>
-          auditorium does not knowingly collect any Personal Identifiable Information from children under the age of 13. If you think that your child provided this kind of information on our website, we strongly encourage you to contact us immediately and we will do our best efforts to promptly remove such information from our records.
-          </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Щоб керувати своїм обліковим записом: </Text> керуйте своєю
+            реєстрацією як користувач Додатку.
+            Надані Вами персональні дані можуть надати Вам доступ до різних функцій Сервісу, які доступні Вам як
+            зареєстрованому користувачу. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Щоб зв’язатися з Вами: </Text> Щоб зв’язатися з Вами електронною
+            поштою, телефонними дзвінками,
+            SMS або іншими еквівалентними формами
+            електронного зв'язку, наприклад, push -сповіщення мобільних додатків щодо оновлень або інформативні
+            комунікації, пов'язані з функціональними можливостями, продуктами або контрактними послугами, включаючи
+            безпеку
+            оновлення, коли це необхідно або розумно для їх впровадження. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Щоб надати Вам </Text> новини, спеціальні пропозиції та загальну
+            інформацію про інші товари,
+            послуги
+            та події, які ми пропонуємо, подібні до тих, які ви вже придбали чи запитали про них, крім випадків, коли це
+            відбувається
+            Ви вирішили не отримувати таку інформацію. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> Щоб керувати Вашими запитами: </Text> Щоб відвідувати та
+            керувати Вашими запитами до нас. </Paragraph>
+        </Paragraph>
+        <Paragraph>
+          <Paragraph><Text style={{fontWeight: '600'}}> В інших цілях </Text>: Ми можемо використовувати Вашу інформацію
+            в інших цілях, таких як аналіз
+            даних,
+            визначення тенденцій використанняб оцінка та
+            покращення наших послуг.</Paragraph>
+        </Paragraph>
+
+        <Paragraph> Ми можемо передавати Вашу особисту інформацію у таких ситуаціях: </Paragraph>
+
+        <Paragraph><Text style={{fontWeight: '600'}}> З постачальниками послуг. </Text> Ми можемо передавати Вашу
+          особисту інформацію постачальникам послуг
+          відстежувати та аналізувати використання нашого Сервісу, щоб зв’язатися з Вами.
+        </Paragraph>
+        <Paragraph><Text style={{fontWeight: '600'}}> З діловими партнерами: </Text> Ми можемо поділитися Вашою
+          інформацією з нашими діловими партнерами,
+          щоб запропонувати Вам
+          певні товари, послуги чи акції.
+        </Paragraph>
+        <Paragraph><Text style={{fontWeight: '600'}}> З іншими користувачами: </Text> коли ви ділитесь особистою
+          інформацією або іншим чином взаємодієте у
+          загальнодоступних місцях
+          з іншими користувачами таку інформацію можуть переглядати всі користувачі та публічно розповсюджувати їх за
+          межами.
+        </Paragraph>
+        <Paragraph><Text style={{fontWeight: '600'}}> З вашої згоди </Text>: Ми можемо розкривати Вашу особисту
+          інформацію для будь-яких інших цілейю</Paragraph>
+
+        <Title style={{fontSize: 16}}> Збереження ваших особистих даних</Title>
+        <Paragraph> Компанія зберігатиме Ваші персональні дані лише стільки часу, скільки це необхідно для цілей,
+          викладених у цій
+          Політиці Конфіденційності. Ми будемо зберігати та використовувати Ваші Персональні дані в обсязі, необхідному
+          для виконання наших
+          юридичних зобов’язань (наприклад, якщо ми зобов’язані зберігати ваші дані відповідно до чинного
+          законодавства).</Paragraph>
+        <Paragraph> Компанія також зберігатиме дані про використання для цілей внутрішнього аналізу. Дані про
+          використання зазвичай
+          зберігаються для коротший період часу, за винятком випадків, коли ці дані використовуються для посилення
+          безпеки або покращення
+          функціональності. </Paragraph>
+        <Title style={{fontSize: 16}}> Передача ваших особистих даних </Title>
+        <Paragraph> Ваша інформація, включаючи персональні дані, обробляється в офісах компанії та в будь -яких інших
+          місцях
+          де знаходяться сторони, які беруть участь у обробці. Це означає, що ця інформація може бути передана
+          на комп'ютерах, що знаходяться за межами Вашого штату, провінції, країни чи іншої урядової юрисдикції, де
+          законодавство про захист даних може відрізнятися від законодавства Вашої юрисдикції. </Paragraph>
+        <Paragraph> Ваша згода з цією Політикою конфіденційності з подальшим поданням такої інформації є вашою згодою на
+          це.</Paragraph>
+        <Paragraph> Компанія вживе всіх необхідних заходів, щоб забезпечити безпечне та відповідне поводження з Вашими
+          даними
+          згідно з цією Політикою конфіденційності, передача Ваших персональних даних не відбуватиметься до організації
+          чи країни
+          якщо немає належного контролю, включаючи безпеку Ваших даних та іншої особистої інформації. </Paragraph>
+        <Title style={{fontSize: 16}}> Розкриття ваших особистих даних </Title>
+        <Title style={{fontSize: 14}}>Ділові операції </Title>
+        <Paragraph> Якщо Компанія бере участь у злитті, поглинанні або продажу активів, Ваші Персональні дані можуть
+          бути передані. Ми будемо
+          надіслати повідомлення до того, як Ваші Персональні дані будуть передані та стануть предметом іншої Політики
+          конфіденційності. </Paragraph>
+        <Title style={{fontSize: 14}}>Правоохоронні органи </Title>
+        <Paragraph> За певних обставин від Компанії може знадобитися розкриття ваших Персональних даних, якщо цього
+          вимагає закон
+          або у відповідь на дійсні запити державних органів (наприклад, суду чи державного органу). </Paragraph>
+        <Title style={{fontSize: 14}}>Інші законодавчі вимоги </Title>
+        <Paragraph> Компанія може добросовісно розкрити Ваші Персональні дані, що такі дії необхідні для: </Paragraph>
+
+        <Paragraph> Виконувати юридичні зобов’язання </Paragraph>
+        <Paragraph> Захищати та захищати права чи майно Компанії </Paragraph>
+        <Paragraph> Запобігайте або розслідувати можливі правопорушення, пов'язані з Додатком</Paragraph>
+        <Paragraph> Захищати особисту безпеку Користувачів Послуги</Paragraph>
+
+        <Title style={{fontSize: 16}}> Безпека ваших особистих даних </Title>
+        <Paragraph> Для нас важлива безпека ваших персональних даних, але пам’ятайте, що жоден спосіб передачі через
+          Інтернет,
+          або спосіб електронного зберігання не є 100% безпечним.</Paragraph>
+        <Title> Посилання на інші веб-сайти </Title>
+        <Paragraph> Наш Сервіс може містити посилання на інші веб-сайти, якими ми не керуємо. Якщо Ви натискаєте
+          посилання третьої сторони, Ви
+          буде перенаправлено на веб-сайт цієї третьої сторони. Ми наполегливо радимо Вам переглянути Політику
+          конфіденційності кожного Вашого сайту
+          відвідування. </Paragraph>
+        <Paragraph> Ми не контролюємо і не несемо відповідальності за зміст, політику конфіденційності чи практику
+          будь-якої третьої особи
+          вечірки або послуги. </Paragraph>
+        <Title> Зміни до цієї Політики конфіденційності </Title>
+        <Paragraph> Ми можемо час від часу оновлювати нашу Політику конфіденційності. Ми повідомимо Вас про будь-які
+          зміни, опублікувавши нову Політику Конфіденційности на цій сторінці. </Paragraph>
+        <Paragraph> Ми повідомимо Вас електронною поштою та/або помітним повідомленням про наш Додаток до того, як зміна
+          набуде чинності та
+          оновлення. Дата останнього оновлення у верхній частині цієї Політики конфіденційності. </Paragraph>
+        <Paragraph> Радимо періодично переглядати цю Політику конфіденційності на предмет будь-яких змін. Зміни в цій
+          Політиці конфіденційності
+          набувають чинності, коли вони розміщені на цій сторінці. </Paragraph>
+        <Title> Зв’яжіться з нами </Title>
+        <Paragraph> Якщо у вас є запитання щодо цієї Політики конфіденційності, ви можете зв'язатися з
+          нами: </Paragraph>
+
+        <Paragraph> На електронну адресу: auditorium.knmau@gmail.com </Paragraph>
       </ScrollView>
-    </View>
+    </ImageBackground>
   )
 }
 
@@ -131,11 +276,12 @@ const styles = StyleSheet.create({
     top: 0,
     paddingTop: 26,
     height: 80,
-    backgroundColor: '#2e287c',
+    backgroundColor: 'transparent',
   },
   wrapper: {
-    marginTop: 100,
-    marginLeft: 16,
-    marginRight: 16,
+    marginTop: 80,
+    paddingLeft: 16,
+    paddingRight: 16,
+    backgroundColor: '#fff'
   },
 });

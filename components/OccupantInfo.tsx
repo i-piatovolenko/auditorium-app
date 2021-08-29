@@ -7,6 +7,8 @@ import colors from "../constants/Colors";
 import UserInfo from "./UserInfo";
 import {useLocal} from "../hooks/useLocal";
 import useTimeLeft from "../hooks/useTimeLeft";
+import {client} from "../api/client";
+import {MAKE_DECISION_ON_PENDING_CLASSROOM} from "../api/operations/mutations/makeDecisionOnPendingClassroom";
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -21,6 +23,26 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
   const [timeLeft, timeLeftInPer] = useTimeLeft(classroom?.occupied, occupiedTotalTime);
   const [visibleBanner, setVisibleBanner] = useState(true);
   const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const makeDecision = async (decision: boolean) => {
+    setLoading(true);
+    try {
+      await client.mutate({
+        mutation: MAKE_DECISION_ON_PENDING_CLASSROOM,
+        variables: {
+          input: {
+            classroomName: classroom.name,
+            continueWaitingForDesiredClassrooms: decision
+          }
+        }
+      });
+      setLoading(false);
+    } catch (e) {
+      alert(JSON.stringify(e));
+      setLoading(false);
+    }
+  }
 
   const showModal = () => setVisible(true);
 
@@ -99,10 +121,15 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
             />
         </View>}
         <View>
-          <Button mode='contained' style={{marginBottom: 8}} color='#f91354'>
+          <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
+                  disabled={loading}
+                  onPress={() => makeDecision(false)}>
             Відхилити аудиторію
           </Button>
-          <Button mode='contained'>Підтвердити аудиторію</Button>
+          <Button mode='contained' onPress={() => makeDecision(true)} loading={loading}
+                  disabled={loading}>
+            Підтвердити аудиторію
+          </Button>
         </View>
       </>
     )}

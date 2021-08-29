@@ -9,9 +9,10 @@ import WaitDialog from "../components/WaitDialog";
 import {getItem, setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
 import {ErrorCodes, ErrorCodesUa, Langs, Mode, QueueState, QueueType, User} from "../models/models";
-import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar, wsLink} from "../api/client";
+import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar} from "../api/client";
 import PushNotification from "./PushNotification";
 import {GET_LANG} from "../api/operations/queries/lang";
+import i18n from "i18n-js";
 
 export default function Login({route, navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
@@ -22,7 +23,7 @@ export default function Login({route, navigation}: any) {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [pushNotificationToken, setPushNotificationToken] = useState('');
-  const {data: {lang}} = useQuery(GET_LANG);
+  // const {data: {lang}} = useQuery(GET_LANG);
 
   useEffect(() => {
     if (modalActivator !== null) {
@@ -30,19 +31,19 @@ export default function Login({route, navigation}: any) {
     }
   }, [modalActivator]);
 
-  useEffect(() => {
-    getItem('lang').then(res => {
-      if (res) {
-        langVar(res);
-      } else {
-        setItem('lang', lang);
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   getItem('lang').then(res => {
+  //     if (res) {
+  //       langVar(res);
+  //     } else {
+  //       setItem('lang', lang);
+  //     }
+  //   });
+  // }, []);
 
   const handleChangeLang = async (lng: Langs) => {
-    await setItem('lang', lng);
-    langVar(lng);
+    // await setItem('lang', lng);
+    // langVar(lng);
   };
 
   const hideError = () => {
@@ -70,17 +71,17 @@ export default function Login({route, navigation}: any) {
           const token: string = result?.data.login.token;
           await setItem('user', user);
           await setItem('token', token);
-          if (user.queue.length) {
-            const minimal = user.queue.filter(({type, state}) => {
-              return type === QueueType.MINIMAL && state === QueueState.ACTIVE;
-            });
-            const desired = user.queue.filter(({type, state}) => {
-              return type === QueueType.DESIRED && state === QueueState.ACTIVE;
-            });
-            modeVar(Mode.INLINE);
-            minimalClassroomIdsVar(minimal.map(({classroom: {id}}) => id));
-            desirableClassroomIdsVar(desired.map(({classroom: {id}}) => id));
-          }
+          // if (user.queue.length) {
+          //   const minimal = user.queue.filter(({type, state}) => {
+          //     return type === QueueType.MINIMAL && state === QueueState.ACTIVE;
+          //   });
+          //   const desired = user.queue.filter(({type, state}) => {
+          //     return type === QueueType.DESIRED && state === QueueState.ACTIVE;
+          //   });
+          //   modeVar(Mode.INLINE);
+          //   minimalClassroomIdsVar(minimal.map(({classroom: {id}}) => id));
+          //   desirableClassroomIdsVar(desired.map(({classroom: {id}}) => id));
+          // }
           meVar(user);
         }
       } catch (e) {
@@ -95,19 +96,19 @@ export default function Login({route, navigation}: any) {
       {/*<PushNotification setPushNotificationToken={setPushNotificationToken}/>*/}
       <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
         <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
-        <View style={styles.langSwitcher}>
-          <TouchableHighlight onPress={() => handleChangeLang(Langs.UA)}>
-            <Image source={require('../assets/images/ua.png')}
-                   style={lang === Langs.UA ? styles.langImageSelected : styles.langImage}
-            />
-          </TouchableHighlight>
-          <TouchableHighlight onPress={() => handleChangeLang(Langs.EN)}>
-            <Image source={require('../assets/images/en.png')}
-                   style={lang === Langs.EN ? styles.langImageSelected : styles.langImage}
-            />
-          </TouchableHighlight>
-        </View>
-        <Text style={styles.title}>Вхід</Text>
+        {/*<View style={styles.langSwitcher}>*/}
+        {/*  <TouchableHighlight onPress={() => handleChangeLang(Langs.UA)}>*/}
+        {/*    <Image source={require('../assets/images/ua.png')}*/}
+        {/*           style={lang === Langs.UA ? styles.langImageSelected : styles.langImage}*/}
+        {/*    />*/}
+        {/*  </TouchableHighlight>*/}
+        {/*  <TouchableHighlight onPress={() => handleChangeLang(Langs.EN)}>*/}
+        {/*    <Image source={require('../assets/images/en.png')}*/}
+        {/*           style={lang === Langs.EN ? styles.langImageSelected : styles.langImage}*/}
+        {/*    />*/}
+        {/*  </TouchableHighlight>*/}
+        {/*</View>*/}
+        <Text style={styles.title}>{i18n.t('login')}</Text>
         <Surface style={styles.inputs}>
           <TextInput label='Логін'
                      style={styles.input}

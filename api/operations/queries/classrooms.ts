@@ -9,8 +9,15 @@ export const GET_CLASSROOMS = gql`
       floor
       special
       isHidden
-      chair {
+       chair {
+          id
           name
+          exclusivelyQueueAllowedDepartmentsInfo {
+            department {
+              id
+              name
+            }
+          }
       }
       isWing
       isOperaStudio
@@ -37,6 +44,17 @@ export const GET_CLASSROOMS = gql`
         comment
         until
         state
+      }
+      queueInfo {
+        queuePolicy {
+          policy
+          queueAllowedDepartments {
+            department {
+              id
+              name
+            }
+          }
+        }
       }
     }
   }
@@ -84,6 +102,17 @@ export const GET_CLASSROOMS_NO_SCHEDULE = gql`
         comment
         until
         state
+      }
+      queueInfo {
+        queuePolicy {
+          policy
+          queueAllowedDepartments {
+            department {
+              id
+              name
+            }
+          }
+        }
       }
     }
   }

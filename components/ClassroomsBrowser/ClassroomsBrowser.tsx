@@ -131,9 +131,9 @@ const styles = StyleSheet.create(
     gridDivider: {
       color: '#fff',
       marginBottom: 10,
-      marginLeft: 3,
-      marginRight: 3,
-      paddingLeft: 17,
+      marginLeft: 8,
+      marginRight: 8,
+      paddingLeft: 8,
       borderBottomWidth: 1,
       borderBottomColor: '#ffffff77',
       paddingBottom: 10

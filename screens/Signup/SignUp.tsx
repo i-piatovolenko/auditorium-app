@@ -2,16 +2,14 @@ import * as React from 'react';
 import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text} from 'react-native';
 import {View} from '../../components/Themed';
 import {Appbar, Banner, Button, Checkbox, HelperText, TextInput} from 'react-native-paper';
-import {useState} from "react";
-import useDegrees from "../../hooks/useDegrees";
-import useDepartments from "../../hooks/useDepartments";
+import {useEffect, useState} from "react";
 import Agreement from "./components/Agreement";
 import CustomPickerField from "../../components/CustomPicker/CustomPickerField";
 import moment from "moment";
 import {useMutation} from "@apollo/client";
 import {SIGN_UP} from "../../api/operations/mutations/signUp";
 import InfoDialog from "../../components/InfoDialog";
-import {ErrorCodes, ErrorCodesUa} from "../../models/models";
+import {ErrorCodes, ErrorCodesUa, UserTypes, UserTypesUa} from "../../models/models";
 
 const currentYear: number = parseInt(moment().format('YYYY'));
 
@@ -22,6 +20,11 @@ const startYearsItems = [
   {name: currentYear - 3, id: currentYear - 3},
 ];
 
+const userTypesData = [
+  {id: 1, name: UserTypes.POST_GRADUATE},
+  {id: 2, name: UserTypes.STUDENT},
+];
+
 const windowHeight = Dimensions.get('window').height;
 
 
@@ -29,6 +32,8 @@ export default function SignUp({navigation}: any) {
   const [selectedDepartment, setSelectedDepartment] = useState({name: '', id: -1});
   const [selectedDegree, setSelectedDegree] = useState({name: '', id: -1});
   const [selectedStartYear, setSelectedStartYear] = useState({name: '', id: -1});
+  const [selectedType, setSelectedType] = useState({name: userTypesData[0].name,
+    id: userTypesData[0].id});
   const [visible, setVisible] = useState(true);
   const [visibleAgreement, setVisibleAgreement] = useState(false);
   const [visibleBackDialog, setVisibleBackDialog] = useState(false);
@@ -42,8 +47,8 @@ export default function SignUp({navigation}: any) {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [checkAgreement, setCheckAgreement] = useState(false);
-  const degrees = useDegrees();
-  const departments = useDepartments(true);
+  const [departments, setDepartments] = useState([{id: 1, name: 'DEFAULT_DEPARTMENT'}]);
+  const [degrees, serDegrees] = useState([{id: 1, name: 'DEFAULT_DEGREE'}]);
 
   const [isSignupTouched, setIsSignupTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -63,6 +68,15 @@ export default function SignUp({navigation}: any) {
   const [isDegreeModalVisited, setIsDegreeModalVisited] = useState(false);
 
   const [signup, {loading, error}] = useMutation(SIGN_UP);
+
+  useEffect(() => {
+    // client.query({query: GET_UNSIGNED_DEPARTMENTS,
+    //   fetchPolicy: 'network-only',
+    // }).then(({data}) => {
+    //   setDepartments(data.signupFacultiesDepartments.departments.slice()
+    //     .sort((a: Department, b: Department) => a.id - b.id))
+    // });
+  }, [])
 
   const checkLastNameValidation = (value: string) => {
     if (!value) {
@@ -172,9 +186,10 @@ export default function SignUp({navigation}: any) {
               password: password,
               email: email,
               phoneNumber: phoneNumber,
-              department: selectedDepartment.id,
-              degree: selectedDegree.id,
+              departmentId: selectedDepartment.id,
+              degreeId: selectedDegree.id,
               startYear: selectedStartYear.id,
+              type: selectedType.name
             }
           }
         });
@@ -336,6 +351,13 @@ export default function SignUp({navigation}: any) {
                                checkValidation={checkDegreeValidation}
                                setIsVisited={setIsDegreeModalVisited}
                                underlineColor={!isDegreeValidated ? '#ccc' : '#f91354'}
+
+            />
+            <CustomPickerField name='Статус' selected={selectedType} items={userTypesData}
+                               checkValidation={() => {}}
+                               setIsVisited={() => {}}
+                               setSelected={setSelectedType}
+                               underlineColor='#ccc'
 
             />
             <Error validator={isDegreeValidated}/>

@@ -11,7 +11,7 @@ type Item = {
 
 interface PropTypes {
   selected: Item;
-  setSelected: (value: Item) => void;
+  setSelected: any;
   name: string;
   items: any[];
   checkValidation: (value: number) => void;

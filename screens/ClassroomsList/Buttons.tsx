@@ -12,7 +12,6 @@ import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
 import getInLine from "../../helpers/queue/getInLine";
 import ErrorDialog from "../../components/ErrorDialog";
 import moment from "moment";
-import removeFromLine from "../../helpers/queue/removeFromLine";
 import WaitDialog from "../../components/WaitDialog";
 import ConfirmLineOut from "../../components/ConfirmLineOut";
 
@@ -73,26 +72,26 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
     <View style={styles.wrapper}>
       {mode === Mode.PRIMARY && !(hasOwnClassroom(currentUser.occupiedClassrooms)) && (
         <Button style={styles.getInLine} mode='contained' color={Colors.blue}
-                onPress={handlePress}>
+                onPress={handlePress} loading={loading} disabled={loading}>
           <Text>Стати в чергу</Text>
         </Button>
       )}
       {mode === Mode.QUEUE_SETUP && (
         <>
           <Button style={styles.getOutLine} mode='contained' color={Colors.red}
-                  onPress={handlePress}>
+                  onPress={handlePress} loading={loading} disabled={loading}>
             <Text>Відміна</Text>
           </Button>
           <Button style={styles.approve} mode='contained' color={Colors.blue}
-                  disabled={!minimalClassroomIds.length && !desirableClassroomIds.length}
-                  onPress={handleReady}>
+                  disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length)|| loading}
+                  onPress={handleReady} loading={loading}>
             <Text>Стати в чергу</Text>
           </Button>
         </>
       )}
       {mode === Mode.INLINE && (
         <Button style={styles.getOutLine} mode='contained' color={Colors.red}
-                onPress={() => setVisibleLineOut(true)}>
+                onPress={() => setVisibleLineOut(true)} loading={loading} disabled={loading}>
           <Text>Вийти з черги</Text>
         </Button>
       )}

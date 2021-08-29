@@ -2,17 +2,19 @@ import {HOUR, MINUTE, TIME_SNIPPETS, WORKING_DAY_END, WORKING_DAY_START,} from "
 import {
   ACCESS_RIGHTS,
   ClassroomType,
-  CurrentUser, DisabledState,
+  CurrentUser,
+  DisabledState,
   Mode,
   OccupiedInfo,
   OccupiedState,
+  QueuePolicyTypes,
   ScheduleUnitType,
   User,
   UserTypes,
 } from "../models/models";
 import moment from "moment";
 import {ReactElement} from "react";
-import {accessRightsVar, desirableClassroomIdsVar, minimalClassroomIdsVar} from "../api/client";
+import {accessRightsVar} from "../api/client";
 
 export const getScheduleTimeline = (start: number, end: number): string[] => {
   let timeSnippets: string[] = [];
@@ -280,8 +282,11 @@ export const hasOwnClassroom = (occupiedClassrooms: any) => {
 };
 
 export const isEnabledForCurrentDepartment = (classroom: ClassroomType, currentUser: User) => {
-  return classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo.length ?
-    classroom.chair?.exclusivelyQueueAllowedDepartmentsInfo
+  const {queueInfo: {queuePolicy}} = classroom;
+  if (queuePolicy.policy === QueuePolicyTypes.SELECTED_DEPARTMENTS
+    && !queuePolicy.queueAllowedDepartments.length) return false;
+  return queuePolicy.queueAllowedDepartments.length ?
+    queuePolicy.queueAllowedDepartments
       .some(({department}) => department.id === currentUser?.department?.id) : true;
 };
 
