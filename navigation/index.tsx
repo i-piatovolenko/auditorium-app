@@ -37,9 +37,9 @@ function RootNavigator() {
   const [currentUser, setCurrentUser] = useState(null);
   const [appIsReady, setAppIsReady] = useState(false);
   const {data: {me}} = useLocal('me');
+  const {data: {noToken}} = useLocal('noToken');
 
   useEffect(() => {
-
     async function prepare() {
       try {
         const user = await getItem('user');
@@ -75,7 +75,7 @@ function RootNavigator() {
   }, []);
 
   return (
-    me ? <Drawer.Navigator initialRouteName="Home" drawerStyle={styles.drawer} drawerContentOptions={{
+    me && !noToken ? <Drawer.Navigator initialRouteName="Home" drawerStyle={styles.drawer} drawerContentOptions={{
         activeBackgroundColor: '#2b5dff',
         labelStyle: {
           fontSize: 20,

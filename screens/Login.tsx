@@ -9,7 +9,7 @@ import WaitDialog from "../components/WaitDialog";
 import {getItem, setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
 import {ErrorCodes, ErrorCodesUa, Langs, Mode, QueueState, QueueType, User} from "../models/models";
-import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar} from "../api/client";
+import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar, noTokenVar} from "../api/client";
 import PushNotification from "./PushNotification";
 import {GET_LANG} from "../api/operations/queries/lang";
 import i18n from "i18n-js";
@@ -83,6 +83,7 @@ export default function Login({route, navigation}: any) {
           //   desirableClassroomIdsVar(desired.map(({classroom: {id}}) => id));
           // }
           meVar(user);
+          noTokenVar(false);
         }
       } catch (e) {
         setErrorMessage(e?.graphQLErrors[0]?.message || JSON.stringify(e));

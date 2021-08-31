@@ -18,13 +18,13 @@ import {useQuery} from "@apollo/client";
 import ClassroomsBrowser from "../../components/ClassroomsBrowser/ClassroomsBrowser";
 import {GET_CLASSROOMS, GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
 import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
-import {GET_USER_BY_ID} from "../../api/operations/queries/users";
+import {GET_USER_BY_ID, GET_USERS} from "../../api/operations/queries/users";
 import {FOLLOW_USER} from "../../api/operations/subscriptions/user";
 import {getItem} from "../../api/asyncStorage";
 import {hasOwnClassroom, isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
-import {client, modeVar} from "../../api/client";
+import {client, modeVar, noConnectionVar} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
 import Log from "../../components/Log";
 import ConfirmContinueDesiredQueue from "../../components/ConfirmContinueDesiredQueue";
@@ -32,8 +32,11 @@ import {usePrevious} from "../../hooks/usePrevious";
 import InlineDialog from "../../components/InlineDialog";
 import QueueOutDialog from "../../components/QueueOutDialog";
 import {sendPushNotification} from "../PushNotification";
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
+import ErrorDialog from "../../components/ErrorDialog";
+import * as Updates from 'expo-updates';
+import ReturnToQueueDialog from "../../components/ReturnToQueueDialog";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -105,6 +108,7 @@ type QueryClassroomsData = {
 
 const ClassroomsList: React.FC = ({route}: any) => {
   const {data: {mode}} = useLocal('mode');
+  const {data: {noConnection}} = useLocal('noConnection');
   const navigation = useNavigation();
   const {data: {pushNotificationToken}} = useLocal('pushNotificationToken');
   const [showLog, setShowLog] = useState(false);
@@ -250,7 +254,38 @@ const ClassroomsList: React.FC = ({route}: any) => {
     setShowLog(prevState => !prevState);
   }
 
-  return (
+  const handleReload = () => {
+    try {
+      client.query({
+        query: GET_CLASSROOMS,
+        fetchPolicy: 'network-only'
+      });
+      client.query({
+        query: GET_USER_BY_ID,
+        variables: {
+          where: {
+            id: route.params.currentUserId
+          }
+        },
+        fetchPolicy: 'network-only'
+      });
+      client.query({
+        query: GENERAL_QUEUE_SIZE,
+        fetchPolicy: 'network-only'
+      });
+      noConnectionVar(false);
+    } catch (e) {
+
+    }
+  }
+
+  return noConnection ? (
+    <ErrorDialog visible={noConnection}
+                 hideDialog={handleReload}
+                 message="Немає з'єднання з інтернетом"
+                 buttonText='Перезавантажити'
+    />
+  ) : (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
                      style={{width: '100%', height: windowHeight}}>
       {!loading && !error && !userLoading && !userError
@@ -348,6 +383,12 @@ const ClassroomsList: React.FC = ({route}: any) => {
       </View>
       {!!userData && !loading && !error && (
         <Buttons currentUser={userData.user} classrooms={data.classrooms}/>
+      )}
+      {userData &&
+      userData.user.queueInfo.currentSession?.state === UserQueueState.QUEUE_RESERVED_NOT_OCCUPYING && (
+        <ReturnToQueueDialog
+          remainingOccupationTime={userData.user.queueInfo?.currentSession?.remainingOccupationTime}
+        />
       )}
     </ImageBackground>
   )

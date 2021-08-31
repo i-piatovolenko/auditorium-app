@@ -3,7 +3,7 @@ import {ACCESS_RIGHTS, Langs, Mode, User} from "../models/models";
 import {WebSocketLink} from '@apollo/client/link/ws';
 import {getMainDefinition} from "@apollo/client/utilities";
 import {setContext} from "@apollo/client/link/context";
-import {getItem} from "./asyncStorage";
+import {getItem, removeItem} from "./asyncStorage";
 import {onError} from "@apollo/client/link/error";
 
 const wsLink: any = new WebSocketLink({
@@ -58,13 +58,29 @@ const splitLink = split(
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors)
-    graphQLErrors.forEach(({ message, locations, path }) =>
+    graphQLErrors.forEach(({ message,
+                             locations,
+                             path }) => {
+      if (message === 'AUTHENTICATION_ERROR') {
+        noTokenVar(true);
+      }
       alert(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-      ),
+          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        )
+      }
     );
 
-  if (networkError) noConnectionVar(true);
+  // @ts-ignore
+  if (networkError && networkError.bodyText === 'Invalid options provided to ApolloServer: BAD_TOKEN') {
+    noTokenVar(true);
+    removeItem('token');
+    removeItem('user');
+  } else if (networkError && networkError.message === 'Failed to fetch') {
+    noConnectionVar(true);
+  } else {
+    noTokenVar(false);
+    noConnectionVar(false);
+  }
 });
 
 export const client = new ApolloClient({
@@ -119,6 +135,11 @@ export const client = new ApolloClient({
               return noConnectionVar();
             },
           },
+          noToken: {
+            read() {
+              return noTokenVar();
+            },
+          },
         },
       },
     },
@@ -134,3 +155,4 @@ export const desirableClassroomIdsVar = makeVar<number[]>([]);
 export const isMinimalSetupVar = makeVar(true);
 export const pushNotificationTokenVar = makeVar('');
 export const noConnectionVar = makeVar(false);
+export const noTokenVar = makeVar(false);

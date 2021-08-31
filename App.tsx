@@ -10,6 +10,7 @@ import * as Localization from 'expo-localization';
 import i18n from 'i18n-js';
 import en from './localization/en.json';
 import ua from './localization/ua.json';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 i18n.locale = Localization.locale;
 i18n.fallbacks = true;

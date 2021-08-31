@@ -28,6 +28,7 @@ export const FOLLOW_USER = gql`
           id
           state
           skips
+          remainingOccupationTime
         }
       }
     }
