@@ -14,11 +14,15 @@ export enum Mode {
 export enum ErrorCodesUa {
   INVALID_PASSWORD = "Невірний пароль",
   USER_NOT_FOUND = "Користувача не знайдено",
+  EMAIL_NOT_CONFIRMED = "Будь-ласка, підтвердіть вашу e-mail адресу. Для цього перейдіть за посиланням яке було відправлене на вашу поштову скриньку.",
+  USER_NOT_VERIFIED = "Ви не верифіковані. Підтвердіть ваші дані в учбовій частині."
 }
 
 export enum ErrorCodes {
   INVALID_PASSWORD = "INVALID_PASSWORD",
   USER_NOT_FOUND = "USER_NOT_FOUND",
+  EMAIL_NOT_CONFIRMED = "EMAIL_NOT_CONFIRMED",
+  USER_NOT_VERIFIED = "USER_NOT_VERIFIED"
 }
 
 export enum EmploymentTypes {

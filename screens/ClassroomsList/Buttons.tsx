@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, Text, View} from "react-native";
 import {Button} from "react-native-paper";
 import Colors from "../../constants/Colors";
-import {hasOwnClassroom} from "../../helpers/helpers";
-import {ClassroomType, Mode, SavedFilterT} from "../../models/models";
+import {hasOwnClassroom, isEnabledForQueue} from "../../helpers/helpers";
+import {ClassroomType, Mode, OccupiedState, SavedFilterT} from "../../models/models";
 import {useLocal} from "../../hooks/useLocal";
 import {desirableClassroomIdsVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
@@ -20,8 +20,10 @@ type PropTypes = {
   classrooms: ClassroomType[];
 }
 
-const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil}, ...currentUser},
-                                        classrooms}) => {
+const Buttons: React.FC<PropTypes> = ({
+                                        currentUser: {queueInfo: {sanctionedUntil}, ...currentUser},
+                                        classrooms
+                                      }) => {
   const {data: {mode}} = useLocal('mode');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
@@ -68,9 +70,18 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
     setLoading(false);
   };
 
+  const hasAvailableClassroomsForQueue = () => {
+    if (!classrooms.length) return false;
+    return !!(classrooms.filter(classroom => {
+      return filterDisabledForQueue(classroom, currentUser);
+    })
+      .filter(({occupied: {state}}) => state !== OccupiedState.FREE).length);
+  }
+
   return (
     <View style={styles.wrapper}>
-      {mode === Mode.PRIMARY && !(hasOwnClassroom(currentUser.occupiedClassrooms)) && (
+      {mode === Mode.PRIMARY
+      && !(hasOwnClassroom(currentUser.occupiedClassrooms)) && hasAvailableClassroomsForQueue() && (
         <Button style={styles.getInLine} mode='contained' color={Colors.blue}
                 onPress={handlePress} loading={loading} disabled={loading}>
           <Text>Стати в чергу</Text>
@@ -82,11 +93,11 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
                   onPress={handlePress} loading={loading} disabled={loading}>
             <Text>Відміна</Text>
           </Button>
-          <Button style={styles.approve} mode='contained' color={Colors.blue}
-                  disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length)|| loading}
-                  onPress={handleReady} loading={loading}>
-            <Text>Стати в чергу</Text>
-          </Button>
+          {hasAvailableClassroomsForQueue() && <Button style={styles.approve} mode='contained' color={Colors.blue}
+                                                       disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length) || loading}
+                                                       onPress={handleReady} loading={loading}>
+              <Text>Стати в чергу</Text>
+          </Button>}
         </>
       )}
       {mode === Mode.INLINE && (
@@ -96,7 +107,7 @@ const Buttons: React.FC<PropTypes> = ({currentUser: {queueInfo: {sanctionedUntil
         </Button>
       )}
       <ErrorDialog visible={visibleModalError} hideDialog={() => setVisibleModalError(false)}
-        message={queueErrorMessage}
+                   message={queueErrorMessage}
       />
       <WaitDialog visible={loading}/>
       <ConfirmLineOut hideDialog={() => setVisibleLineOut(false)} visible={visibleLineOut}/>

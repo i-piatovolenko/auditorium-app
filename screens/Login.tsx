@@ -1,18 +1,32 @@
 import * as React from 'react';
-import {useEffect, useState} from 'react';
-import {Image, ImageBackground, StyleSheet, TouchableHighlight} from 'react-native';
-import {Button, Surface, TextInput} from 'react-native-paper';
+import {useEffect, useRef, useState} from 'react';
+import {CheckBox, Dimensions, Image, ImageBackground, StyleSheet, TouchableOpacity} from 'react-native';
+import {Button, Checkbox, IconButton, Paragraph, Surface, TextInput, Title} from 'react-native-paper';
 import {Text, View} from '../components/Themed';
-import {useMutation, useQuery} from "@apollo/client";
+import {useMutation} from "@apollo/client";
 import {LOGIN} from "../api/operations/mutations/login";
 import WaitDialog from "../components/WaitDialog";
-import {getItem, setItem} from "../api/asyncStorage";
+import {getItem, removeItem, setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
-import {ErrorCodes, ErrorCodesUa, Langs, Mode, QueueState, QueueType, User} from "../models/models";
-import {desirableClassroomIdsVar, langVar, meVar, minimalClassroomIdsVar, modeVar, noTokenVar} from "../api/client";
+import {ErrorCodes, ErrorCodesUa, Langs, User} from "../models/models";
+import {meVar, noTokenVar} from "../api/client";
 import PushNotification from "./PushNotification";
-import {GET_LANG} from "../api/operations/queries/lang";
 import i18n from "i18n-js";
+// @ts-ignore
+import Carousel from 'react-native-anchor-carousel';
+import Colors from "../constants/Colors";
+import SimplePaginationDot from "../components/SimplePaginationDot";
+
+const {width: windowWidth} = Dimensions.get('window');
+
+const INITIAL_INDEX = 0;
+
+const hintTexts = [
+  'Ви можете зберегти додаток на головному екрані.',
+  'Щоб користуватись додатком, пройдіть реєстрацію. Вкажіть дійсні дані, які співпадають з Вашим студентським квитком або іншим документом.',
+  'Вкажіть дійсний e-mail. На нього буде відправлено повідомлення з підтвердженням.',
+  'Після реєстрації перевірте електронну пошту. В надісланому повідомленні перейдіть за посиланням. Після цього повідомте верифікаційний номер в учбовій частині.'
+]
 
 export default function Login({route, navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
@@ -23,7 +37,39 @@ export default function Login({route, navigation}: any) {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [pushNotificationToken, setPushNotificationToken] = useState('');
+  const carouselRef = React.useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [showHints, setShowHints] = useState(false);
+
+  function handleCarouselScrollEnd(item: any, index: number) {
+    setCurrentIndex(index);
+  }
+
+  const renderItem = ({item, index}: any) => {
+    return (
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() => {
+          carouselRef.current.scrollToIndex(index);
+        }}>
+        <View>
+          <Image source={require(`../assets/images/hint_${index + 1}.jpg`)} style={styles.hintImage}/>
+        </View>
+        <Paragraph style={styles.hintDescription}>
+          {hintTexts[index]}
+        </Paragraph>
+      </TouchableOpacity>
+    );
+  }
   // const {data: {lang}} = useQuery(GET_LANG);
+
+  useEffect(() => {
+    getItem('dontShowLoginHints').then(result => {
+      setShowHints(!result);
+      setDontShowAgain(result);
+    });
+  }, []);
 
   useEffect(() => {
     if (modalActivator !== null) {
@@ -92,10 +138,52 @@ export default function Login({route, navigation}: any) {
     }
   };
 
+  const handleShowHints = () => {
+    setShowHints(prevState => !prevState);
+  };
+
+  const handleRememberDontShowHints = async () => {
+    if (!dontShowAgain) {
+      await setItem('dontShowLoginHints', true);
+    } else {
+      await removeItem('dontShowLoginHints');
+    }
+    setDontShowAgain(!dontShowAgain);
+  }
+
   return (
     <View style={styles.container}>
       {/*<PushNotification setPushNotificationToken={setPushNotificationToken}/>*/}
       <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
+        <TouchableOpacity onPress={handleShowHints}
+                          style={styles.helpImageButtonWrapper}>
+          <Image source={require('../assets/images/help_white.png')} style={styles.helpImageButton}/>
+        </TouchableOpacity>
+        <Surface style={[styles.hintsPopup, {display: showHints ? 'flex' : 'none'}]}>
+          <IconButton icon='close' color={Colors.red} onPress={handleShowHints} style={styles.closeIcon}/>
+          <View style={styles.hintsTitle}>
+            <Text style={styles.hintsTitleText}>Корисні поради</Text>
+            <Image source={require('../assets/images/help.png')} style={styles.helpImage}/>
+          </View>
+          <Carousel
+            ref={carouselRef}
+            data={Array(4).fill(0)}
+            renderItem={renderItem}
+            style={styles.carousel}
+            itemWidth={windowWidth * 0.75}
+            containerWidth={windowWidth * 0.85}
+            onScrollEnd={handleCarouselScrollEnd}
+            separatorWidth={8}
+          />
+          <View style={styles.checkbox}>
+            <Checkbox
+              status={dontShowAgain ? 'checked' : 'unchecked'}
+              onPress={handleRememberDontShowHints}
+            />
+            <Paragraph>Більше не показувати</Paragraph>
+          </View>
+          {/*<SimplePaginationDot currentIndex={currentIndex} length={4} />*/}
+        </Surface>
         <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
         {/*<View style={styles.langSwitcher}>*/}
         {/*  <TouchableHighlight onPress={() => handleChangeLang(Langs.UA)}>*/}
@@ -124,7 +212,6 @@ export default function Login({route, navigation}: any) {
                                             onPress={() => setShowPassword(prevState => !prevState)}
                      />}
           />
-
           <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
                   style={styles.button} disabled={(!email || !password) || loading}>
             Увійти
@@ -214,5 +301,68 @@ const styles = StyleSheet.create({
   langImageSelected: {
     width: 50,
     height: 35,
+  },
+  carousel: {
+    flexGrow: 0,
+    height: 300,
+  },
+  item: {},
+  hintsPopup: {
+    elevation: 25,
+    zIndex: 1000,
+    borderRadius: 9,
+    position: 'absolute',
+    width: windowWidth * .9,
+    backgroundColor: '#fff',
+// overflow: 'hidden',
+    paddingHorizontal: 16
+  },
+  hintsTitle: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  hintsTitleText: {
+    marginTop: 24,
+    color: Colors.darkBlue,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16
+  },
+  helpImage: {
+    width: 48,
+    height: 48,
+    position: 'absolute',
+    left: 8,
+    top: 16,
+    opacity: .3
+  },
+  helpImageButton: {
+    width: 32,
+    height: 32,
+  },
+  helpImageButtonWrapper: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+  },
+  hintImage: {
+    height: 180
+  },
+  hintDescription: {
+    marginTop: 16
+  },
+  checkbox: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  closeIcon: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    zIndex: 1001
   }
 });
