@@ -1,11 +1,11 @@
 {
   "files": {
-    "app.js": "/static/js/app.eb253ce5.chunk.js",
-    "app.js.map": "/static/js/app.eb253ce5.chunk.js.map",
+    "app.js": "/static/js/app.1c4a5f7e.chunk.js",
+    "app.js.map": "/static/js/app.1c4a5f7e.chunk.js.map",
     "runtime~app.js": "/static/js/runtime~app.2e9f1821.js",
     "runtime~app.js.map": "/static/js/runtime~app.2e9f1821.js.map",
-    "static/js/2.43566fc2.chunk.js": "/static/js/2.43566fc2.chunk.js",
-    "static/js/2.43566fc2.chunk.js.map": "/static/js/2.43566fc2.chunk.js.map",
+    "static/js/2.ae7120e7.chunk.js": "/static/js/2.ae7120e7.chunk.js",
+    "static/js/2.ae7120e7.chunk.js.map": "/static/js/2.ae7120e7.chunk.js.map",
     "fonts/MaterialCommunityIcons.ttf": "/./fonts/MaterialCommunityIcons.ttf",
     "favicon-16.png": "/favicon-16.png",
     "favicon-32.png": "/favicon-32.png",
@@ -13,7 +13,7 @@
     "index.html": "/index.html",
     "manifest.json": "/manifest.json",
     "serve.json": "/serve.json",
-    "static/js/2.43566fc2.chunk.js.LICENSE.txt": "/static/js/2.43566fc2.chunk.js.LICENSE.txt",
+    "static/js/2.ae7120e7.chunk.js.LICENSE.txt": "/static/js/2.ae7120e7.chunk.js.LICENSE.txt",
     "static/media/Chembalo.png": "/static/media/Chembalo.5e053f8a.png",
     "static/media/GrandPiano.png": "/static/media/GrandPiano.5e053f8a.png",
     "static/media/UpRightPiano.png": "/static/media/UpRightPiano.791ce387.png",
@@ -22,17 +22,13 @@
     "static/media/bg.jpg": "/static/media/bg.5326a7ca.jpg",
     "static/media/help.png": "/static/media/help.60dca5bc.png",
     "static/media/help_white.png": "/static/media/help_white.e1af6cda.png",
-    "static/media/hint_1.jpg": "/static/media/hint_1.7332a75d.jpg",
-    "static/media/hint_2.jpg": "/static/media/hint_2.a6177960.jpg",
-    "static/media/hint_3.jpg": "/static/media/hint_3.ee66fa40.jpg",
-    "static/media/hint_4.jpg": "/static/media/hint_4.e39331a6.jpg",
     "static/media/key.png": "/static/media/key.5df04324.png",
     "static/media/specialPiano.png": "/static/media/specialPiano.11c92757.png",
     "static/media/star.png": "/static/media/star.f99f6a14.png"
   },
   "entrypoints": [
     "static/js/runtime~app.2e9f1821.js",
-    "static/js/2.43566fc2.chunk.js",
-    "static/js/app.eb253ce5.chunk.js"
+    "static/js/2.ae7120e7.chunk.js",
+    "static/js/app.1c4a5f7e.chunk.js"
   ]
 }
