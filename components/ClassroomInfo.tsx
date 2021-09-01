@@ -21,6 +21,10 @@ import InstrumentItem from "./InstrumentItem";
 import OccupantInfo from "./OccupantInfo";
 import ClassroomQueueControlButtons from "./ClassroomQueueControlButtons";
 import {RESERVE_FREE_CLASSROOM} from "../api/operations/mutations/reserveFreeClassroom";
+import {getDistance} from "../helpers/getDistance";
+import {MAX_DISTANCE, UNIVERSITY_LOCATION} from "../constants/constants";
+import * as Location from "expo-location";
+import ErrorDialog from "./ErrorDialog";
 
 interface PropTypes {
   route: any;
@@ -47,6 +51,35 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [isNear, setIsNear] = useState(false);
+
+  useEffect(() => {
+    if (location) {
+      const distance = getDistance(location.coords.latitude, location.coords.longitude,
+        UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
+      if (distance <= MAX_DISTANCE) {
+        setIsNear(true);
+      } else {
+        setIsNear(false);
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує 150 м. Ваша відстань: ${
+          (distance * 1000).toFixed(0)
+        } м.`)
+      }
+    }
+  }, [location]);
+
+  const getCurrentLocation = async () => {
+    let {status} = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
+      return;
+    }
+    setErrorMsg(null);
+    let location = await Location.getCurrentPositionAsync({});
+    setLocation(location);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -72,27 +105,31 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
 
   const getReservedClassroom = async () => {
     setLoading(true);
-    try {
-    const result = await client.mutate({
-      mutation: RESERVE_FREE_CLASSROOM,
-      variables: {
-        input: {
-          classroomName: classroom.name
+    await getCurrentLocation();
+    if (isNear) {
+      try {
+        const result = await client.mutate({
+          mutation: RESERVE_FREE_CLASSROOM,
+          variables: {
+            input: {
+              classroomName: classroom.name
+            }
+          }
+        });
+        if (result.data.reserveFreeClassroom.userErrors.length) {
+          result.data.reserveFreeClassroom.userErrors.forEach(({message}: any) => {
+            alert(JSON.stringify(message))
+          })
+        } else {
+          goBack();
+          setLoading(false);
         }
+      } catch (e) {
+        alert(JSON.stringify(e));
+        setLoading(false);
       }
-    });
-    if (result.data.reserveFreeClassroom.userErrors.length) {
-      result.data.reserveFreeClassroom.userErrors.forEach(({message}: any) => {
-        alert(JSON.stringify(message))
-      })
-    } else {
-      goBack();
-      setLoading(false);
     }
-    } catch (e) {
-      alert(JSON.stringify(e));
-      setLoading(false);
-    }
+    setLoading(false);
   };
 
   return <View style={styles.container}>
@@ -174,6 +211,9 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
           )}
         </View>
       )}
+      <ErrorDialog visible={!!errorMsg} hideDialog={() => setErrorMsg(null)}
+                   message={errorMsg}
+      />
     </View>
   </View>
 };

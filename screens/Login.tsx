@@ -54,7 +54,7 @@ export default function Login({route, navigation}: any) {
           carouselRef.current.scrollToIndex(index);
         }}>
         <View>
-          <Image source={require(`../assets/images/hint_${index + 1}.jpg`)} style={styles.hintImage}/>
+          {/*<Image source={require(`../assets/images/hint_${index + 1}.jpg`)} style={styles.hintImage}/>*/}
         </View>
         <Paragraph style={styles.hintDescription}>
           {hintTexts[index]}

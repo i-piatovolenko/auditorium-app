@@ -1,0 +1,6 @@
+export const UNIVERSITY_LOCATION = {
+  lat: 50.44902530334269,
+  long: 30.52519006935677
+}
+
+export const MAX_DISTANCE = 0.150;

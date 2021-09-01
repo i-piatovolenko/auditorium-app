@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View} from "react-native";
 import {Button} from "react-native-paper";
 import Colors from "../../constants/Colors";
-import {hasOwnClassroom, isEnabledForQueue} from "../../helpers/helpers";
+import {hasOwnClassroom} from "../../helpers/helpers";
 import {ClassroomType, Mode, OccupiedState, SavedFilterT} from "../../models/models";
 import {useLocal} from "../../hooks/useLocal";
 import {desirableClassroomIdsVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
@@ -14,6 +14,9 @@ import ErrorDialog from "../../components/ErrorDialog";
 import moment from "moment";
 import WaitDialog from "../../components/WaitDialog";
 import ConfirmLineOut from "../../components/ConfirmLineOut";
+import * as Location from 'expo-location';
+import {getDistance} from "../../helpers/getDistance";
+import {MAX_DISTANCE, UNIVERSITY_LOCATION} from "../../constants/constants";
 
 type PropTypes = {
   currentUser: any;
@@ -32,7 +35,35 @@ const Buttons: React.FC<PropTypes> = ({
     .format('DD-MM-YYYY HH:mm') : ''}. До закінчення санкційного терміну ви можете брати вільні аудиторії.`;
   const [loading, setLoading] = useState(false);
   const [visibleLineOut, setVisibleLineOut] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [isNear, setIsNear] = useState(false);
 
+  useEffect(() => {
+    if (location) {
+      const distance = getDistance(location.coords.latitude, location.coords.longitude,
+        UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
+      if (distance <= MAX_DISTANCE) {
+        setIsNear(true);
+      } else {
+        setIsNear(false);
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує 150 м. Ваша відстань: ${
+          (distance*1000).toFixed(0)
+        } м.`)
+      }
+    }
+  }, [location]);
+
+  const getCurrentLocation = async () => {
+    let {status} = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
+      return;
+    }
+    setErrorMsg(null);
+    let location = await Location.getCurrentPositionAsync({});
+    setLocation(location);
+  };
 
   const handlePress = async () => {
     setLoading(true);
@@ -66,7 +97,11 @@ const Buttons: React.FC<PropTypes> = ({
 
   const handleReady = async () => {
     setLoading(true);
-    await getInLine(minimalClassroomIds, desirableClassroomIds);
+    await getCurrentLocation();
+    if (isNear) {
+      await getInLine(minimalClassroomIds, desirableClassroomIds);
+      setLoading(false);
+    }
     setLoading(false);
   };
 
@@ -108,6 +143,9 @@ const Buttons: React.FC<PropTypes> = ({
       )}
       <ErrorDialog visible={visibleModalError} hideDialog={() => setVisibleModalError(false)}
                    message={queueErrorMessage}
+      />
+      <ErrorDialog visible={!!errorMsg} hideDialog={() => setErrorMsg(null)}
+                   message={errorMsg}
       />
       <WaitDialog visible={loading}/>
       <ConfirmLineOut hideDialog={() => setVisibleLineOut(false)} visible={visibleLineOut}/>
