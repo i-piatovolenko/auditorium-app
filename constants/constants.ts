@@ -3,4 +3,4 @@ export const UNIVERSITY_LOCATION = {
   long: 30.52519006935677
 }
 
-export const MAX_DISTANCE = 0.150;
+export const MAX_DISTANCE = 7.750;

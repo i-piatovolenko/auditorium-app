@@ -17,6 +17,8 @@ import ConfirmLineOut from "../../components/ConfirmLineOut";
 import * as Location from 'expo-location';
 import {getDistance} from "../../helpers/getDistance";
 import {MAX_DISTANCE, UNIVERSITY_LOCATION} from "../../constants/constants";
+import {useQuery} from "@apollo/client";
+import {PERMITTED_ACTION_HOURS} from "../../api/operations/queries/permittedActionHours";
 
 type PropTypes = {
   currentUser: any;
@@ -38,6 +40,8 @@ const Buttons: React.FC<PropTypes> = ({
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [isNear, setIsNear] = useState(false);
+  const {data: {permittedActionHours} = {},
+    loading: loadingTime, error: errorTime} = useQuery(PERMITTED_ACTION_HOURS);
 
   useEffect(() => {
     if (location) {

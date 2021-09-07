@@ -1,8 +1,8 @@
 import * as React from 'react';
+import {useEffect, useState} from 'react';
 import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text} from 'react-native';
 import {View} from '../../components/Themed';
 import {Appbar, Banner, Button, Checkbox, HelperText, TextInput} from 'react-native-paper';
-import {useEffect, useState} from "react";
 import Agreement from "./components/Agreement";
 import CustomPickerField from "../../components/CustomPicker/CustomPickerField";
 import moment from "moment";
@@ -10,6 +10,9 @@ import {useMutation} from "@apollo/client";
 import {SIGN_UP} from "../../api/operations/mutations/signUp";
 import InfoDialog from "../../components/InfoDialog";
 import {ErrorCodes, ErrorCodesUa, UserTypes, UserTypesUa} from "../../models/models";
+import {GET_UNSIGNED_DEPARTMENTS} from "../../api/operations/queries/unsignedDepartments";
+import {client} from "../../api/client";
+import {GET_UNSIGNED_DEGREES} from "../../api/operations/queries/unsignedDegrees";
 
 const currentYear: number = parseInt(moment().format('YYYY'));
 
@@ -21,8 +24,8 @@ const startYearsItems = [
 ];
 
 const userTypesData = [
-  {id: 1, name: UserTypes.POST_GRADUATE},
-  {id: 2, name: UserTypes.STUDENT},
+  {id: UserTypes.STUDENT, name: UserTypesUa[UserTypes.STUDENT as UserTypes]},
+  {id: UserTypes.POST_GRADUATE, name: UserTypesUa[UserTypes.POST_GRADUATE as UserTypes]},
 ];
 
 const windowHeight = Dimensions.get('window').height;
@@ -47,8 +50,8 @@ export default function SignUp({navigation}: any) {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [checkAgreement, setCheckAgreement] = useState(false);
-  const [departments, setDepartments] = useState([{id: 1, name: 'DEFAULT_DEPARTMENT'}]);
-  const [degrees, serDegrees] = useState([{id: 1, name: 'DEFAULT_DEGREE'}]);
+  const [departments, setDepartments] = useState([{id: -1, name: 'DEFAULT_DEPARTMENT'}]);
+  const [degrees, setDegrees] = useState([{id: -1, name: 'DEFAULT_DEGREE'}]);
 
   const [isSignupTouched, setIsSignupTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -70,13 +73,17 @@ export default function SignUp({navigation}: any) {
   const [signup, {loading, error}] = useMutation(SIGN_UP);
 
   useEffect(() => {
-    // client.query({query: GET_UNSIGNED_DEPARTMENTS,
-    //   fetchPolicy: 'network-only',
-    // }).then(({data}) => {
-    //   setDepartments(data.signupFacultiesDepartments.departments.slice()
-    //     .sort((a: Department, b: Department) => a.id - b.id))
-    // });
-  }, [])
+    client.query({query: GET_UNSIGNED_DEPARTMENTS,
+      fetchPolicy: 'network-only',
+    }).then(({data}) => {
+      setDepartments(data.signupDepartments);
+    });
+    client.query({query: GET_UNSIGNED_DEGREES,
+      fetchPolicy: 'network-only',
+    }).then(({data}) => {
+      setDegrees(data.signupDegrees);
+    });
+  }, []);
 
   const checkLastNameValidation = (value: string) => {
     if (!value) {
@@ -161,8 +168,6 @@ export default function SignUp({navigation}: any) {
   };
 
   const handleSubmit = async () => {
-    navigation.navigate('SignUpStepTwo');
-
     checkLastNameValidation(lastName);
     checkFirstNameValidation(firstName);
     checkEmailValidation(email);
@@ -189,7 +194,7 @@ export default function SignUp({navigation}: any) {
               departmentId: selectedDepartment.id,
               degreeId: selectedDegree.id,
               startYear: selectedStartYear.id,
-              type: selectedType.name
+              type: selectedType.id
             }
           }
         });

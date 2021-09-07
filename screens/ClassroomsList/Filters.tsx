@@ -47,8 +47,8 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
         <Headline>Фільтри аудиторій для черги</Headline>
       </View>
       <View style={styles.body}>
-        <Button icon='pencil' onPress={showModalInstrumentFilters}>
-          <Text>
+        <Button icon='pencil' onPress={showModalInstrumentFilters} style={styles.instrumentsButton} >
+          <Text numberOfLines={1}>
             { !instruments.length
               ? 'Будь-які або без інструментів'
               : `${instruments.length} інструмент${getEnding()}` }
@@ -133,5 +133,9 @@ const styles = StyleSheet.create({
   buttons: {
     flexDirection: 'row',
     justifyContent: 'center'
+  },
+  instrumentsButton: {
+    overflow: 'hidden',
+    width: 280
   }
 });

@@ -35,7 +35,6 @@ import {sendPushNotification} from "../PushNotification";
 import {useNavigation} from '@react-navigation/native';
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import ErrorDialog from "../../components/ErrorDialog";
-import * as Updates from 'expo-updates';
 import ReturnToQueueDialog from "../../components/ReturnToQueueDialog";
 
 const Stack = createStackNavigator<RootStackParamList>();

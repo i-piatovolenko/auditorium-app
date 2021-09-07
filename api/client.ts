@@ -63,8 +63,11 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
                              path }) => {
       if (message === 'AUTHENTICATION_ERROR') {
         noTokenVar(true);
+        removeItem('token');
+        removeItem('user');
+        meVar(null);
       }
-      alert(
+      console.log(
           `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
         )
       }

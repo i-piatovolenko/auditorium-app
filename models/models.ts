@@ -242,7 +242,8 @@ export type ClassroomType = {
     faculty: Faculty;
     users: User[];
     exclusivelyQueueAllowedDepartmentsInfo: {
-      department: Department | null }[];
+      department: Department | null
+    }[];
   } | null;
   special: string | null;
   floor: number;
@@ -361,4 +362,9 @@ export enum Langs {
 export enum EnqueuedBy {
   SELF = 'SELF',
   DISPATCHER = 'DISPATCHER'
+}
+
+export enum PermittedActionHoursTypes {
+  RESERVE_FREE_CLASSROOM = 'RESERVE_FREE_CLASSROOM',
+  QUEUE_ACTION = 'QUEUE_ACTION'
 }

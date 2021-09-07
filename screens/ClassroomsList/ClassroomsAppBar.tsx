@@ -44,6 +44,12 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
   const [generalQueuePosition, setGeneralQueuePosition] = useState(0);
 
   useEffect(() => {
+    if (!loadingPosition && !errorPosition) {
+      setGeneralQueuePosition(dataPosition.generalQueuePosition);
+    }
+  }, [dataPosition, loadingPosition, errorPosition]);
+
+  useEffect(() => {
     const unsubscribeSize = subscribeToMore({
         document: FOLLOW_GENERAL_QUEUE_SIZE,
         updateQuery: (prev, {subscriptionData}) => {
@@ -120,7 +126,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
                      color='#fff'
       />
       {mode === Mode.INLINE && (
-        <Appbar.Content title={`Ваша позиція в черзі: ${generalQueuePosition}`}
+        <Appbar.Content title={`Ваша позиція в черзі: ${generalQueuePosition + 1}`}
                         color='#fff'
         />
       )}
@@ -135,7 +141,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
           <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '88%'}}>
             <View style={styles.queueSwitcher}>
               <Button mode={isMinimalSetup ? 'contained' : 'text'}
-                      style={{position: 'relative', width: '45%'}}
+                      style={{position: 'relative', width: isMinimalSetup ? '65%' : '30%'}}
                       color='#fff'
                       onPress={() => isMinimalSetupVar(true)}
               >
@@ -143,7 +149,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
               </Button>
               <Button
                 mode={!isMinimalSetup ? 'contained' : 'text'}
-                style={{position: 'relative', width: '35%'}}
+                style={{position: 'relative', width: !isMinimalSetup ? '55%' : '35%'}}
                 color='#fff'
                 onPress={() => isMinimalSetupVar(false)}
               >

@@ -1,6 +1,6 @@
 import React from 'react'
-import {StyleSheet, View, TouchableOpacity, Image, Text} from 'react-native'
-import {Dialog, Paragraph, Portal, ProgressBar} from "react-native-paper";
+import {StyleSheet, View, TouchableOpacity, Image} from 'react-native'
+import {Dialog, Portal} from "react-native-paper";
 
 type PropTypes = {
   size: number;
@@ -25,12 +25,10 @@ export default function CustomRating({size = 5, count, setCount, visible, hideDi
         <Dialog.Title style={{textAlign: 'center'}}>Виберіть мінімальний рейтинг</Dialog.Title>
         <Dialog.Content>
           <View style={styles.rate}>
-            <Image source={require('../../assets/images/star.png')}
-            />
             {stars.map((value, index) => (
               <TouchableOpacity key={index} onPress={() => handleRate(index + 1)}>
                 <Image source={require('../../assets/images/star.png')}
-                       style={{...styles.star, opacity: index < count ? 1 : .3}}
+                       style={[styles.star, {opacity: index < count ? 1 : .3}]}
                 />
               </TouchableOpacity>
             ))}
