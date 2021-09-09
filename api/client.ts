@@ -143,6 +143,16 @@ export const client = new ApolloClient({
               return noTokenVar();
             },
           },
+          skippedClassroom: {
+            read() {
+              return skippedClassroomVar();
+            },
+          },
+          acceptedClassroom: {
+            read() {
+              return acceptedClassroomVar();
+            },
+          }
         },
       },
     },
@@ -159,3 +169,5 @@ export const isMinimalSetupVar = makeVar(true);
 export const pushNotificationTokenVar = makeVar('');
 export const noConnectionVar = makeVar(false);
 export const noTokenVar = makeVar(false);
+export const skippedClassroomVar = makeVar(false);
+export const acceptedClassroomVar = makeVar(false);

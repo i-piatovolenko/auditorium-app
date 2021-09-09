@@ -11,7 +11,6 @@ import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-nat
 import {useNavigation} from "@react-navigation/native";
 import {useQuery} from "@apollo/client";
 import {isEnabledForCurrentDepartment, isOccupiedOrPendingByCurrentUser} from "../helpers/helpers";
-import {useLocal} from "../hooks/useLocal";
 import {client} from "../api/client";
 import Colors from "../constants/Colors";
 import {GET_CLASSROOM} from "../api/operations/queries/classroom";
@@ -47,10 +46,6 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
       }
     }
   });
-  const {data: {mode}} = useLocal('mode');
-  const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
-  const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
-  const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [isNear, setIsNear] = useState(false);
@@ -143,7 +138,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
       )}
     </Appbar>
     <View style={styles.wrapper}>
-      {(!classroom || !userData) ? <ActivityIndicator animating color='#fff' size={64}/> : (
+      {(userLoading || !classroom) ? <ActivityIndicator animating color='#fff' size={64}/> : (
         <View>
           {!isEnabledForCurrentDepartment(classroom, userData.user) && (
             <View style={styles.warning}>
@@ -152,7 +147,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
           )}
           {classroom.disabled.state === DisabledState.DISABLED && (
             <View style={styles.warning}>
-              <Title style={styles.warningText}>Аудиторія відключена від системи</Title>
+              <Title style={styles.warningText}>Аудиторія недоступна</Title>
               <Title style={styles.warningText}>{classroom.disabled.comment}</Title>
               <Title style={styles.warningText}>
                 до {moment(classroom.disabled.until).format('DD-MM-YYYY HH:mm')}
@@ -164,19 +159,27 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
               <Title style={styles.warningText}>Аудиторія недоступна</Title>
             </View>
           )}
-          <View style={styles.tags}>
-            {classroom.isWing && <Chip selected selectedColor='#00f' mode='outlined'
-                                       style={styles.tag}>Флігель</Chip>}
-            {classroom.isOperaStudio && <Chip selected selectedColor='#00f' mode='outlined'
-                                              style={styles.tag}>Оперна студія</Chip>}
-            {classroom.special && <Chip selected selectedColor='#00f' mode='outlined'
-                                        style={styles.tag}>Спеціалізована</Chip>}
-          </View>
-          <Divider style={styles.divider}/>
-          <View>
-            <Text style={{textAlign: 'center'}}>{classroom.description}</Text>
-          </View>
-          <Divider style={styles.divider}/>
+          {classroom.isWing || classroom.isOperaStudio || classroom.special && (
+            <>
+              <View style={styles.tags}>
+                {classroom.isWing && <Chip selected selectedColor='#00f' mode='outlined'
+                                           style={styles.tag}>Флігель</Chip>}
+                {classroom.isOperaStudio && <Chip selected selectedColor='#00f' mode='outlined'
+                                                  style={styles.tag}>Оперна студія</Chip>}
+                {classroom.special && <Chip selected selectedColor='#00f' mode='outlined'
+                                            style={styles.tag}>Спеціалізована</Chip>}
+              </View>
+              <Divider style={styles.divider}/>
+            </>
+          )}
+          {classroom.description && (
+            <>
+              <View>
+                <Text style={{textAlign: 'center'}}>{classroom.description}</Text>
+              </View>
+              <Divider style={styles.divider}/>
+            </>
+          )}
           <View>
             <Text style={{textAlign: 'center'}}>Поверх: {classroom.floor}</Text>
           </View>
@@ -191,7 +194,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
               </>
             )}
           </View>
-          <OccupantInfo classroom={classroom} user={userData.user}/>
+          <OccupantInfo classroom={classroom} user={userData.user} navigation={navigation}/>
           {classroom.occupied.state !== OccupiedState.FREE
           && !isOccupiedOrPendingByCurrentUser(classroom.occupied, userData.user)
           && <ClassroomQueueControlButtons classroom={classroom} currentUser={userData.user}/>

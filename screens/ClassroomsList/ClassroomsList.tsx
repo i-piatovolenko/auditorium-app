@@ -27,7 +27,6 @@ import {useLocal} from "../../hooks/useLocal";
 import {client, modeVar, noConnectionVar} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
 import Log from "../../components/Log";
-import ConfirmContinueDesiredQueue from "../../components/ConfirmContinueDesiredQueue";
 import {usePrevious} from "../../hooks/usePrevious";
 import InlineDialog from "../../components/InlineDialog";
 import QueueOutDialog from "../../components/QueueOutDialog";
@@ -36,6 +35,8 @@ import {useNavigation} from '@react-navigation/native';
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import ErrorDialog from "../../components/ErrorDialog";
 import ReturnToQueueDialog from "../../components/ReturnToQueueDialog";
+import SkippedClassroomSnackbar from "../../components/SkippedClassroomSnackbar";
+import ClassroomAcceptedDialog from "../../components/ClassroomAcceptedDialog";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -110,6 +111,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const {data: {noConnection}} = useLocal('noConnection');
   const navigation = useNavigation();
   const {data: {pushNotificationToken}} = useLocal('pushNotificationToken');
+  const {data: {skippedClassroom}} = useLocal('skippedClassroom');
   const [showLog, setShowLog] = useState(false);
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
   const [showQueueInSuccess, setShownQueueInSuccess] = useState(false);
@@ -287,9 +289,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
   ) : (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
                      style={{width: '100%', height: windowHeight}}>
-      {!loading && !error && !userLoading && !userError
-      && userData.user.queueInfo.currentSession?.state === UserQueueState.IN_QUEUE_DESIRED_AND_OCCUPYING
-      && <ConfirmContinueDesiredQueue/>}
       {!userLoading && !userError && (
         <>
           <InlineDialog visible={showQueueInSuccess}
@@ -388,6 +387,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
         <ReturnToQueueDialog
           remainingOccupationTime={userData.user.queueInfo?.currentSession?.remainingOccupationTime}
         />
+      )}
+      <ClassroomAcceptedDialog/>
+      {skippedClassroom && userData && (
+        <SkippedClassroomSnackbar skipsCount={userData.user.queueInfo.currentSession?.skips}/>
       )}
     </ImageBackground>
   )

@@ -16,8 +16,10 @@ export const MAKE_DECISION_ON_QUEUE_RESERVED = gql`
               }
             }
             queueInfo {
-                state
-                remainingOccupationTime
+              currentSession {
+                  state
+                  remainingOccupationTime
+                }
               }
             }
             userErrors {

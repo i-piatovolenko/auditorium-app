@@ -1,21 +1,23 @@
 import React, {useState} from 'react';
 import {fullName, getTimeHHMM, isNotFree, isOwnClassroom, isPendingForMe} from "../helpers/helpers";
-import {StyleSheet, Text, View} from "react-native";
+import {CheckBox, StyleSheet, Text, View} from "react-native";
 import {Banner, Button, Paragraph, ProgressBar, Surface} from "react-native-paper";
 import {ClassroomType, Mode, OccupiedState, User, UserTypeColors, UserTypes, UserTypesUa} from "../models/models";
 import colors from "../constants/Colors";
 import UserInfo from "./UserInfo";
 import {useLocal} from "../hooks/useLocal";
 import useTimeLeft from "../hooks/useTimeLeft";
-import {client} from "../api/client";
+import {acceptedClassroomVar, client, skippedClassroomVar} from "../api/client";
 import {MAKE_DECISION_ON_PENDING_CLASSROOM} from "../api/operations/mutations/makeDecisionOnPendingClassroom";
+import {useNavigation} from '@react-navigation/native';
 
 type PropTypes = {
   classroom: ClassroomType;
   user: User;
+  navigation: any;
 }
 
-const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
+const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
   const {data: {mode}} = useLocal('mode');
   const userFullName = isNotFree(classroom?.occupied) ? fullName(classroom.occupied?.user) : '';
   const occupiedTotalTime = classroom.occupied.state === OccupiedState.OCCUPIED ? 180 :
@@ -27,23 +29,25 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
 
   const makeDecision = async (decision: boolean) => {
     setLoading(true);
+    skippedClassroomVar(!decision);
+    acceptedClassroomVar(decision);
     try {
       await client.mutate({
         mutation: MAKE_DECISION_ON_PENDING_CLASSROOM,
         variables: {
           input: {
             classroomName: classroom.name,
-            continueWaitingForDesiredClassrooms: decision
+            reserveClassroom: decision,
           }
         }
       });
       setLoading(false);
     } catch (e) {
-      alert(JSON.stringify(e));
+      console.log(JSON.stringify(e));
       setLoading(false);
     }
+    navigation.navigate('ClassroomsList');
   }
-
   const showModal = () => setVisible(true);
 
   const hideModal = () => setVisible(false);
@@ -101,7 +105,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
     {classroom.occupied.state === OccupiedState.PENDING &&
     classroom.occupied.user.id === user.id && mode === Mode.INLINE && (
       <>
-        {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
+        {timeLeftInPer > 0 && <View style={styles.infoBanner}>
             <Banner visible={visibleBanner} actions={[{
               label: 'Зрозуміло',
               onPress: () => setVisibleBanner(false)
@@ -109,12 +113,11 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
                     style={styles.spaceBottom30}
             >
               {
-                `Ви можете відхилити аудиторію ${user.queueInfo.currentSession?.skips} раз${user.queueInfo.currentSession?.skips === 2 || user.queueInfo.currentSession?.skips === 3 || user.queueInfo.currentSession?.skips === 4 ? 'и.' : '.'
-                } Якщо аудиторія не буде підтверджена на протязі визначеного часу, вона буде відхилена автоматично. Якщо показник допустимих відхилень дорівнює нулю і Ви не підтверджуєте та не відхиляєте аудиторію, вона автоматично відхиляється і Ви вибуваєте з черги.`
+                `Доступні пропуски аудиторій: ${user.queueInfo.currentSession?.skips ? user.queueInfo.currentSession?.skips : 0}. Якщо аудиторія не буде підтверджена на протязі визначеного часу, вона буде пропущена автоматично. Якщо показник допустимих пропусків дорівнює нулю і Ви не підтверджуєте та не відхиляєте аудиторію, вона автоматично пропускається і Ви вибуваєте з черги.`
               }
             </Banner>
             <Paragraph>
-                Часу на прийняття рішення залишилось: {timeLeft}
+                Часу до автоматичного пропуску: {timeLeft}
             </Paragraph>
             <ProgressBar progress={timeLeftInPer as number / 100} visible color={colors.red}
                          style={styles.progressBar}
@@ -124,7 +127,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user}) => {
           <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
                   disabled={loading}
                   onPress={() => makeDecision(false)}>
-            Відхилити аудиторію
+            Пропустити аудиторію
           </Button>
           <Button mode='contained' onPress={() => makeDecision(true)} loading={loading}
                   disabled={loading}>
@@ -176,6 +179,10 @@ const styles = StyleSheet.create({
   },
   spaceBottom30: {
     marginBottom: 30,
+    backgroundColor: '#ffffff'
+  },
+  infoBanner: {
+    marginVertical: 30,
     backgroundColor: '#ffffff'
   }
 });
