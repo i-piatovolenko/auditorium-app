@@ -13,7 +13,7 @@ export default function Users() {
   const navigation = useNavigation();
   const users = useUsers();
   const [pages, setPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [visible, setVisible] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(0);
   const [searchText, setSearchText] = useState('');
@@ -37,12 +37,13 @@ export default function Users() {
                           style={{width: '100%', height: windowHeight}}>
     <Appbar style={styles.top}>
       <Appbar.Action icon={() => <Image source={require('../assets/images/burger.png')}
-                                        style={styles.menuIcon}/>} onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                                        style={styles.menuIcon}/>}
+                     onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
                      color='#fff'
       />
-        <Appbar.Content
-          title='Довідник' color='#fff'
-        />
+      <Appbar.Content
+        title='Довідник' color='#fff'
+      />
     </Appbar>
     <Searchbar
       placeholder="Пошук"
@@ -64,11 +65,11 @@ export default function Users() {
             {users?.filter(user => isTeacherType(user.type as UserTypes))
               .slice()
               //@ts-ignore
-              .sort((a , b) => fullName(a).toLowerCase() > fullName(b).toLowerCase())
+              .sort((a, b) => fullName(a).toLowerCase() > fullName(b).toLowerCase())
               .filter(user => fullName(user).toLowerCase().includes(searchText.toLowerCase()))
               .slice(currentPage * 13, (currentPage * 13) + 13)
               .map(user =>
-              <UserElement user={user}/>)}
+                <UserElement user={user}/>)}
           </ScrollView>
         </View>
         <DataTable.Pagination
