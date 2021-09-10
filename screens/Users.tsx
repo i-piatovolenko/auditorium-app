@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView, Dimensions, ImageBackground} from "react-native";
+import {StyleSheet, View, ScrollView, Dimensions, ImageBackground, Image} from "react-native";
 import useUsers from "../hooks/useUsers";
 import {ActivityIndicator, Appbar, DataTable, Searchbar} from "react-native-paper";
 import {UserTypes, UserTypesUa} from "../models/models";
@@ -36,7 +36,8 @@ export default function Users() {
   return <ImageBackground source={require('../assets/images/bg.jpg')}
                           style={{width: '100%', height: windowHeight}}>
     <Appbar style={styles.top}>
-      <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+      <Appbar.Action icon={() => <Image source={require('../assets/images/burger.png')}
+                                        style={styles.menuIcon}/>} onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
                      color='#fff'
       />
         <Appbar.Content
@@ -110,5 +111,11 @@ const styles = StyleSheet.create(({
   },
   dataTable: {
     backgroundColor: '#fff'
+  },
+  menuIcon: {
+    marginLeft: 3,
+    marginTop: 3,
+    width: 20,
+    height: 20
   }
 }));

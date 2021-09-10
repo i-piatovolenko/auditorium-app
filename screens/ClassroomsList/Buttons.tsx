@@ -40,8 +40,14 @@ const Buttons: React.FC<PropTypes> = ({
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [isNear, setIsNear] = useState(false);
-  const {data: {permittedActionHours} = {},
-    loading: loadingTime, error: errorTime} = useQuery(PERMITTED_ACTION_HOURS);
+  const {
+    data: {permittedActionHours} = {},
+    loading: loadingTime, error: errorTime
+  } = useQuery(PERMITTED_ACTION_HOURS);
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
 
   useEffect(() => {
     if (location) {
@@ -52,7 +58,7 @@ const Buttons: React.FC<PropTypes> = ({
       } else {
         setIsNear(false);
         setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує 150 м. Ваша відстань: ${
-          (distance*1000).toFixed(0)
+          (distance * 1000).toFixed(0)
         } м.`)
       }
     }
@@ -132,11 +138,13 @@ const Buttons: React.FC<PropTypes> = ({
                   onPress={handlePress} loading={loading} disabled={loading}>
             <Text>Відміна</Text>
           </Button>
-          {hasAvailableClassroomsForQueue() && <Button style={styles.approve} mode='contained' color={Colors.blue}
-                                                       disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length) || loading}
-                                                       onPress={handleReady} loading={loading}>
+          {hasAvailableClassroomsForQueue() && (
+            <Button style={styles.approve} mode='contained' color={Colors.blue}
+                    disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length) || loading}
+                    onPress={handleReady} loading={loading}>
               <Text>Стати в чергу</Text>
-          </Button>}
+            </Button>
+          )}
         </>
       )}
       {mode === Mode.INLINE && (

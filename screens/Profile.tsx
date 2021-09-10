@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View, Text, ImageBackground, Dimensions} from "react-native";
+import {StyleSheet, View, Text, ImageBackground, Dimensions, Image} from "react-native";
 import {Appbar, Divider, Title} from "react-native-paper";
 import {useQuery} from "@apollo/client";
 import {GET_ME} from "../api/operations/queries/me";
@@ -16,7 +16,9 @@ export default function Profile({navigation}: any) {
     <ImageBackground source={require('../assets/images/bg.jpg')}
                      style={{width: '100%', height: windowHeight}}>
       <Appbar style={styles.top}>
-        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        <Appbar.Action icon={() => <Image source={require('../assets/images/burger.png')}
+                                          style={styles.menuIcon}/>}
+                       onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
                        color='#fff'
         />
         <Appbar.Content
@@ -75,5 +77,11 @@ const styles = StyleSheet.create({
   },
   whiteText: {
     color: '#fff'
+  },
+  menuIcon: {
+    marginLeft: 3,
+    marginTop: 3,
+    width: 20,
+    height: 20
   }
 });

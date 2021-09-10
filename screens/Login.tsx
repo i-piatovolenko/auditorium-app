@@ -159,31 +159,31 @@ export default function Login({route, navigation}: any) {
                           style={styles.helpImageButtonWrapper}>
           <Image source={require('../assets/images/help_white.png')} style={styles.helpImageButton}/>
         </TouchableOpacity>
-        <Surface style={[styles.hintsPopup, {display: showHints ? 'flex' : 'none'}]}>
-          <IconButton icon='close' color={Colors.red} onPress={handleShowHints} style={styles.closeIcon}/>
-          <View style={styles.hintsTitle}>
-            <Text style={styles.hintsTitleText}>Корисні поради</Text>
-            <Image source={require('../assets/images/help.png')} style={styles.helpImage}/>
-          </View>
-          <Carousel
-            ref={carouselRef}
-            data={Array(4).fill(0)}
-            renderItem={renderItem}
-            style={styles.carousel}
-            itemWidth={windowWidth * 0.75}
-            containerWidth={windowWidth * 0.85}
-            onScrollEnd={handleCarouselScrollEnd}
-            separatorWidth={8}
-          />
-          <View style={styles.checkbox}>
-            <Checkbox
-              status={dontShowAgain ? 'checked' : 'unchecked'}
-              onPress={handleRememberDontShowHints}
-            />
-            <Paragraph>Більше не показувати</Paragraph>
-          </View>
-          {/*<SimplePaginationDot currentIndex={currentIndex} length={4} />*/}
-        </Surface>
+        {/*<Surface style={[styles.hintsPopup, {display: showHints ? 'flex' : 'none'}]}>*/}
+        {/*  <IconButton icon='close' color={Colors.red} onPress={handleShowHints} style={styles.closeIcon}/>*/}
+        {/*  <View style={styles.hintsTitle}>*/}
+        {/*    <Text style={styles.hintsTitleText}>Корисні поради</Text>*/}
+        {/*    <Image source={require('../assets/images/help.png')} style={styles.helpImage}/>*/}
+        {/*  </View>*/}
+        {/*  <Carousel*/}
+        {/*    ref={carouselRef}*/}
+        {/*    data={Array(4).fill(0)}*/}
+        {/*    renderItem={renderItem}*/}
+        {/*    style={styles.carousel}*/}
+        {/*    itemWidth={windowWidth * 0.75}*/}
+        {/*    containerWidth={windowWidth * 0.85}*/}
+        {/*    onScrollEnd={handleCarouselScrollEnd}*/}
+        {/*    separatorWidth={8}*/}
+        {/*  />*/}
+        {/*  <View style={styles.checkbox}>*/}
+        {/*    <Checkbox*/}
+        {/*      status={dontShowAgain ? 'checked' : 'unchecked'}*/}
+        {/*      onPress={handleRememberDontShowHints}*/}
+        {/*    />*/}
+        {/*    <Paragraph>Більше не показувати</Paragraph>*/}
+        {/*  </View>*/}
+        {/*  /!*<SimplePaginationDot currentIndex={currentIndex} length={4} />*!/*/}
+        {/*</Surface>*/}
         <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
         {/*<View style={styles.langSwitcher}>*/}
         {/*  <TouchableHighlight onPress={() => handleChangeLang(Langs.UA)}>*/}

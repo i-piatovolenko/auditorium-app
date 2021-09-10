@@ -1,5 +1,5 @@
 import React from 'react';
-import {ScrollView, StyleSheet, Text, ImageBackground, Dimensions} from "react-native";
+import {ScrollView, StyleSheet, Text, ImageBackground, Dimensions, Image} from "react-native";
 import {Appbar, Paragraph, Title} from "react-native-paper";
 import {DrawerActions} from "@react-navigation/native";
 
@@ -10,7 +10,9 @@ export default function PrivacyPolicy({navigation}: any) {
     <ImageBackground source={require('../assets/images/bg.jpg')}
                      style={{width: '100%', height: windowHeight}}>
       <Appbar style={styles.top}>
-        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        <Appbar.Action icon={() => <Image source={require('../assets/images/burger.png')}
+                                          style={styles.menuIcon}/>}
+                       onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
                        color='#fff'
         />
         <Appbar.Content
@@ -284,4 +286,10 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     backgroundColor: '#fff'
   },
+  menuIcon: {
+    marginLeft: 3,
+    marginTop: 3,
+    width: 20,
+    height: 20
+  }
 });

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Appbar, Button} from "react-native-paper";
 import {DrawerActions, useNavigation} from "@react-navigation/native";
-import {StyleSheet, View} from "react-native";
+import {Image, StyleSheet, View} from "react-native";
 import {useQuery} from "@apollo/client";
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import {FOLLOW_GENERAL_QUEUE_SIZE} from "../../api/operations/subscriptions/generalQueueSize";
@@ -14,6 +14,7 @@ import {getClassroomsFilteredByInstruments} from "./helpers";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {GENERAL_QUEUE_POSITION} from "../../api/operations/queries/generalQueuePosition";
 import {FOLLOW_GENERAL_QUEUE_POSITION} from "../../api/operations/subscriptions/generalQueuePosition";
+import {Ionicons} from '@expo/vector-icons';
 
 type PropTypes = {
   freeClassroomsAmount: number;
@@ -122,7 +123,9 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
 
   return (
     <Appbar style={styles.top}>
-      <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+      <Appbar.Action icon={() => <Image source={require('../../assets/images/burger.png')}
+      style={styles.menuIcon}/>}
+                     onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
                      color='#fff'
       />
       {mode === Mode.INLINE && (
@@ -188,6 +191,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     alignItems: 'center',
   },
+  menuIcon: {
+    marginLeft: 3,
+    marginTop: 3,
+    width: 20,
+    height: 20
+  }
 });
 
 export default ClassroomsAppBar;
