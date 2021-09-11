@@ -9,13 +9,16 @@ import WaitDialog from "../components/WaitDialog";
 import {getItem, removeItem, setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
 import {ErrorCodes, ErrorCodesUa, Langs, User} from "../models/models";
-import {meVar, noTokenVar} from "../api/client";
+import {client, meVar, noTokenVar} from "../api/client";
 import PushNotification from "./PushNotification";
 import i18n from "i18n-js";
 // @ts-ignore
 import Carousel from 'react-native-anchor-carousel';
 import Colors from "../constants/Colors";
 import SimplePaginationDot from "../components/SimplePaginationDot";
+import * as Linking from "expo-linking";
+import {CONFIRM_EMAIL} from "../api/operations/mutations/confirmEmail";
+import InfoDialog from "../components/InfoDialog";
 
 const {width: windowWidth} = Dimensions.get('window');
 
@@ -41,6 +44,8 @@ export default function Login({route, navigation}: any) {
   const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [showHints, setShowHints] = useState(false);
+  const [persNumber, setPersNumber] = useState(-1);
+  const [visibleEmailConfirmSuccess, setVisibleEmailConfirmSuccess] = useState(false);
 
   function handleCarouselScrollEnd(item: any, index: number) {
     setCurrentIndex(index);
@@ -63,6 +68,29 @@ export default function Login({route, navigation}: any) {
     );
   }
   // const {data: {lang}} = useQuery(GET_LANG);
+
+  useEffect(() => {
+    Linking.getInitialURL().then(url => {
+      const confirmEmailToken = Linking.parse(url).queryParams.confirmEmailToken;
+      if (confirmEmailToken) {
+        client.mutate({
+          mutation: CONFIRM_EMAIL,
+          variables: {
+            input: {
+              confirmEmailToken
+            }
+          }
+        }).then((result: any) => {
+          setPersNumber(result.confirmEmail.user.id);
+          setVisibleEmailConfirmSuccess(true);
+        }).catch(() => {
+          setVisibleEmailConfirmSuccess(true);
+          setErrorMessage('E-mail не було верифіковано');
+          setModalActivator(prevState => !prevState);
+        })
+      }
+    })
+  }, [])
 
   useEffect(() => {
     getItem('dontShowLoginHints').then(result => {
@@ -230,6 +258,12 @@ export default function Login({route, navigation}: any) {
           <Text style={{color: '#fff', marginTop: 16}}>Auditorium © 2021</Text>
         </View>
       </ImageBackground>
+      <InfoDialog
+        message={`Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер (${persNumber})`}
+        visible={visibleEmailConfirmSuccess}
+        hideDialog={() => setVisibleEmailConfirmSuccess(false)}
+        confirmButton
+      />
       <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
       <ErrorDialog visible={showError} hideDialog={hideError} message={errorMessage}/>
     </View>

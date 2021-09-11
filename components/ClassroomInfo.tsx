@@ -159,20 +159,20 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
               <Title style={styles.warningText}>Аудиторія недоступна</Title>
             </View>
           )}
-          {classroom.isWing || classroom.isOperaStudio || classroom.special && (
+          {classroom.isWing || classroom.isOperaStudio || !!classroom.special && (
             <>
               <View style={styles.tags}>
                 {classroom.isWing && <Chip selected selectedColor='#00f' mode='outlined'
                                            style={styles.tag}>Флігель</Chip>}
                 {classroom.isOperaStudio && <Chip selected selectedColor='#00f' mode='outlined'
                                                   style={styles.tag}>Оперна студія</Chip>}
-                {classroom.special && <Chip selected selectedColor='#00f' mode='outlined'
+                {!!classroom.special && <Chip selected selectedColor='#00f' mode='outlined'
                                             style={styles.tag}>Спеціалізована</Chip>}
               </View>
               <Divider style={styles.divider}/>
             </>
           )}
-          {classroom.description && (
+          {!!classroom.description && (
             <>
               <View>
                 <Text style={{textAlign: 'center'}}>{classroom.description}</Text>
@@ -208,7 +208,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
             <>
               <Divider style={styles.divider}/>
               <Button mode='contained' onPress={getReservedClassroom} disabled={!classroom || loading}>
-                Взяти аудиторію
+                <Text>Взяти аудиторію</Text>
               </Button>
             </>
           )}

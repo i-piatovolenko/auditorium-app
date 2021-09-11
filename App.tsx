@@ -1,5 +1,5 @@
 import {StatusBar} from 'expo-status-bar';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
@@ -10,7 +10,6 @@ import * as Localization from 'expo-localization';
 import i18n from 'i18n-js';
 import en from './localization/en.json';
 import ua from './localization/ua.json';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 i18n.locale = Localization.locale;
 i18n.fallbacks = true;

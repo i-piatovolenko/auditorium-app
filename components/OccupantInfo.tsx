@@ -112,6 +112,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
             }]}
                     style={styles.spaceBottom30}
             >
+
               {
                 `Доступні пропуски аудиторій: ${user.queueInfo.currentSession?.skips ? user.queueInfo.currentSession?.skips : 0}. Якщо аудиторія не буде підтверджена на протязі визначеного часу, вона буде пропущена автоматично. Якщо показник допустимих пропусків дорівнює нулю і Ви не підтверджуєте та не відхиляєте аудиторію, вона автоматично пропускається і Ви вибуваєте з черги.`
               }
@@ -127,11 +128,11 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
           <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
                   disabled={loading}
                   onPress={() => makeDecision(false)}>
-            Пропустити аудиторію
+            <Text>Пропустити аудиторію</Text>
           </Button>
           <Button mode='contained' onPress={() => makeDecision(true)} loading={loading}
                   disabled={loading}>
-            Підтвердити аудиторію
+            <Text>Підтвердити аудиторію</Text>
           </Button>
         </View>
       </>

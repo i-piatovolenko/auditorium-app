@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {useLocal} from "../hooks/useLocal";
 import {Button, Divider} from "react-native-paper";
 import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../api/client";
-import {StyleSheet} from "react-native";
+import {StyleSheet, Text} from "react-native";
 import {ClassroomType, Mode, QueueRecord, QueueType, User, UserQueueState} from "../models/models";
 import getInLine from "../helpers/queue/getInLine";
 import WaitDialog from "./WaitDialog";
@@ -72,13 +72,13 @@ const ClassroomQueueControlButtons: React.FC<PropTypes> = ({
               <Button mode='contained' style={{marginBottom: 8}}
                       onPress={handleClassroomForQueue}
               >
-                Видалити з черги (мінімальні)
+                <Text>Видалити з черги (мінімальні)</Text>
               </Button>
             ) : (
               <Button mode='contained' style={{marginBottom: 8}}
                       onPress={handleClassroomForQueue}
               >
-                Додати до черги (мінімальні)
+                <Text>Додати до черги (мінімальні)</Text>
               </Button>
             )
           ) : (
@@ -86,13 +86,13 @@ const ClassroomQueueControlButtons: React.FC<PropTypes> = ({
               <Button mode='contained' style={{marginBottom: 8}}
                       onPress={handleClassroomForQueue}
               >
-                Видалити з черги (бажані)
+                <Text>Видалити з черги (бажані)</Text>
               </Button>
             ) : (
               <Button mode='contained' style={{marginBottom: 8}}
                       onPress={handleClassroomForQueue}
               >
-                Додати до черги (бажані)
+                <Text>Додати до черги (бажані)</Text>
               </Button>
             )
           )}
@@ -107,13 +107,13 @@ const ClassroomQueueControlButtons: React.FC<PropTypes> = ({
             <Button mode='contained' style={{marginBottom: 8}}
                     onPress={() => asyncHandleClassroomForQueue(true)}
             >
-              Видалити з черги
+              <Text>Видалити з черги</Text>
             </Button>
           ) : (
             <Button mode='contained' style={{marginBottom: 8}}
                     onPress={() => asyncHandleClassroomForQueue(false)}
             >
-              Додати до черги
+              <Text>Додати до черги</Text>
             </Button>
           )}
         </>
