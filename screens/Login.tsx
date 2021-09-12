@@ -81,7 +81,7 @@ export default function Login({route, navigation}: any) {
             }
           }
         }).then((result: any) => {
-          setPersNumber(result.confirmEmail.user.id);
+          setPersNumber(result.confirmEmail.userId);
           setVisibleEmailConfirmSuccess(true);
         }).catch(() => {
           setVisibleEmailConfirmSuccess(true);

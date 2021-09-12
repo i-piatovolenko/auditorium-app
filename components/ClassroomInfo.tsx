@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {Dimensions, StyleSheet, Text, View} from "react-native";
 import {
   ClassroomType,
-  DisabledState,
-  InstrumentType,
+  DisabledState, ErrorCodes, ErrorCodesUa,
+  InstrumentType, Mode,
   OccupiedState,
   UserQueueState
 } from "../models/models";
@@ -11,7 +11,7 @@ import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-nat
 import {useNavigation} from "@react-navigation/native";
 import {useQuery} from "@apollo/client";
 import {isEnabledForCurrentDepartment, isOccupiedOrPendingByCurrentUser} from "../helpers/helpers";
-import {client} from "../api/client";
+import {client, modeVar} from "../api/client";
 import Colors from "../constants/Colors";
 import {GET_CLASSROOM} from "../api/operations/queries/classroom";
 import {GET_USER_BY_ID} from "../api/operations/queries/users";
@@ -49,6 +49,10 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [isNear, setIsNear] = useState(false);
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
 
   useEffect(() => {
     if (location) {
@@ -112,10 +116,11 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
           }
         });
         if (result.data.reserveFreeClassroom.userErrors.length) {
-          result.data.reserveFreeClassroom.userErrors.forEach(({message}: any) => {
-            alert(JSON.stringify(message))
+          result.data.reserveFreeClassroom.userErrors.forEach(({message, code}: any) => {
+            alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]))
           })
         } else {
+          modeVar(Mode.PRIMARY);
           goBack();
           setLoading(false);
         }

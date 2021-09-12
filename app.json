@@ -20,7 +20,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.knmau.auditorium",
+      "bundleIdentifier": "ua.com.knmau.auditorium",
       "buildNumber": "1.0.9",
       "infoPlist": {
         "UIBackgroundModes": [
