@@ -23,8 +23,7 @@ export default function UserInfo({userId, hideModal, visible}: PropTypes) {
   return <Portal>
     <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
       {!loading && !error ? <>
-          <Title style={styles.occupantName}>{data.user.nameTemp === null ? fullName(data.user) :
-            data.user.nameTemp}</Title>
+          <Title style={styles.occupantName}>{fullName(data.user)}</Title>
           <Divider style={styles.divider}/>
           <Text>Статус: {UserTypesUa[data.user.type as UserTypes]}</Text>
           <Text>Кафедра: {data.user.department?.name}</Text>

@@ -13,6 +13,9 @@ import {ErrorCodes, ErrorCodesUa, UserTypes, UserTypesUa} from "../../models/mod
 import {GET_UNSIGNED_DEPARTMENTS} from "../../api/operations/queries/unsignedDepartments";
 import {client} from "../../api/client";
 import {GET_UNSIGNED_DEGREES} from "../../api/operations/queries/unsignedDegrees";
+import {setItem} from "../../api/asyncStorage";
+
+const BACHELOR_DEGREE_ID = 1;
 
 const currentYear: number = parseInt(moment().format('YYYY'));
 
@@ -35,8 +38,6 @@ export default function SignUp({navigation}: any) {
   const [selectedDepartment, setSelectedDepartment] = useState({name: '', id: -1});
   const [selectedDegree, setSelectedDegree] = useState({name: '', id: -1});
   const [selectedStartYear, setSelectedStartYear] = useState({name: '', id: -1});
-  const [selectedType, setSelectedType] = useState({name: userTypesData[0].name,
-    id: userTypesData[0].id});
   const [visible, setVisible] = useState(true);
   const [visibleAgreement, setVisibleAgreement] = useState(false);
   const [visibleBackDialog, setVisibleBackDialog] = useState(false);
@@ -194,15 +195,12 @@ export default function SignUp({navigation}: any) {
               departmentId: selectedDepartment.id,
               degreeId: selectedDegree.id,
               startYear: selectedStartYear.id,
-              type: selectedType.id
             }
           }
         });
-        const hasErrors = result?.data.login.userErrors?.length;
-
+        const hasErrors = result?.data.signup.userErrors?.length;
         if (hasErrors) {
-          const errorMessage = ErrorCodesUa[result?.data.login.userErrors[0].code as ErrorCodes];
-
+          const errorMessage = ErrorCodesUa[result?.data.signup.userErrors[0].code as ErrorCodes];
           alert(errorMessage);
         } else {
           navigation.navigate('SignUpStepTwo');
@@ -356,13 +354,6 @@ export default function SignUp({navigation}: any) {
                                checkValidation={checkDegreeValidation}
                                setIsVisited={setIsDegreeModalVisited}
                                underlineColor={!isDegreeValidated ? '#ccc' : '#f91354'}
-
-            />
-            <CustomPickerField name='Статус' selected={selectedType} items={userTypesData}
-                               checkValidation={() => {}}
-                               setIsVisited={() => {}}
-                               setSelected={setSelectedType}
-                               underlineColor='#ccc'
 
             />
             <Error validator={isDegreeValidated}/>

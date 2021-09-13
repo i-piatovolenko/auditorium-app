@@ -81,8 +81,10 @@ export default function Login({route, navigation}: any) {
             }
           }
         }).then((result: any) => {
-          setPersNumber(result.confirmEmail.userId);
+          const userId = result.data.confirmEmail.userId;
+          setPersNumber(userId);
           setVisibleEmailConfirmSuccess(true);
+          setErrorMessage(null);
         }).catch(() => {
           setVisibleEmailConfirmSuccess(true);
           setErrorMessage('E-mail не було верифіковано');
@@ -90,9 +92,6 @@ export default function Login({route, navigation}: any) {
         })
       }
     })
-  }, [])
-
-  useEffect(() => {
     getItem('dontShowLoginHints').then(result => {
       setShowHints(!result);
       setDontShowAgain(result);
@@ -259,7 +258,12 @@ export default function Login({route, navigation}: any) {
         </View>
       </ImageBackground>
       <InfoDialog
-        message={`Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер (${persNumber})`}
+        message={<Text>{
+          'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' +
+          <Text>{persNumber}</Text> +
+          " або ім'я"
+        }</Text>
+        }
         visible={visibleEmailConfirmSuccess}
         hideDialog={() => setVisibleEmailConfirmSuccess(false)}
         confirmButton
@@ -398,5 +402,20 @@ const styles = StyleSheet.create({
     right: 8,
     top: 8,
     zIndex: 1001
+  },
+  tempId: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    zIndex: 1001,
+    backgroundColor: '#fff',
+    elevation: 14,
+    borderRadius: 6
+  },
+  tempIdText: {
+    color: '#000',
+    fontSize: 24,
+    fontWeight: "bold",
+    padding: 8
   }
 });

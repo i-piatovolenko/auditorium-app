@@ -15,7 +15,7 @@ export enum ErrorCodesUa {
   INVALID_PASSWORD = "Невірний пароль",
   USER_NOT_FOUND = "Користувача не знайдено",
   EMAIL_NOT_CONFIRMED = "Будь-ласка, підтвердіть вашу e-mail адресу. Для цього перейдіть за посиланням яке було відправлене на вашу поштову скриньку.",
-  USER_NOT_VERIFIED = "Ви не верифіковані. Підтвердіть ваші дані в учбовій частині.",
+  USER_UNVERIFIED = "Ви не верифіковані. Підтвердіть ваші дані в учбовій частині.",
   CANNOT_RESERVE_WHILE_OCCUPYING = 'Знаходитись одночасно в декількох аудиторіях неможливо. У вас вже є аудиторія.'
 }
 
@@ -23,7 +23,7 @@ export enum ErrorCodes {
   INVALID_PASSWORD = "INVALID_PASSWORD",
   USER_NOT_FOUND = "USER_NOT_FOUND",
   EMAIL_NOT_CONFIRMED = "EMAIL_NOT_CONFIRMED",
-  USER_NOT_VERIFIED = "USER_NOT_VERIFIED",
+  USER_UNVERIFIED = "USER_UNVERIFIED",
   CANNOT_RESERVE_WHILE_OCCUPYING = 'CANNOT_RESERVE_WHILE_OCCUPYING'
 }
 

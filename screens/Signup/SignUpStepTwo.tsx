@@ -7,7 +7,7 @@ export default function SignUpStepTwo() {
   const navigation = useNavigation();
   const message1 = 'Щоб підтвердити вказаний e-mail, перейдіть за посиланням, яке ми' +
     ' надіслали на Вашу адресу.';
-  const message2 = 'Далі увійдіть до свого аккаунту та пройдіть верифікацію в учбовій частині.';
+  const message2 = 'Далі пройдіть верифікацію в учбовій частині.';
 
 
   const navigateToLogin = () => {

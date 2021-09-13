@@ -19,6 +19,7 @@ import * as SplashScreen from "expo-splash-screen";
 import Splash from "../screens/Splash";
 import PrivacyPolicy from "../screens/PrivacyPolicy";
 import {useLocal} from "../hooks/useLocal";
+import SignUpStepTwo from "../screens/Signup/SignUpStepTwo";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -112,6 +113,10 @@ function RootNavigator() {
         <Stack.Screen
           name={"SignUp" as any}
           component={SignUp}
+        />
+        <Stack.Screen
+          name={"SignUpStepTwo" as any}
+          component={SignUpStepTwo}
         />
         <Stack.Screen
           name={"ForgotPassword" as any}

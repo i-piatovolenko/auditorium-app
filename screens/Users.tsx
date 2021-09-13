@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView, Dimensions, ImageBackground, Image} from "react-native";
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  Dimensions,
+  ImageBackground,
+  Image,
+} from "react-native";
 import useUsers from "../hooks/useUsers";
 import {ActivityIndicator, Appbar, DataTable, Searchbar} from "react-native-paper";
 import {UserTypes, UserTypesUa} from "../models/models";
@@ -17,10 +24,15 @@ export default function Users() {
   const [visible, setVisible] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(0);
   const [searchText, setSearchText] = useState('');
-  const UserElement = ({user}: any) => <DataTable.Row onPress={() => showModal(user.id)}>
-    <DataTable.Cell>{fullName(user)}</DataTable.Cell>
-    <DataTable.Cell>{UserTypesUa[user.type as UserTypes]}</DataTable.Cell>
-  </DataTable.Row>;
+  const UserElement = ({user}: any) => {
+    return (
+      <DataTable.Row>
+        <DataTable.Cell>{fullName(user)}</DataTable.Cell>
+        <DataTable.Cell>{UserTypesUa[user.type as UserTypes]}</DataTable.Cell>
+      </DataTable.Row>
+    )
+  }
+
 
   const showModal = (userId: number) => {
     setVisible(true);
@@ -30,7 +42,7 @@ export default function Users() {
   const hideModal = () => setVisible(false);
 
   useEffect(() => {
-    setPages(users.length / 13)
+    setPages(users.length / 13);
   }, [users]);
 
   return <ImageBackground source={require('../assets/images/bg.jpg')}
@@ -62,14 +74,18 @@ export default function Users() {
       {users.length ? <>
         <View style={styles.list}>
           <ScrollView>
-            {users?.filter(user => isTeacherType(user.type as UserTypes))
+            {users?.filter(user => !user.nameTemp && isTeacherType(user.type as UserTypes))
               .slice()
               //@ts-ignore
               .sort((a, b) => fullName(a).toLowerCase() > fullName(b).toLowerCase())
               .filter(user => fullName(user).toLowerCase().includes(searchText.toLowerCase()))
               .slice(currentPage * 13, (currentPage * 13) + 13)
               .map(user =>
-                <UserElement user={user}/>)}
+                <DataTable.Row key={user.id}>
+                  <DataTable.Cell onPress={() => showModal(user.id)}>{fullName(user)}</DataTable.Cell>
+                  <DataTable.Cell>{UserTypesUa[user.type as UserTypes]}</DataTable.Cell>
+                </DataTable.Row>
+              )}
           </ScrollView>
         </View>
         <DataTable.Pagination

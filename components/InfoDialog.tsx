@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Paragraph, Dialog, Portal, Button} from 'react-native-paper';
 
 interface PropTypes {
-  message: string;
+  message: any;
   visible: boolean;
   hideDialog: () => void;
   navigateToLogin?: () => void;
