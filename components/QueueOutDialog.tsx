@@ -14,7 +14,7 @@ export default function QueueOutDialog({visible, hideDialog}: PropTypes) {
       <Modal visible={visible} onDismiss={hideDialog} contentContainerStyle={styles.containerStyle}>
         <View>
           <Text style={styles.header}>Увага!</Text>
-          <Text style={styles.paragraph}>Ви покинули чергу!</Text>
+          <Text style={styles.paragraph}>Ви залишили чергу!</Text>
           <View style={styles.buttons}>
             <Button mode='contained' onPress={hideDialog}>Закрити</Button>
           </View>
