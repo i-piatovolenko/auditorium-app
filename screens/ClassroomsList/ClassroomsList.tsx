@@ -4,13 +4,15 @@ import {
   AppStateStatus,
   Dimensions,
   ImageBackground,
+  Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View
 } from "react-native";
 import {ActivityIndicator} from "react-native-paper";
-import {ClassroomType, DisabledState, Mode, OccupiedState, User, UserQueueState} from "../../models/models";
+import {ClassroomType, DisabledState, Mode, OccupiedState, Platforms, User, UserQueueState} from "../../models/models";
 import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
@@ -18,7 +20,7 @@ import {useQuery} from "@apollo/client";
 import ClassroomsBrowser from "../../components/ClassroomsBrowser/ClassroomsBrowser";
 import {GET_CLASSROOMS, GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
 import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
-import {GET_USER_BY_ID, GET_USERS} from "../../api/operations/queries/users";
+import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {FOLLOW_USER} from "../../api/operations/subscriptions/user";
 import {getItem} from "../../api/asyncStorage";
 import {hasOwnClassroom, isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
@@ -30,17 +32,19 @@ import Log from "../../components/Log";
 import {usePrevious} from "../../hooks/usePrevious";
 import InlineDialog from "../../components/InlineDialog";
 import QueueOutDialog from "../../components/QueueOutDialog";
-import {sendPushNotification} from "../PushNotification";
 import {useNavigation} from '@react-navigation/native';
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import ErrorDialog from "../../components/ErrorDialog";
 import ReturnToQueueDialog from "../../components/ReturnToQueueDialog";
 import SkippedClassroomSnackbar from "../../components/SkippedClassroomSnackbar";
 import ClassroomAcceptedDialog from "../../components/ClassroomAcceptedDialog";
+import {GET_GENERAL_QUEUE} from "../../api/operations/queries/generalQueue";
+import Space from "../../components/Space";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-const windowHeight = Dimensions.get("window").height;
+const WINDOW_HEIGHT = Dimensions.get("window").height;
+const BOTTOM_SPACE = 80;
 
 export default function Home() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -135,7 +139,30 @@ const ClassroomsList: React.FC = ({route}: any) => {
     }
   });
   const prevUserData: { user: User } = usePrevious(userData);
-  const prevClassroomsData: { classrooms: ClassroomType[] } = usePrevious(data);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await client.query({
+        query: GET_CLASSROOMS_NO_SCHEDULE
+      })
+      await client.query({
+        query: GET_USER_BY_ID,
+        variables: {
+          where: {
+            id: route.params.currentUserId
+          }
+        }
+      })
+      await client.query({
+        query: GET_GENERAL_QUEUE
+      });
+      setRefreshing(false);
+    } catch (e) {
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (userData && prevUserData) {
@@ -151,20 +178,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
       }
     }
   }, [userData]);
-
-  // useEffect(() => {
-  //   if (data && prevClassroomsData && userData) {
-  //     data.classrooms.forEach(({occupied, id, name}) => {
-  //       const prevClassroomOccupiedData = prevClassroomsData.classrooms
-  //         .find((classroom) => classroom.id === id)?.occupied;
-  //       if (prevClassroomOccupiedData.user?.id !== occupied.user?.id && occupied.state === OccupiedState.PENDING
-  //         && occupied.user?.id === userData.user.id) {
-  //         sendPushNotification(pushNotificationToken, `Аудиторія ${name} звільнена.`,
-  //           `Ви маєте 2 хв. щоб зарезервувати або пропустити ії.`);
-  //       }
-  //     })
-  //   }
-  // }, [data, userData]);
 
   useEffect(() => {
     const unsubscribeClassrooms = subscribeToMore({
@@ -229,7 +242,8 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const chosen = (classroom: ClassroomType) => {
 
     return userData.user.queue.some(({classroom: {id}, ...queueRecord}: any) => classroom.id === id)
-      && !(userData.user.occupiedClassrooms.some(({id}: ClassroomType) => classroom.id === id));
+      && !(userData.user.occupiedClassrooms.some(({id}: ClassroomType) => classroom.id === id))
+      && !(classroom.occupied.user.id === userData.user.id && classroom.occupied.state === OccupiedState.PENDING);
   };
 
   /**
@@ -276,7 +290,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
       });
       noConnectionVar(false);
     } catch (e) {
-
+      console.log(e)
     }
   }
 
@@ -288,7 +302,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
     />
   ) : (
     <ImageBackground source={require('../../assets/images/bg.jpg')}
-                     style={{width: '100%', height: windowHeight}}>
+                     style={{width: '100%', height: Platform.OS !== Platforms.WEB ? '100%' : WINDOW_HEIGHT}}>
       {!userLoading && !userError && (
         <>
           <InlineDialog visible={showQueueInSuccess}
@@ -304,7 +318,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
                           delayLongPress={3000}>
         </TouchableOpacity>
       )}
-      {!loading && !error && !userLoading && !userError && (
+      {!loading && !error && !userLoading && !userError && userData && (
         <ClassroomsAppBar freeClassroomsAmount={freeClassroomsAmount} classrooms={data.classrooms}
                           currentUser={userData.user}
         />
@@ -315,7 +329,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
           <Log data={JSON.stringify({...userData.user.queueInfo, ...userData.user.queue})}/>
         )}
         {!loading && !error && !userLoading && !userError && (
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView}
+                      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}
+                                                      progressViewOffset={30}
+                      />}>
             {/**
              My classroom: OCCUPIED or RESERVED classroom by current user
              Shown anytime except QUEUE_SETUP mode.
@@ -375,6 +392,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
                                  title='Інші аудиторії'
               />
             )}
+            <Space height={BOTTOM_SPACE}/>
           </ScrollView>
         )}
         {loading && <ActivityIndicator animating color='#fff' size={64}/>}
@@ -399,7 +417,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
 const styles = StyleSheet.create(
   {
     grid: {
-      marginBottom: 80,
       marginLeft: 2,
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -473,7 +490,6 @@ const styles = StyleSheet.create(
     },
     scrollView: {
       paddingTop: 8,
-      paddingBottom: 80
-    }
+    },
   }
 );

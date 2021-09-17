@@ -293,10 +293,9 @@ export const isEnabledForCurrentDepartment = (classroom: ClassroomType, currentU
 export const isEnabledForQueue = (classroom: ClassroomType, user: any) => {
     const ownClassroomId = hasOwnClassroom(user.occupiedClassrooms);
 
-    return classroom.id !== ownClassroomId && !classroom.isHidden &&
-      classroom.disabled.state === DisabledState.NOT_DISABLED &&
-      isEnabledForCurrentDepartment(classroom, user) &&
-      !(user.occupiedClassrooms.some((data: any) => {
+    return classroom.id !== ownClassroomId && !classroom.isHidden
+      && isEnabledForCurrentDepartment(classroom, user)
+      && !(user.occupiedClassrooms.some((data: any) => {
         return data.classroom.id === classroom.id && data.state === OccupiedState.PENDING
       }));
 };

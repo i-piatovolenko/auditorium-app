@@ -2,16 +2,16 @@ import * as React from 'react';
 import {View, StyleSheet, Text} from "react-native";
 import {Button} from "react-native-paper";
 
-export default function ResetPasswordSuccess({navigation}: any) {
+export default function ForgotPasswordSuccess({navigation}: any) {
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
-        Пароль надіслано, перевірте пошту.
+        Пароль успішно змінено.
       </Text>
       <Button onPress={()=>navigation.navigate('Login')} mode='contained' color='#2b5dff'
         style={styles.loginButton}>
-        На сторінку входу
+        Повернутись на сторінку входу
       </Button>
     </View>
   );

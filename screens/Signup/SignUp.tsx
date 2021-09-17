@@ -14,6 +14,7 @@ import {GET_UNSIGNED_DEPARTMENTS} from "../../api/operations/queries/unsignedDep
 import {client} from "../../api/client";
 import {GET_UNSIGNED_DEGREES} from "../../api/operations/queries/unsignedDegrees";
 import {setItem} from "../../api/asyncStorage";
+import {EMAIL_VALID, PASSWORD_SOFT_VALID, PHONE_VALID} from "../../helpers/validators";
 
 const BACHELOR_DEGREE_ID = 1;
 
@@ -101,37 +102,30 @@ export default function SignUp({navigation}: any) {
   };
 
   const checkEmailValidation = (value: string) => {
-    const re = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
-
     if (!value) {
       return setIsEmailValidated("Обов'язкове поле");
     }
-    if (!re.test(value)) {
+    if (!EMAIL_VALID.test(value)) {
       return setIsEmailValidated("Невірний формат");
     }
     return setIsEmailValidated(null);
   };
 
   const checkPhoneValidation = (value: string) => {
-    const re = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
-
     if (!value) {
       return setIsPhoneValidated("Обов'язкове поле");
     }
-    if (!re.test(value)) {
+    if (!PHONE_VALID.test(value)) {
       return setIsPhoneValidated("Невірний формат");
     }
     return setIsPhoneValidated(null);
   };
 
   const checkPasswordValidation = (value: string) => {
-    const re = /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})/;
-    const strongRe = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
-
     if (!value) {
       return setIsPasswordValidated("Обов'язкове поле");
     }
-    if (!re.test(value)) {
+    if (!PASSWORD_SOFT_VALID.test(value)) {
       return setIsPasswordValidated("Невірний формат");
     }
     return setIsPasswordValidated(null);

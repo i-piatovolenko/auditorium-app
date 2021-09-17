@@ -1,14 +1,16 @@
-import React from "react";
-import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
-import {ClassroomType, DisabledState} from "../../models/models";
+import React, {useCallback} from "react";
+import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View, Platform} from "react-native";
+import {ClassroomType, DisabledState, Platforms} from "../../models/models";
 import Colors from "../../constants/Colors";
-import {Button, Surface} from "react-native-paper";
+import {Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
 import {useNavigation} from "@react-navigation/native";
-import {useLocal} from "../../hooks/useLocal";
+import TextTicker from "react-native-text-ticker";
+import moment from "moment";
 
-const windowWidth = Dimensions.get('window').width;
-const cellWidth = ((windowWidth - 10) / 3);
+const WINDOW_WIDTH = Dimensions.get('window').width;
+const CELL_WIDTH = ((WINDOW_WIDTH - 10) / 3);
+const TICKER_SCROLL_DURATION = 6000;
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -25,6 +27,18 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
     navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
   };
 
+  const defineStatus = useCallback(() => {
+    return isDisabled ? !isEnabledForCurrentUser ?
+      !classroom.queueInfo.queuePolicy
+        .queueAllowedDepartments.length ? Platform.OS === Platforms.WEB ? 'Недоступно'
+        : 'Недоступно для студентів' : Platform.OS === Platforms.WEB ? 'Недоступно' :
+        'Тільки ' + classroom.queueInfo.queuePolicy
+          .queueAllowedDepartments.map(({department: {name}}) => name.toLowerCase()).join(', ')
+      : Platform.OS === Platforms.WEB ? disabled?.comment
+        : disabled?.comment + ' до ' + moment(disabled.until).format('DD-MM-YYYY HH:mm')
+      : 'Вільно'
+  }, [isDisabled, isEnabledForCurrentUser, classroom.queueInfo.queuePolicy])
+
   return (
     <TouchableHighlight onPress={handlePress}>
       <Surface style={[styles.cell, isDisabled ? styles.disabled : styles.free]}>
@@ -33,9 +47,18 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
           <Image source={require('./../../assets/images/specialPiano.png')}
                  style={[special ? styles.special : styles.notSpecial]}/>
         </View>
-        <Text style={styles.occupationInfo} numberOfLines={1}>
-          {isDisabled ? !isEnabledForCurrentUser ? 'Для студентів кафедри' : disabled?.comment : 'Вільно'}
-        </Text>
+        <View style={styles.statusWrapper}>
+          <TextTicker
+            style={styles.occupationInfo}
+            animationType='scroll'
+            duration={TICKER_SCROLL_DURATION}
+            loop
+            repeatSpacer={10}
+            marqueeDelay={0}
+          >
+            {defineStatus()}
+          </TextTicker>
+        </View>
         <View style={styles.instruments}>
           {instruments?.length
             ? instruments
@@ -53,7 +76,7 @@ export default FreeClassroomCell;
 
 const styles = StyleSheet.create({
   cell: {
-    width: cellWidth,
+    width: CELL_WIDTH,
     justifyContent: 'center',
     alignItems: 'center',
     height: 100,
@@ -63,13 +86,18 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
+  statusWrapper: {
+    width: CELL_WIDTH,
+    backgroundColor: '#00000011',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
   occupationInfo: {
-    width: cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,
     textAlign: 'center',
-    backgroundColor: '#00000011'
+    overflow: Platform.OS === Platforms.WEB ? 'hidden' : 'visible',
   },
   free: {
     backgroundColor: '#4bfd63'
@@ -80,7 +108,7 @@ const styles = StyleSheet.create({
   cellHeader: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: cellWidth,
+    width: CELL_WIDTH,
     paddingLeft: 16,
     paddingRight: 16,
     flexDirection: 'row',
@@ -117,13 +145,13 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     backgroundColor: '#00000033',
     height: 100,
-    width: cellWidth,
+    width: CELL_WIDTH,
   },
   timeLeft: {
     fontSize: 12,
     backgroundColor: '#f91354',
     color: '#fff',
-    width: cellWidth,
+    width: CELL_WIDTH,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,

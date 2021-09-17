@@ -40,38 +40,16 @@ export default function Login({route, navigation}: any) {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [pushNotificationToken, setPushNotificationToken] = useState('');
-  const carouselRef = React.useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [showHints, setShowHints] = useState(false);
   const [persNumber, setPersNumber] = useState(-1);
   const [visibleEmailConfirmSuccess, setVisibleEmailConfirmSuccess] = useState(false);
-
-  function handleCarouselScrollEnd(item: any, index: number) {
-    setCurrentIndex(index);
-  }
-
-  const renderItem = ({item, index}: any) => {
-    return (
-      <TouchableOpacity
-        style={styles.item}
-        onPress={() => {
-          carouselRef.current.scrollToIndex(index);
-        }}>
-        <View>
-          {/*<Image source={require(`../assets/images/hint_${index + 1}.jpg`)} style={styles.hintImage}/>*/}
-        </View>
-        <Paragraph style={styles.hintDescription}>
-          {hintTexts[index]}
-        </Paragraph>
-      </TouchableOpacity>
-    );
-  }
-  // const {data: {lang}} = useQuery(GET_LANG);
 
   useEffect(() => {
     Linking.getInitialURL().then(url => {
       const confirmEmailToken = Linking.parse(url).queryParams.confirmEmailToken;
+      const resetPasswordToken = Linking.parse(url).queryParams.resetPasswordToken;
+      if (resetPasswordToken) {
+        navigation.navigate('ResetPassword', { resetPasswordToken });
+      }
       if (confirmEmailToken) {
         client.mutate({
           mutation: CONFIRM_EMAIL,
@@ -92,10 +70,6 @@ export default function Login({route, navigation}: any) {
         })
       }
     })
-    getItem('dontShowLoginHints').then(result => {
-      setShowHints(!result);
-      setDontShowAgain(result);
-    });
   }, []);
 
   useEffect(() => {
@@ -103,21 +77,6 @@ export default function Login({route, navigation}: any) {
       setShowError(true);
     }
   }, [modalActivator]);
-
-  // useEffect(() => {
-  //   getItem('lang').then(res => {
-  //     if (res) {
-  //       langVar(res);
-  //     } else {
-  //       setItem('lang', lang);
-  //     }
-  //   });
-  // }, []);
-
-  const handleChangeLang = async (lng: Langs) => {
-    // await setItem('lang', lng);
-    // langVar(lng);
-  };
 
   const hideError = () => {
     setShowError(false);
@@ -144,17 +103,6 @@ export default function Login({route, navigation}: any) {
           const token: string = result?.data.login.token;
           await setItem('user', user);
           await setItem('token', token);
-          // if (user.queue.length) {
-          //   const minimal = user.queue.filter(({type, state}) => {
-          //     return type === QueueType.MINIMAL && state === QueueState.ACTIVE;
-          //   });
-          //   const desired = user.queue.filter(({type, state}) => {
-          //     return type === QueueType.DESIRED && state === QueueState.ACTIVE;
-          //   });
-          //   modeVar(Mode.INLINE);
-          //   minimalClassroomIdsVar(minimal.map(({classroom: {id}}) => id));
-          //   desirableClassroomIdsVar(desired.map(({classroom: {id}}) => id));
-          // }
           meVar(user);
           noTokenVar(false);
         }
@@ -165,65 +113,11 @@ export default function Login({route, navigation}: any) {
     }
   };
 
-  const handleShowHints = () => {
-    setShowHints(prevState => !prevState);
-  };
-
-  const handleRememberDontShowHints = async () => {
-    if (!dontShowAgain) {
-      await setItem('dontShowLoginHints', true);
-    } else {
-      await removeItem('dontShowLoginHints');
-    }
-    setDontShowAgain(!dontShowAgain);
-  }
-
   return (
     <View style={styles.container}>
       {/*<PushNotification setPushNotificationToken={setPushNotificationToken}/>*/}
       <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
-        <TouchableOpacity onPress={handleShowHints}
-                          style={styles.helpImageButtonWrapper}>
-          <Image source={require('../assets/images/help_white.png')} style={styles.helpImageButton}/>
-        </TouchableOpacity>
-        {/*<Surface style={[styles.hintsPopup, {display: showHints ? 'flex' : 'none'}]}>*/}
-        {/*  <IconButton icon='close' color={Colors.red} onPress={handleShowHints} style={styles.closeIcon}/>*/}
-        {/*  <View style={styles.hintsTitle}>*/}
-        {/*    <Text style={styles.hintsTitleText}>Корисні поради</Text>*/}
-        {/*    <Image source={require('../assets/images/help.png')} style={styles.helpImage}/>*/}
-        {/*  </View>*/}
-        {/*  <Carousel*/}
-        {/*    ref={carouselRef}*/}
-        {/*    data={Array(4).fill(0)}*/}
-        {/*    renderItem={renderItem}*/}
-        {/*    style={styles.carousel}*/}
-        {/*    itemWidth={windowWidth * 0.75}*/}
-        {/*    containerWidth={windowWidth * 0.85}*/}
-        {/*    onScrollEnd={handleCarouselScrollEnd}*/}
-        {/*    separatorWidth={8}*/}
-        {/*  />*/}
-        {/*  <View style={styles.checkbox}>*/}
-        {/*    <Checkbox*/}
-        {/*      status={dontShowAgain ? 'checked' : 'unchecked'}*/}
-        {/*      onPress={handleRememberDontShowHints}*/}
-        {/*    />*/}
-        {/*    <Paragraph>Більше не показувати</Paragraph>*/}
-        {/*  </View>*/}
-        {/*  /!*<SimplePaginationDot currentIndex={currentIndex} length={4} />*!/*/}
-        {/*</Surface>*/}
         <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
-        {/*<View style={styles.langSwitcher}>*/}
-        {/*  <TouchableHighlight onPress={() => handleChangeLang(Langs.UA)}>*/}
-        {/*    <Image source={require('../assets/images/ua.png')}*/}
-        {/*           style={lang === Langs.UA ? styles.langImageSelected : styles.langImage}*/}
-        {/*    />*/}
-        {/*  </TouchableHighlight>*/}
-        {/*  <TouchableHighlight onPress={() => handleChangeLang(Langs.EN)}>*/}
-        {/*    <Image source={require('../assets/images/en.png')}*/}
-        {/*           style={lang === Langs.EN ? styles.langImageSelected : styles.langImage}*/}
-        {/*    />*/}
-        {/*  </TouchableHighlight>*/}
-        {/*</View>*/}
         <Text style={styles.title}>{i18n.t('login')}</Text>
         <Surface style={styles.inputs}>
           <TextInput label='Логін'

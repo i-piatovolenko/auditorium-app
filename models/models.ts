@@ -370,3 +370,9 @@ export enum PermittedActionHoursTypes {
   RESERVE_FREE_CLASSROOM = 'RESERVE_FREE_CLASSROOM',
   QUEUE_ACTION = 'QUEUE_ACTION'
 }
+
+export enum Platforms {
+  WEB = 'web',
+  ANDROID = 'android',
+  IOS = 'ios'
+}

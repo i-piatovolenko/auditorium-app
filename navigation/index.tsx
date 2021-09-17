@@ -20,6 +20,8 @@ import Splash from "../screens/Splash";
 import PrivacyPolicy from "../screens/PrivacyPolicy";
 import {useLocal} from "../hooks/useLocal";
 import SignUpStepTwo from "../screens/Signup/SignUpStepTwo";
+import ResetPassword from "../screens/ResetPassword";
+import ResetPasswordSuccess from "../screens/ForgotPasswordSuccess";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -125,6 +127,14 @@ function RootNavigator() {
         <Stack.Screen
           name={"ForgotPasswordSuccess" as any}
           component={ForgotPasswordSuccess}
+        />
+        <Stack.Screen
+          name={"ResetPassword" as any}
+          component={ResetPassword}
+        />
+        <Stack.Screen
+          name={"ResetPasswordSuccess" as any}
+          component={ResetPasswordSuccess}
         />
       </Stack.Navigator>
   );

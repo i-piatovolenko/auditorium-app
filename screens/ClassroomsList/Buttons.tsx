@@ -126,9 +126,9 @@ const Buttons: React.FC<PropTypes> = ({
   return (
     <View style={styles.wrapper}>
       {mode === Mode.PRIMARY
-      && !(hasOwnClassroom(currentUser.occupiedClassrooms)) && hasAvailableClassroomsForQueue() && (
+      && !(hasOwnClassroom(currentUser.occupiedClassrooms)) && (
         <Button style={styles.getInLine} mode='contained' color={Colors.blue}
-                onPress={handlePress} loading={loading} disabled={loading}>
+                onPress={handlePress} loading={loading} disabled={loading || !hasAvailableClassroomsForQueue()}>
           <Text>Стати в чергу</Text>
         </Button>
       )}
@@ -138,13 +138,12 @@ const Buttons: React.FC<PropTypes> = ({
                   onPress={handlePress} loading={loading} disabled={loading}>
             <Text>Відміна</Text>
           </Button>
-          {hasAvailableClassroomsForQueue() && (
-            <Button style={styles.approve} mode='contained' color={Colors.blue}
-                    disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length) || loading}
-                    onPress={handleReady} loading={loading}>
-              <Text>Стати в чергу</Text>
-            </Button>
-          )}
+          <Button style={styles.approve} mode='contained' color={Colors.blue}
+                  disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length)
+                  || loading || !hasAvailableClassroomsForQueue()}
+                  onPress={handleReady} loading={loading}>
+            <Text>Стати в чергу</Text>
+          </Button>
         </>
       )}
       {mode === Mode.INLINE && (
