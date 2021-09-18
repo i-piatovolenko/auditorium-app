@@ -46,38 +46,39 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
       }
     }
   });
-  const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [isNear, setIsNear] = useState(false);
 
   useEffect(() => {
-    getCurrentLocation();
+    requestLocation().then(() => {
+      getIsNear()
+    });
   }, []);
 
-  useEffect(() => {
-    if (location) {
-      const distance = getDistance(location.coords.latitude, location.coords.longitude,
-        UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
-      if (distance <= MAX_DISTANCE) {
-        setIsNear(true);
-      } else {
-        setIsNear(false);
-        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує 150 м. Ваша відстань: ${
-          (distance * 1000).toFixed(0)
-        } м.`)
-      }
-    }
-  }, [location]);
-
-  const getCurrentLocation = async () => {
+  const requestLocation = async () => {
     let {status} = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
       return;
     }
     setErrorMsg(null);
+  };
+
+  const getIsNear = async () => {
+    let isNear;
     let location = await Location.getCurrentPositionAsync({});
-    setLocation(location);
+    if (location) {
+      const distance = getDistance(location.coords.latitude, location.coords.longitude,
+        UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
+      if (distance <= MAX_DISTANCE) {
+        isNear = true;
+      } else {
+        isNear = false
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE} м. Ваша відстань: ${
+          (distance * 1000).toFixed(0)
+        } м.`)
+      }
+    }
+    return isNear;
   };
 
   useEffect(() => {
@@ -104,7 +105,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
 
   const getReservedClassroom = async () => {
     setLoading(true);
-    await getCurrentLocation();
+    const isNear = await getIsNear();
     if (isNear) {
       try {
         const result = await client.mutate({

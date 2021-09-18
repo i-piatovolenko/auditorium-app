@@ -22,6 +22,7 @@ import {useLocal} from "../hooks/useLocal";
 import SignUpStepTwo from "../screens/Signup/SignUpStepTwo";
 import ResetPassword from "../screens/ResetPassword";
 import ResetPasswordSuccess from "../screens/ResetPasswordSuccess";
+import FAQ from "../screens/FAQ";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -105,6 +106,9 @@ function RootNavigator() {
         }}/>
         <Drawer.Screen name="PrivacyPolicy" component={PrivacyPolicy} options={{
           title: 'Політика конфіденційності'
+        }}/>
+        <Drawer.Screen name="FAQ" component={FAQ} options={{
+          title: 'Допомога'
         }}/>
       </Drawer.Navigator>
       : <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName={"Login" as any}>

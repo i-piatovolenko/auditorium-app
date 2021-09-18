@@ -39,40 +39,42 @@ const Buttons: React.FC<PropTypes> = ({
   const [visibleLineOut, setVisibleLineOut] = useState(false);
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [isNear, setIsNear] = useState(false);
   const {
     data: {permittedActionHours} = {},
     loading: loadingTime, error: errorTime
   } = useQuery(PERMITTED_ACTION_HOURS);
 
   useEffect(() => {
-    getCurrentLocation();
+    requestLocation().then(() => {
+      getIsNear()
+    });
   }, []);
 
-  useEffect(() => {
-    if (location) {
-      const distance = getDistance(location.coords.latitude, location.coords.longitude,
-        UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
-      if (distance <= MAX_DISTANCE) {
-        setIsNear(true);
-      } else {
-        setIsNear(false);
-        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує 150 м. Ваша відстань: ${
-          (distance * 1000).toFixed(0)
-        } м.`)
-      }
-    }
-  }, [location]);
-
-  const getCurrentLocation = async () => {
+  const requestLocation = async () => {
     let {status} = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
       return;
     }
     setErrorMsg(null);
+  };
+
+  const getIsNear = async () => {
+    let isNear;
     let location = await Location.getCurrentPositionAsync({});
-    setLocation(location);
+    if (location) {
+      const distance = getDistance(location.coords.latitude, location.coords.longitude,
+        UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
+      if (distance <= MAX_DISTANCE) {
+        isNear = true;
+      } else {
+        isNear = false
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE} м. Ваша відстань: ${
+          (distance * 1000).toFixed(0)
+        } м.`)
+      }
+    }
+    return isNear;
   };
 
   const handlePress = async () => {
@@ -107,7 +109,7 @@ const Buttons: React.FC<PropTypes> = ({
 
   const handleReady = async () => {
     setLoading(true);
-    await getCurrentLocation();
+    const isNear = await getIsNear();
     if (isNear) {
       await getInLine(minimalClassroomIds, desirableClassroomIds);
       setLoading(false);
@@ -155,8 +157,10 @@ const Buttons: React.FC<PropTypes> = ({
       <ErrorDialog visible={visibleModalError} hideDialog={() => setVisibleModalError(false)}
                    message={queueErrorMessage}
       />
-      <ErrorDialog visible={!!errorMsg} hideDialog={() => setErrorMsg(null)}
+      <ErrorDialog visible={!!errorMsg}
+                   hideDialog={() => requestLocation()}
                    message={errorMsg}
+                   buttonText='Дозволити геолокацію'
       />
       <WaitDialog visible={loading}/>
       <ConfirmLineOut hideDialog={() => setVisibleLineOut(false)} visible={visibleLineOut}/>
