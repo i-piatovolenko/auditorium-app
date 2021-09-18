@@ -21,7 +21,7 @@ import PrivacyPolicy from "../screens/PrivacyPolicy";
 import {useLocal} from "../hooks/useLocal";
 import SignUpStepTwo from "../screens/Signup/SignUpStepTwo";
 import ResetPassword from "../screens/ResetPassword";
-import ResetPasswordSuccess from "../screens/ForgotPasswordSuccess";
+import ResetPasswordSuccess from "../screens/ResetPasswordSuccess";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (

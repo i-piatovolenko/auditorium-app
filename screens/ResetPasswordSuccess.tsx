@@ -1,18 +1,25 @@
 import * as React from 'react';
-import {View, StyleSheet, Text} from "react-native";
+import {View, StyleSheet, Text, Linking, ImageBackground} from "react-native";
 import {Button} from "react-native-paper";
 
-export default function ForgotPasswordSuccess({navigation}: any) {
+export default function ResetPasswordSuccess({navigation}: any) {
+
+  const goToLoginPage = () => {
+    Linking.openURL('/');
+    navigation.navigate('Login');
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
-        Пароль успішно змінено.
-      </Text>
-      <Button onPress={()=>navigation.navigate('Login')} mode='contained' color='#2b5dff'
-        style={styles.loginButton}>
-        Повернутись на сторінку входу
-      </Button>
+      <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
+        <Text style={styles.text}>
+          Пароль успішно змінено
+        </Text>
+        <Button onPress={goToLoginPage} mode='contained' color='#2b5dff'
+          style={styles.loginButton}>
+          Повернутись на сторінку входу
+        </Button>
+      </ImageBackground>
     </View>
   );
 }
@@ -23,6 +30,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#2e287c',
+  },
+  checkMark: {
+    width: '60%',
+    resizeMode: 'contain',
+    flex: 1
+  },
+  bg: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   text: {
     color: '#fff',
@@ -40,5 +58,5 @@ const styles = StyleSheet.create({
   input: {
     width: '90%',
     height: 50
-  }
+  },
 });

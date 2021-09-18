@@ -1,17 +1,21 @@
 import * as React from 'react';
-import {View, StyleSheet, Text, TextInput} from "react-native";
-import {Button} from "react-native-paper";
+import {View, StyleSheet, Text, ImageBackground} from "react-native";
+import {Button, Surface, TextInput} from "react-native-paper";
 import {useState} from "react";
 import Colors from "../constants/Colors";
 import {EMAIL_VALID} from "../helpers/validators";
 import {client} from "../api/client";
 import {EMAIL_FOR_PASSWORD_RESET} from "../api/operations/mutations/resetPasswordRequestEmail";
+import ErrorDialog from "../components/ErrorDialog";
+import {ErrorCodes, ErrorCodesUa} from "../models/models";
+import i18n from "i18n-js";
 
 export default function ForgotPassword({navigation}: any) {
   const [email, setEmail] = useState('');
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [visited, setVisited] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleChange = (text: string) => {
     const validated = EMAIL_VALID.test(text);
@@ -36,8 +40,8 @@ export default function ForgotPassword({navigation}: any) {
       });
       if (result.data.resetPasswordRequestEmail.userErrors.length) {
         result.data.resetPasswordRequestEmail.userErrors.forEach(({message, code}: any) => {
-          // alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]));
-          alert(JSON.stringify(message));
+          setErrorMessage(ErrorCodesUa[code as ErrorCodes]);
+          setLoading(false);
         });
       } else {
         setLoading(false);
@@ -51,34 +55,49 @@ export default function ForgotPassword({navigation}: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
-        Введіть Вашу email адресу куди ми відправимо новий пароль.
-      </Text>
-      <TextInput
-        placeholder="E-mail"
-        style={styles.input}
-        value={email}
-        onChangeText={handleChange}
-        onBlur={() => setVisited(true)}
-      />
-      {visited && !isValidEmail && <Text style={styles.errorText}>Невірний формат</Text>}
-      <Button
-        onPress={handleSendEmail}
-        mode='contained'
-        color={Colors.blue}
-        disabled={!isValidEmail}
-        loading={loading}
-        style={styles.button}>
-        Відновити пароль
-      </Button>
-      <Button
-        onPress={goBack}
-        mode='contained'
-        color={Colors.red}
-        disabled={loading}
-        style={styles.button}>
-        Назад
-      </Button>
+      <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
+        <Text style={styles.title}>Відновлення паролю</Text>
+        <Surface style={styles.inputs}>
+          <Text style={styles.text}>
+            Введіть Вашу email адресу
+          </Text>
+          <Text style={styles.text}>
+            На неї буде відправлено посилання на сторінку відновлення паролю
+          </Text>
+          <TextInput
+            placeholder="E-mail"
+            style={styles.input}
+            value={email}
+            onChangeText={handleChange}
+            onBlur={() => setVisited(true)}
+          />
+          {visited && !isValidEmail && <Text style={styles.errorText}>Невірний формат</Text>}
+          <View style={styles.buttons}>
+            <Button
+              onPress={goBack}
+              mode='contained'
+              color={Colors.red}
+              disabled={loading}
+              style={styles.button}>
+              Назад
+            </Button>
+            <Button
+              onPress={handleSendEmail}
+              mode='contained'
+              color={Colors.blue}
+              disabled={!isValidEmail}
+              loading={loading}
+              style={styles.button}>
+              Відправити
+            </Button>
+          </View>
+        </Surface>
+        <ErrorDialog
+          visible={!!errorMessage}
+          hideDialog={() => setErrorMessage(null)}
+          message={errorMessage}
+        />
+      </ImageBackground>
     </View>
   );
 }
@@ -90,25 +109,49 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#2e287c',
   },
-  text: {
-    color: '#fff',
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 5,
-    width: '90%',
-    marginBottom: 32,
-  },
-  button: {
-    marginTop: 32,
-    height: 50,
+  bg: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
     justifyContent: 'center'
   },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#fff',
+  },
+  text: {
+    color: Colors.darkBlue,
+    paddingTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
+    width: '90%',
+  },
+  inputs: {
+    width: '90%',
+    elevation: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 16,
+    marginTop: 32,
+  },
+  button: {
+    height: 50,
+    justifyContent: 'center',
+    marginHorizontal: 4
+  },
   input: {
+    marginTop: 32,
     width: '90%',
     height: 50,
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    fontSize: 16
+    fontSize: 16,
+    borderRadius: 6,
   },
   errorText: {
     marginTop: 16,
@@ -117,5 +160,11 @@ const styles = StyleSheet.create({
     padding: 8,
     color: Colors.red,
     textAlign: 'center'
+  },
+  buttons: {
+    marginTop: 32,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });

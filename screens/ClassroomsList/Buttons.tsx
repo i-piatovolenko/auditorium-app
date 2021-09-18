@@ -129,7 +129,7 @@ const Buttons: React.FC<PropTypes> = ({
       && !(hasOwnClassroom(currentUser.occupiedClassrooms)) && (
         <Button style={styles.getInLine} mode='contained' color={Colors.blue}
                 onPress={handlePress} loading={loading} disabled={loading || !hasAvailableClassroomsForQueue()}>
-          <Text>Стати в чергу</Text>
+          <Text>Вибрати аудиторії для черги</Text>
         </Button>
       )}
       {mode === Mode.QUEUE_SETUP && (
@@ -177,7 +177,6 @@ const styles = StyleSheet.create(
     },
 
     getInLine: {
-      width: '55%',
       height: 50,
       justifyContent: 'center',
       flexDirection: 'row',
