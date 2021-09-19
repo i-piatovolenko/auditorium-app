@@ -17,10 +17,10 @@ export const FOLLOW_CLASSROOMS = gql`
           state
         }
         disabled {
-        comment
-        state
-        until
-      }
+          comment
+          state
+          until
+        }
       }
     }
   }

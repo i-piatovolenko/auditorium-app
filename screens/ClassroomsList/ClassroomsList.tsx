@@ -251,9 +251,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
    * */
   const notChosen = (classroom: ClassroomType) => {
     const ownClassroomId = hasOwnClassroom(userData.user.occupiedClassrooms);
+    const fullHidden = classroom.occupied.state === OccupiedState.FREE && classroom.isHidden;
 
     return !(userData.user.queue.some(({classroom: {id}}: any) => classroom.id === id)) &&
-      classroom.id !== ownClassroomId;
+      classroom.id !== ownClassroomId && !fullHidden;
   };
 
   /**

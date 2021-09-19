@@ -43,7 +43,7 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
     <TouchableHighlight onPress={handlePress}>
       <Surface style={[styles.cell, isDisabled ? styles.disabled : styles.free]}>
         <View style={styles.cellHeader}>
-          <Text style={styles.name}>{classroom.name}</Text>
+          <Text style={classroom.name.length > 2 ? styles.longName : styles.name}>{classroom.name}</Text>
           <Image source={require('./../../assets/images/specialPiano.png')}
                  style={[special ? styles.special : styles.notSpecial]}/>
         </View>
@@ -115,6 +115,12 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 35,
+    lineHeight: 35,
+    fontWeight: 'bold',
+  },
+  longName: {
+    fontSize: 26,
+    lineHeight: 35,
     fontWeight: 'bold',
   },
   special: {

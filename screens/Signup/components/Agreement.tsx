@@ -1,7 +1,9 @@
 import React from 'react';
 import {Button, Dialog, Paragraph, Portal, Title} from "react-native-paper";
-import {ScrollView, StyleSheet, Text} from "react-native";
+import {ScrollView, StyleSheet, Text, Dimensions} from "react-native";
 import Colors from "../../../constants/Colors";
+
+const WINDOW_HEIGHT = Dimensions.get('window').height;
 
 interface PropTypes {
   visible: boolean;
@@ -14,7 +16,7 @@ export default function Agreement({visible, hideDialog, setCheckAgreement}: Prop
     <Dialog visible={visible} onDismiss={hideDialog} style={styles.wrapper}>
       <Dialog.Title>Умови користування</Dialog.Title>
       <Dialog.Content>
-        <ScrollView style={{height: '80%'}}>
+        <ScrollView style={{height: WINDOW_HEIGHT * .75}}>
           <Title> Політика конфіденційності </Title>
           <Paragraph> Останнє оновлення: 25 серпня 2021 р.</Paragraph>
           <Paragraph> Ця Політика конфіденційності описує нашу політику та процедури щодо збору, використання та

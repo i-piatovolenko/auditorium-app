@@ -39,6 +39,7 @@ const Buttons: React.FC<PropTypes> = ({
   const [visibleLineOut, setVisibleLineOut] = useState(false);
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [errorDialogButtonText, setErrorDialogButtonText] = useState('Дозволити геолокацію');
   const {
     data: {permittedActionHours} = {},
     loading: loadingTime, error: errorTime
@@ -54,6 +55,7 @@ const Buttons: React.FC<PropTypes> = ({
     let {status} = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
+      setErrorDialogButtonText('Дозволити геолокацію');
       return;
     }
     setErrorMsg(null);
@@ -69,9 +71,10 @@ const Buttons: React.FC<PropTypes> = ({
         isNear = true;
       } else {
         isNear = false
-        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE} м. Ваша відстань: ${
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE * 1000} м. Ваша відстань: ${
           (distance * 1000).toFixed(0)
-        } м.`)
+        } м.`);
+        setErrorDialogButtonText('Зрозуміло');
       }
     }
     return isNear;
@@ -158,9 +161,12 @@ const Buttons: React.FC<PropTypes> = ({
                    message={queueErrorMessage}
       />
       <ErrorDialog visible={!!errorMsg}
-                   hideDialog={() => requestLocation()}
+                   hideDialog={() => {
+                     requestLocation();
+                     setErrorMsg(null)
+                   }}
                    message={errorMsg}
-                   buttonText='Дозволити геолокацію'
+                   buttonText={errorDialogButtonText}
       />
       <WaitDialog visible={loading}/>
       <ConfirmLineOut hideDialog={() => setVisibleLineOut(false)} visible={visibleLineOut}/>

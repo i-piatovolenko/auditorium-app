@@ -10,6 +10,7 @@ import useTimeLeft from "../hooks/useTimeLeft";
 import {acceptedClassroomVar, client, skippedClassroomVar} from "../api/client";
 import {MAKE_DECISION_ON_PENDING_CLASSROOM} from "../api/operations/mutations/makeDecisionOnPendingClassroom";
 import {useNavigation} from '@react-navigation/native';
+import WaitDialog from "./WaitDialog";
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -124,7 +125,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
                          style={styles.progressBar}
             />
         </View>}
-        <View>
+        <View style={styles.buttons}>
           <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
                   disabled={loading}
                   onPress={() => makeDecision(false)}>
@@ -137,6 +138,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
         </View>
       </>
     )}
+    <WaitDialog visible={loading}/>
   </>
 }
 
@@ -185,6 +187,9 @@ const styles = StyleSheet.create({
   infoBanner: {
     marginVertical: 30,
     backgroundColor: '#ffffff'
+  },
+  buttons: {
+    paddingBottom: 16
   }
 });
 

@@ -1,35 +1,31 @@
 import * as React from 'react';
-import {useEffect, useRef, useState} from 'react';
-import {CheckBox, Dimensions, Image, ImageBackground, StyleSheet, TouchableOpacity} from 'react-native';
-import {Button, Checkbox, IconButton, Paragraph, Surface, TextInput, Title} from 'react-native-paper';
+import {useEffect, useState} from 'react';
+import {
+  Dimensions,
+  Image,
+  ImageBackground,
+  Keyboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Platform
+} from 'react-native';
+import {Button, Surface, TextInput} from 'react-native-paper';
 import {Text, View} from '../components/Themed';
 import {useMutation} from "@apollo/client";
 import {LOGIN} from "../api/operations/mutations/login";
 import WaitDialog from "../components/WaitDialog";
-import {getItem, removeItem, setItem} from "../api/asyncStorage";
+import {setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
-import {ErrorCodes, ErrorCodesUa, Langs, User} from "../models/models";
+import {ErrorCodes, ErrorCodesUa, Platforms, User} from "../models/models";
 import {client, meVar, noTokenVar} from "../api/client";
 import PushNotification from "./PushNotification";
 import i18n from "i18n-js";
-// @ts-ignore
-import Carousel from 'react-native-anchor-carousel';
 import Colors from "../constants/Colors";
-import SimplePaginationDot from "../components/SimplePaginationDot";
 import * as Linking from "expo-linking";
 import {CONFIRM_EMAIL} from "../api/operations/mutations/confirmEmail";
 import InfoDialog from "../components/InfoDialog";
 
 const {width: windowWidth} = Dimensions.get('window');
-
-const INITIAL_INDEX = 0;
-
-const hintTexts = [
-  'Ви можете зберегти додаток на головному екрані.',
-  'Щоб користуватись додатком, пройдіть реєстрацію. Вкажіть дійсні дані, які співпадають з Вашим студентським квитком або іншим документом.',
-  'Вкажіть дійсний e-mail. На нього буде відправлено повідомлення з підтвердженням.',
-  'Після реєстрації перевірте електронну пошту. В надісланому повідомленні перейдіть за посиланням. Після цього повідомте верифікаційний номер в учбовій частині.'
-]
 
 export default function Login({route, navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
@@ -48,7 +44,7 @@ export default function Login({route, navigation}: any) {
       const confirmEmailToken = Linking.parse(url).queryParams.confirmEmailToken;
       const resetPasswordToken = Linking.parse(url).queryParams.resetPasswordToken;
       if (resetPasswordToken) {
-        navigation.navigate('ResetPassword', { resetPasswordToken });
+        navigation.navigate('ResetPassword', {resetPasswordToken});
       }
       if (confirmEmailToken) {
         client.mutate({
@@ -114,57 +110,65 @@ export default function Login({route, navigation}: any) {
   };
 
   return (
-    <View style={styles.container}>
-      {/*<PushNotification setPushNotificationToken={setPushNotificationToken}/>*/}
-      <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
-        <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
-        <Text style={styles.title}>{i18n.t('login')}</Text>
-        <Surface style={styles.inputs}>
-          <TextInput label='Логін'
-                     style={styles.input}
-                     onChangeText={(e) => setEmail(e)}
-          />
-          <TextInput label='Пароль'
-                     style={styles.input}
-                     onChangeText={(e) => setPassword(e)}
-                     secureTextEntry={!showPassword}
-                     selectionColor='#2b5dff'
-                     right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#2b5dff'
-                                            onPress={() => setShowPassword(prevState => !prevState)}
-                     />}
-          />
-          <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
-                  style={styles.button} disabled={(!email || !password) || loading}>
-            Увійти
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        {Platform.OS !== Platforms.WEB && (
+          <PushNotification setPushNotificationToken={setPushNotificationToken}/>
+        )}
+        <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
+          <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
+          <Text style={styles.title}>{i18n.t('login')}</Text>
+          <Surface style={styles.inputs}>
+            <TextInput label='Логін'
+                       style={styles.input}
+                       onChangeText={(e) => setEmail(e)}
+            />
+            <TextInput label='Пароль'
+                       style={styles.input}
+                       onChangeText={(e) => setPassword(e)}
+                       secureTextEntry={!showPassword}
+                       selectionColor='#2b5dff'
+                       right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#2b5dff'
+                                              onPress={() => setShowPassword(prevState => !prevState)}
+                       />}
+            />
+            <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
+                    style={styles.button} disabled={(!email || !password) || loading}>
+              Увійти
+            </Button>
+            <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'
+                    style={styles.button}>
+              Реєстрація
+            </Button>
+          </Surface>
+          <Button onPress={() => navigation.navigate('ForgotPassword')} uppercase={false}
+                  labelStyle={{color: '#fff'}} style={styles.button}>
+            Відновити пароль
           </Button>
-          <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'
-                  style={styles.button}>
-            Реєстрація
-          </Button>
-        </Surface>
-        <Button onPress={() => navigation.navigate('ForgotPassword')} uppercase={false}
-                labelStyle={{color: '#fff'}} style={styles.button}>
-          Відновити пароль
-        </Button>
-        <View style={styles.footer}>
-          <Text style={{color: '#fff'}}>Національна музична академія України ім. П. І. Чайковського</Text>
-          <Text style={{color: '#fff', marginTop: 16}}>Auditorium © 2021</Text>
-        </View>
-      </ImageBackground>
-      <InfoDialog
-        message={<Text>{
-          'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' +
-          <Text>{persNumber}</Text> +
-          " або ім'я"
-        }</Text>
-        }
-        visible={visibleEmailConfirmSuccess}
-        hideDialog={() => setVisibleEmailConfirmSuccess(false)}
-        confirmButton
-      />
-      <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
-      <ErrorDialog visible={showError} hideDialog={hideError} message={errorMessage}/>
-    </View>
+          <View style={styles.footer}>
+            <Text style={{color: '#fff', textAlign: 'center', marginHorizontal: 16}}>
+              Національна музична академія України ім. П. І. Чайковського
+            </Text>
+            <Text style={{color: '#fff', marginTop: 16, textAlign: 'center'}}>
+              Auditorium © 2021
+            </Text>
+          </View>
+        </ImageBackground>
+        <InfoDialog
+          message={<Text>{
+            'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' +
+            <Text>{persNumber}</Text> +
+            " або ім'я"
+          }</Text>
+          }
+          visible={visibleEmailConfirmSuccess}
+          hideDialog={() => setVisibleEmailConfirmSuccess(false)}
+          confirmButton
+        />
+        <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
+        <ErrorDialog visible={showError} hideDialog={hideError} message={errorMessage}/>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -177,12 +181,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   logo: {
+    marginTop: 24,
     width: '80%',
     resizeMode: 'contain',
     flex: 1
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },

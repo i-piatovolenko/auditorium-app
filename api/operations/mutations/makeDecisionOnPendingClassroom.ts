@@ -5,21 +5,6 @@ export const MAKE_DECISION_ON_PENDING_CLASSROOM = gql`
         makeDecisionOnPendingClassroom(input: $input) {
           classroom {
             id
-            name
-            special
-            isHidden
-            chair {
-                id
-                name
-                exclusivelyQueueAllowedDepartmentsInfo {
-                  department {
-                    id
-                    name
-                  }
-                }
-            }
-            isWing
-            isOperaStudio
             occupied {
               user {
                 id
@@ -29,18 +14,6 @@ export const MAKE_DECISION_ON_PENDING_CLASSROOM = gql`
                 type
                 nameTemp
               }
-              until
-              state
-            }
-            instruments {
-              id
-              name
-              type
-              rate
-            }
-            disabled {
-              id
-              comment
               until
               state
             }

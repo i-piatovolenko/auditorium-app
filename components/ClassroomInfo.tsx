@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions, StyleSheet, Text, View} from "react-native";
+import {Dimensions, ScrollView, StyleSheet, Text, View} from "react-native";
 import {
   ClassroomType,
   DisabledState, ErrorCodes, ErrorCodesUa,
@@ -24,6 +24,7 @@ import {getDistance} from "../helpers/getDistance";
 import {MAX_DISTANCE, UNIVERSITY_LOCATION} from "../constants/constants";
 import * as Location from "expo-location";
 import ErrorDialog from "./ErrorDialog";
+import WaitDialog from "./WaitDialog";
 
 interface PropTypes {
   route: any;
@@ -73,7 +74,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
         isNear = true;
       } else {
         isNear = false
-        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE} м. Ваша відстань: ${
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE * 1000} м. Ваша відстань: ${
           (distance * 1000).toFixed(0)
         } м.`)
       }
@@ -145,7 +146,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
     </Appbar>
     <View style={styles.wrapper}>
       {(userLoading || !classroom) ? <ActivityIndicator animating color='#fff' size={64}/> : (
-        <View>
+        <ScrollView>
           {!isEnabledForCurrentDepartment(classroom, userData.user) && (
             <View style={styles.warning}>
               <Title style={styles.warningText}>Аудиторія недоступна для вашої кафедри</Title>
@@ -218,11 +219,12 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
               </Button>
             </>
           )}
-        </View>
+        </ScrollView>
       )}
       <ErrorDialog visible={!!errorMsg} hideDialog={() => setErrorMsg(null)}
                    message={errorMsg}
       />
+      <WaitDialog visible={loading} />
     </View>
   </View>
 };
