@@ -27,7 +27,7 @@ export default function  FAQ({navigation}: any) {
       </Appbar>
       <View style={styles.wrapper}>
         <Title style={styles.whiteText}>Є запитання?</Title>
-        <Text style={styles.marginBottomWhiteText}>i.piatovolenko@gmail.com</Text>
+        <Text style={styles.marginBottomWhiteText}>auditorium.knmau@gmail.com</Text>
       </View>
     </ImageBackground>
   )

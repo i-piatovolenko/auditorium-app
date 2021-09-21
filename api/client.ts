@@ -152,6 +152,11 @@ export const client = new ApolloClient({
             read() {
               return acceptedClassroomVar();
             },
+          },
+          maxDistance: {
+            read() {
+              return maxDistanceVar();
+            },
           }
         },
       },
@@ -171,3 +176,4 @@ export const noConnectionVar = makeVar(false);
 export const noTokenVar = makeVar(false);
 export const skippedClassroomVar = makeVar(false);
 export const acceptedClassroomVar = makeVar(false);
+export const maxDistanceVar = makeVar(0.750);

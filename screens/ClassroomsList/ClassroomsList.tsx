@@ -32,7 +32,6 @@ import Log from "../../components/Log";
 import {usePrevious} from "../../hooks/usePrevious";
 import InlineDialog from "../../components/InlineDialog";
 import QueueOutDialog from "../../components/QueueOutDialog";
-import {useNavigation} from '@react-navigation/native';
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import ErrorDialog from "../../components/ErrorDialog";
 import ReturnToQueueDialog from "../../components/ReturnToQueueDialog";
@@ -40,6 +39,7 @@ import SkippedClassroomSnackbar from "../../components/SkippedClassroomSnackbar"
 import ClassroomAcceptedDialog from "../../components/ClassroomAcceptedDialog";
 import {GET_GENERAL_QUEUE} from "../../api/operations/queries/generalQueue";
 import Space from "../../components/Space";
+import { useNavigation } from '@react-navigation/native';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -113,8 +113,6 @@ type QueryClassroomsData = {
 const ClassroomsList: React.FC = ({route}: any) => {
   const {data: {mode}} = useLocal('mode');
   const {data: {noConnection}} = useLocal('noConnection');
-  const navigation = useNavigation();
-  const {data: {pushNotificationToken}} = useLocal('pushNotificationToken');
   const {data: {skippedClassroom}} = useLocal('skippedClassroom');
   const [showLog, setShowLog] = useState(false);
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
@@ -177,6 +175,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
         setShownQueueOutSuccess(true);
       }
     }
+    if (userData) {
+      if (!!userData.user?.queue.length) modeVar(Mode.INLINE);
+      if (!userData.user?.queue.length && mode === Mode.INLINE) modeVar(Mode.PRIMARY);
+    }
   }, [userData]);
 
   useEffect(() => {
@@ -205,13 +207,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
       setFreeClassroomsAmount(freeClassrooms.length);
     }
   }, [data, userData]);
-
-  useEffect(() => {
-    if (userData) {
-      if (!!userData.user?.queue.length) modeVar(Mode.INLINE);
-      if (!userData.user?.queue.length && mode === Mode.INLINE) modeVar(Mode.PRIMARY);
-    }
-  }, [userData]);
 
   /**
    * Find occupied classroom for current user (OCCUPIED or RESERVED)

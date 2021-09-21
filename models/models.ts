@@ -16,7 +16,8 @@ export enum ErrorCodesUa {
   USER_NOT_FOUND = "Користувача не знайдено",
   EMAIL_NOT_CONFIRMED = "Будь-ласка, підтвердіть вашу e-mail адресу. Для цього перейдіть за посиланням яке було відправлене на вашу поштову скриньку.",
   USER_UNVERIFIED = "Ви не верифіковані. Підтвердіть ваші дані в учбовій частині.",
-  CANNOT_RESERVE_WHILE_OCCUPYING = 'Знаходитись одночасно в декількох аудиторіях неможливо. У вас вже є аудиторія.'
+  CANNOT_RESERVE_WHILE_OCCUPYING = 'Знаходитись одночасно в декількох аудиторіях неможливо. У вас вже є аудиторія.',
+  SERVICE_TEMPORARILY_UNAVAILABLE = 'Сервіс тимчасово недоступний. Спробуйте пізніше.'
 }
 
 export enum ErrorCodes {
@@ -24,7 +25,8 @@ export enum ErrorCodes {
   USER_NOT_FOUND = "USER_NOT_FOUND",
   EMAIL_NOT_CONFIRMED = "EMAIL_NOT_CONFIRMED",
   USER_UNVERIFIED = "USER_UNVERIFIED",
-  CANNOT_RESERVE_WHILE_OCCUPYING = 'CANNOT_RESERVE_WHILE_OCCUPYING'
+  CANNOT_RESERVE_WHILE_OCCUPYING = 'CANNOT_RESERVE_WHILE_OCCUPYING',
+  SERVICE_TEMPORARILY_UNAVAILABLE = 'SERVICE_TEMPORARILY_UNAVAILABLE'
 }
 
 export enum EmploymentTypes {

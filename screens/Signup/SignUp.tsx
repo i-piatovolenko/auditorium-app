@@ -2,21 +2,19 @@ import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text} from 'react-native';
 import {View} from '../../components/Themed';
-import {Appbar, Banner, Button, Checkbox, HelperText, TextInput} from 'react-native-paper';
+import {Appbar, Banner, Button, HelperText, TextInput} from 'react-native-paper';
+import CheckBox from 'react-native-check-box'
 import Agreement from "./components/Agreement";
 import CustomPickerField from "../../components/CustomPicker/CustomPickerField";
 import moment from "moment";
 import {useMutation} from "@apollo/client";
 import {SIGN_UP} from "../../api/operations/mutations/signUp";
 import InfoDialog from "../../components/InfoDialog";
-import {ErrorCodes, ErrorCodesUa, UserTypes, UserTypesUa} from "../../models/models";
+import {ErrorCodes, ErrorCodesUa} from "../../models/models";
 import {GET_UNSIGNED_DEPARTMENTS} from "../../api/operations/queries/unsignedDepartments";
 import {client} from "../../api/client";
 import {GET_UNSIGNED_DEGREES} from "../../api/operations/queries/unsignedDegrees";
-import {setItem} from "../../api/asyncStorage";
 import {EMAIL_VALID, PASSWORD_SOFT_VALID, PHONE_VALID} from "../../helpers/validators";
-
-const BACHELOR_DEGREE_ID = 1;
 
 const currentYear: number = parseInt(moment().format('YYYY'));
 
@@ -25,11 +23,6 @@ const startYearsItems = [
   {name: currentYear - 1, id: currentYear - 1},
   {name: currentYear - 2, id: currentYear - 2},
   {name: currentYear - 3, id: currentYear - 3},
-];
-
-const userTypesData = [
-  {id: UserTypes.STUDENT, name: UserTypesUa[UserTypes.STUDENT as UserTypes]},
-  {id: UserTypes.POST_GRADUATE, name: UserTypesUa[UserTypes.POST_GRADUATE as UserTypes]},
 ];
 
 const windowHeight = Dimensions.get('window').height;
@@ -75,12 +68,14 @@ export default function SignUp({navigation}: any) {
   const [signup, {loading, error}] = useMutation(SIGN_UP);
 
   useEffect(() => {
-    client.query({query: GET_UNSIGNED_DEPARTMENTS,
+    client.query({
+      query: GET_UNSIGNED_DEPARTMENTS,
       fetchPolicy: 'network-only',
     }).then(({data}) => {
       setDepartments(data.signupDepartments);
     });
-    client.query({query: GET_UNSIGNED_DEGREES,
+    client.query({
+      query: GET_UNSIGNED_DEGREES,
       fetchPolicy: 'network-only',
     }).then(({data}) => {
       setDegrees(data.signupDegrees);
@@ -174,8 +169,8 @@ export default function SignUp({navigation}: any) {
     checkDegreeValidation(selectedDegree.id);
 
     if (!isLastNameValidated && !isFirstNameValidated && !isEmailValidated && !isPasswordValidated
-        && !isPasswordConfirmValidated && !isStartYearValidated && !isDepartmentValidated
-        && !isDegreeValidated) {
+      && !isPasswordConfirmValidated && !isStartYearValidated && !isDepartmentValidated
+      && !isDegreeValidated) {
       try {
         const result = await signup({
           variables: {
@@ -219,7 +214,7 @@ export default function SignUp({navigation}: any) {
 
   const handleBack = () => {
     if (lastName || firstName || patronymic || email || phoneNumber || password || passwordConfirm
-        || selectedStartYear.id !== -1 || selectedDepartment.id !== -1 || selectedDegree.id !== -1) {
+      || selectedStartYear.id !== -1 || selectedDepartment.id !== -1 || selectedDegree.id !== -1) {
       showBackDialog();
     } else {
       navigateToLogin();
@@ -252,7 +247,7 @@ export default function SignUp({navigation}: any) {
                 }
               ]}
             >
-              Реєстрація педагогів та співробітників навчального закладу відбувається за допомогою учбової частини.
+              Співробітники академії можуть отримати дані свого облікового запису, звернувшись до учбової частини.
             </Banner>
             <Text style={styles.infoPanel}>
               Введіть дані, що співпадають з вашим студентським квитком або іншим документом.
@@ -352,12 +347,14 @@ export default function SignUp({navigation}: any) {
             />
             <Error validator={isDegreeValidated}/>
             <View style={styles.agreement}>
-              <Checkbox status={checkAgreement ? 'checked' : 'unchecked'} color='#2b5dff'
-                        uncheckedColor='#f91354'
-                        onPress={() => {
-                          setIsSignupTouched(true);
-                          setCheckAgreement(prevState => !prevState);
-                        }}/>
+              <CheckBox
+                isChecked={checkAgreement}
+                onClick={() => {
+                  setIsSignupTouched(true);
+                  setCheckAgreement(prevState => !prevState);
+                }}
+                style={{paddingRight: 8}}
+              />
               <Text style={{width: '90%', backgroundColor: '#fff'}}>Я прочитав і погоджуюсь з
                 <Text style={styles.link} onPress={showAgreement}> політикою конфіденційності</Text> *</Text>
             </View>
@@ -395,7 +392,7 @@ const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: '#fff',
     width: '100%',
-    height: windowHeight-80,
+    height: windowHeight - 80,
     alignItems: 'center',
   },
   title: {

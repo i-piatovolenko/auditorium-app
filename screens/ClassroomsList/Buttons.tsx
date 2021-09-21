@@ -16,7 +16,7 @@ import WaitDialog from "../../components/WaitDialog";
 import ConfirmLineOut from "../../components/ConfirmLineOut";
 import * as Location from 'expo-location';
 import {getDistance} from "../../helpers/getDistance";
-import {MAX_DISTANCE, UNIVERSITY_LOCATION} from "../../constants/constants";
+import {UNIVERSITY_LOCATION} from "../../constants/constants";
 import {useQuery} from "@apollo/client";
 import {PERMITTED_ACTION_HOURS} from "../../api/operations/queries/permittedActionHours";
 
@@ -30,6 +30,7 @@ const Buttons: React.FC<PropTypes> = ({
                                         classrooms
                                       }) => {
   const {data: {mode}} = useLocal('mode');
+  const {data: {maxDistance}} = useLocal('maxDistance');
   const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
   const [visibleModalError, setVisibleModalError] = useState(false);
@@ -37,45 +38,35 @@ const Buttons: React.FC<PropTypes> = ({
     .format('DD-MM-YYYY HH:mm') : ''}. До закінчення санкційного терміну ви можете брати вільні аудиторії.`;
   const [loading, setLoading] = useState(false);
   const [visibleLineOut, setVisibleLineOut] = useState(false);
-  const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [errorDialogButtonText, setErrorDialogButtonText] = useState('Дозволити геолокацію');
-  const {
-    data: {permittedActionHours} = {},
-    loading: loadingTime, error: errorTime
-  } = useQuery(PERMITTED_ACTION_HOURS);
-
-  useEffect(() => {
-    requestLocation().then(() => {
-      getIsNear()
-    });
-  }, []);
 
   const requestLocation = async () => {
     let {status} = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
-      setErrorDialogButtonText('Дозволити геолокацію');
-      return;
+      setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію в налаштуваннях.');
+    } else {
+      setErrorMsg(null);
     }
-    setErrorMsg(null);
   };
 
   const getIsNear = async () => {
     let isNear;
+    await requestLocation();
     let location = await Location.getCurrentPositionAsync({});
     if (location) {
       const distance = getDistance(location.coords.latitude, location.coords.longitude,
         UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
-      if (distance <= MAX_DISTANCE) {
+      if (distance <= maxDistance) {
         isNear = true;
       } else {
         isNear = false
-        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE * 1000} м. Ваша відстань: ${
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${maxDistance * 1000} м. Ваша відстань: ${
           (distance * 1000).toFixed(0)
         } м.`);
-        setErrorDialogButtonText('Зрозуміло');
       }
+    } else {
+      setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію в налаштуваннях.');
+      setLoading(false);
     }
     return isNear;
   };
@@ -161,12 +152,9 @@ const Buttons: React.FC<PropTypes> = ({
                    message={queueErrorMessage}
       />
       <ErrorDialog visible={!!errorMsg}
-                   hideDialog={() => {
-                     requestLocation();
-                     setErrorMsg(null)
-                   }}
+                   hideDialog={() => setErrorMsg(null)}
                    message={errorMsg}
-                   buttonText={errorDialogButtonText}
+                   buttonText='Зрозуміло'
       />
       <WaitDialog visible={loading}/>
       <ConfirmLineOut hideDialog={() => setVisibleLineOut(false)} visible={visibleLineOut}/>

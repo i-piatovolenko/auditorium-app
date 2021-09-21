@@ -6,7 +6,7 @@ import {Appbar, Button, Title} from "react-native-paper";
 export default function SignUpStepTwo() {
   const navigation = useNavigation();
   const message1 = 'Щоб підтвердити вказаний e-mail, перейдіть за посиланням, яке ми' +
-    ' надіслали на Вашу адресу.';
+    ' надіслали на Вашу адресу (якщо листа не має, перевірте розділ "Спам").';
   const message2 = 'Далі пройдіть верифікацію в учбовій частині.';
 
 

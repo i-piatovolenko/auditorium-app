@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Dialog, Paragraph, Portal, Title} from "react-native-paper";
-import {ScrollView, StyleSheet, Text, Dimensions} from "react-native";
+import {ScrollView, StyleSheet, Text, Dimensions, View} from "react-native";
 import Colors from "../../../constants/Colors";
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
@@ -278,18 +278,31 @@ export default function Agreement({visible, hideDialog, setCheckAgreement}: Prop
             нами: </Paragraph>
 
           <Paragraph> На електронну адресу: auditorium.knmau@gmail.com </Paragraph>
+          <View style={{flexDirection: 'row', marginVertical: 20, justifyContent: 'space-between'}}>
+            <Button
+              mode='contained'
+              onPress={() => {
+                hideDialog();
+                setCheckAgreement(false);
+              }}
+              style={{height: 40, width: '48%', alignItems: 'center', justifyContent: 'center'}}
+              color={Colors.red}
+            >
+              <Text style={{fontSize: 10}}>Відхилити</Text>
+            </Button>
+            <Button
+              mode='contained'
+              onPress={() => {
+                hideDialog();
+                setCheckAgreement(true);
+              }}
+              style={{height: 40, width: '48%', alignItems: 'center', justifyContent: 'center'}}
+            >
+              <Text style={{fontSize: 10}}>Прийняти</Text>
+            </Button>
+          </View>
         </ScrollView>
       </Dialog.Content>
-      <Dialog.Actions style={{height: 20, marginBottom: 20}}>
-        <Button onPress={() => {
-          hideDialog();
-          setCheckAgreement(false);
-        }} style={{height: 20}} color={Colors.red}>Відхилити</Button>
-        <Button onPress={() => {
-          hideDialog();
-          setCheckAgreement(true);
-        }} style={{height: 20}}>Прийняти</Button>
-      </Dialog.Actions>
     </Dialog>
   </Portal>
 }

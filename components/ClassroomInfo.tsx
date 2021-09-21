@@ -21,10 +21,11 @@ import OccupantInfo from "./OccupantInfo";
 import ClassroomQueueControlButtons from "./ClassroomQueueControlButtons";
 import {RESERVE_FREE_CLASSROOM} from "../api/operations/mutations/reserveFreeClassroom";
 import {getDistance} from "../helpers/getDistance";
-import {MAX_DISTANCE, UNIVERSITY_LOCATION} from "../constants/constants";
+import {UNIVERSITY_LOCATION} from "../constants/constants";
 import * as Location from "expo-location";
 import ErrorDialog from "./ErrorDialog";
 import WaitDialog from "./WaitDialog";
+import {useLocal} from "../hooks/useLocal";
 
 interface PropTypes {
   route: any;
@@ -35,6 +36,7 @@ const windowHeight = Dimensions.get("window").height;
 export default function ClassroomInfo({route: {params: {classroomId, currentUserId}}}: PropTypes) {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
+  const {data: {maxDistance}} = useLocal('maxDistance');
   const [classroom, setClassroom] = useState<ClassroomType | null>(null);
   const {
     data: userData,
@@ -49,32 +51,27 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   });
   const [errorMsg, setErrorMsg] = useState(null);
 
-  useEffect(() => {
-    requestLocation().then(() => {
-      getIsNear()
-    });
-  }, []);
-
   const requestLocation = async () => {
     let {status} = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
-      return;
+    } else {
+      setErrorMsg(null);
     }
-    setErrorMsg(null);
   };
 
   const getIsNear = async () => {
     let isNear;
+    await requestLocation();
     let location = await Location.getCurrentPositionAsync({});
     if (location) {
       const distance = getDistance(location.coords.latitude, location.coords.longitude,
         UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
-      if (distance <= MAX_DISTANCE) {
+      if (distance <= maxDistance) {
         isNear = true;
       } else {
         isNear = false
-        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${MAX_DISTANCE * 1000} м. Ваша відстань: ${
+        setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${maxDistance * 1000} м. Ваша відстань: ${
           (distance * 1000).toFixed(0)
         } м.`)
       }

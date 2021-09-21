@@ -24,6 +24,7 @@ import Colors from "../constants/Colors";
 import * as Linking from "expo-linking";
 import {CONFIRM_EMAIL} from "../api/operations/mutations/confirmEmail";
 import InfoDialog from "../components/InfoDialog";
+import WithKeyboardDismissWrapper from "../components/WithKeyboardDismissWrapper";
 
 const {width: windowWidth} = Dimensions.get('window');
 
@@ -40,33 +41,43 @@ export default function Login({route, navigation}: any) {
   const [visibleEmailConfirmSuccess, setVisibleEmailConfirmSuccess] = useState(false);
 
   useEffect(() => {
-    Linking.getInitialURL().then(url => {
-      const confirmEmailToken = Linking.parse(url).queryParams.confirmEmailToken;
-      const resetPasswordToken = Linking.parse(url).queryParams.resetPasswordToken;
-      if (resetPasswordToken) {
-        navigation.navigate('ResetPassword', {resetPasswordToken});
-      }
-      if (confirmEmailToken) {
-        client.mutate({
-          mutation: CONFIRM_EMAIL,
-          variables: {
-            input: {
-              confirmEmailToken
-            }
+      Linking.getInitialURL().then(url => {
+          const confirmEmailToken = Linking.parse(url).queryParams.confirmEmailToken;
+          const resetPasswordToken = Linking.parse(url).queryParams.resetPasswordToken;
+          if (resetPasswordToken) {
+            navigation.navigate('ResetPassword', {resetPasswordToken});
           }
-        }).then((result: any) => {
-          const userId = result.data.confirmEmail.userId;
-          setPersNumber(userId);
-          setVisibleEmailConfirmSuccess(true);
-          setErrorMessage(null);
-        }).catch(() => {
-          setVisibleEmailConfirmSuccess(true);
-          setErrorMessage('E-mail не було верифіковано');
-          setModalActivator(prevState => !prevState);
-        })
-      }
-    })
-  }, []);
+          if (confirmEmailToken) {
+            client.mutate({
+              mutation: CONFIRM_EMAIL,
+              variables: {
+                input: {
+                  confirmEmailToken
+                }
+              }
+            }).then((result: any) => {
+                if (result.data.confirmEmail.userErrors.length) {
+                  setErrorMessage(ErrorCodesUa[result.data.confirmEmail.userErrors[0] as ErrorCodes]);
+                  setModalActivator(prevState => !prevState);
+                } else {
+                  const userId = result.data.confirmEmail.userId;
+                  setPersNumber(userId);
+                  setVisibleEmailConfirmSuccess(true);
+                  setErrorMessage(null);
+                }
+              }
+            ).catch(() => {
+              setVisibleEmailConfirmSuccess(true);
+              setErrorMessage('E-mail не було верифіковано');
+              setModalActivator(prevState => !prevState);
+            })
+          }
+        }
+      )
+    },
+    []
+  )
+  ;
 
   useEffect(() => {
     if (modalActivator !== null) {
@@ -110,7 +121,7 @@ export default function Login({route, navigation}: any) {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+    <WithKeyboardDismissWrapper>
       <View style={styles.container}>
         {Platform.OS !== Platforms.WEB && (
           <PushNotification setPushNotificationToken={setPushNotificationToken}/>
@@ -119,7 +130,7 @@ export default function Login({route, navigation}: any) {
           <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
           <Text style={styles.title}>{i18n.t('login')}</Text>
           <Surface style={styles.inputs}>
-            <TextInput label='Логін'
+            <TextInput label='E-mail'
                        style={styles.input}
                        onChangeText={(e) => setEmail(e)}
             />
@@ -156,9 +167,7 @@ export default function Login({route, navigation}: any) {
         </ImageBackground>
         <InfoDialog
           message={<Text>{
-            'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' +
-            <Text>{persNumber}</Text> +
-            " або ім'я"
+            'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' + persNumber + " або ім'я."
           }</Text>
           }
           visible={visibleEmailConfirmSuccess}
@@ -168,7 +177,7 @@ export default function Login({route, navigation}: any) {
         <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
         <ErrorDialog visible={showError} hideDialog={hideError} message={errorMessage}/>
       </View>
-    </TouchableWithoutFeedback>
+    </WithKeyboardDismissWrapper>
   );
 }
 
