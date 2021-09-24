@@ -1,4 +1,4 @@
-import {ApolloClient, createHttpLink, from, InMemoryCache, makeVar, split} from "@apollo/client";
+import {ApolloClient, ApolloLink, createHttpLink, from, InMemoryCache, makeVar, split} from "@apollo/client";
 import {ACCESS_RIGHTS, Langs, Mode, User} from "../models/models";
 import {WebSocketLink} from '@apollo/client/link/ws';
 import {getMainDefinition} from "@apollo/client/utilities";
@@ -10,6 +10,7 @@ const wsLink: any = new WebSocketLink({
     uri: 'wss://api.auditoriu.me/',
     options: {
       reconnect: true,
+      lazy: true,
       connectionParams: async () => {
         const token = await getItem('token');
         return {
@@ -87,7 +88,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 export const client = new ApolloClient({
-  link: from([errorLink, authLink.concat(splitLink)]),
+  link: from([errorLink, authLink, splitLink]),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

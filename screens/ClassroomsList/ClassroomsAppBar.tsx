@@ -14,6 +14,7 @@ import {getClassroomsFilteredByInstruments} from "./helpers";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {GENERAL_QUEUE_POSITION} from "../../api/operations/queries/generalQueuePosition";
 import {FOLLOW_GENERAL_QUEUE_POSITION} from "../../api/operations/subscriptions/generalQueuePosition";
+import {getItem} from "../../api/asyncStorage";
 
 type PropTypes = {
   freeClassroomsAmount: number;
@@ -50,33 +51,33 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
   }, [dataPosition, loadingPosition, errorPosition]);
 
   useEffect(() => {
-    const unsubscribeSize = subscribeToMore({
-        document: FOLLOW_GENERAL_QUEUE_SIZE,
-        updateQuery: (prev, {subscriptionData}) => {
-          if (!subscriptionData.data) return prev;
-          setGeneralQueueSize(subscriptionData.data.generalQueueSize);
-          return subscriptionData.data.generalQueueSize
+      const unsubscribeSize = subscribeToMore({
+          document: FOLLOW_GENERAL_QUEUE_SIZE,
+          updateQuery: (prev, {subscriptionData}) => {
+            if (!subscriptionData.data) return prev;
+            setGeneralQueueSize(subscriptionData.data.generalQueueSize);
+            return subscriptionData.data.generalQueueSize
+          }
         }
-      }
-      )
-    ;
-    const unsubscribePosition = subscribeToMorePosition({
-        document: FOLLOW_GENERAL_QUEUE_POSITION,
-        variables: {
-          userId: currentUser.id
-        },
-        updateQuery: (prev, {subscriptionData}) => {
-          if (!subscriptionData.data) return prev;
-          setGeneralQueuePosition(subscriptionData.data.generalQueuePosition);
-          return subscriptionData.data.generalQueuePosition
+        )
+      ;
+      const unsubscribePosition = subscribeToMorePosition({
+          document: FOLLOW_GENERAL_QUEUE_POSITION,
+          variables: {
+            userId: currentUser.id
+          },
+          updateQuery: (prev, {subscriptionData}) => {
+            if (!subscriptionData.data) return prev;
+            setGeneralQueuePosition(subscriptionData.data.generalQueuePosition);
+            return subscriptionData.data.generalQueuePosition
+          }
         }
-      }
-    );
+      );
 
-    return () => {
-      unsubscribeSize();
-      unsubscribePosition();
-    }
+      return () => {
+        unsubscribeSize();
+        unsubscribePosition();
+      }
   }, []);
 
   useEffect(() => {

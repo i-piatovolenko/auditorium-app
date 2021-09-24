@@ -24,7 +24,7 @@ export default function InfoDialog({visible, message, hideDialog, navigateToLogi
               hideDialog();
               navigateToLogin && navigateToLogin();
             }} mode='contained'>
-              Зрозуміло, я запам'ятав свій номер
+              Закрити
             </Button>
           </Dialog.Actions>
           ) : (

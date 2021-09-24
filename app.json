@@ -36,7 +36,9 @@
       "backgroundColor": "#ffffff",
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
+        "ACCESS_FINE_LOCATION",
+        "NOTIFICATIONS",
+        "USER_FACING_NOTIFICATIONS"
       ],
       "package": "com.knmau.auditorium",
       "versionCode": 13

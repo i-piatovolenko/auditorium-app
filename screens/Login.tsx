@@ -28,7 +28,7 @@ import WithKeyboardDismissWrapper from "../components/WithKeyboardDismissWrapper
 
 const {width: windowWidth} = Dimensions.get('window');
 
-export default function Login({route, navigation}: any) {
+export default function Login({navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -108,8 +108,8 @@ export default function Login({route, navigation}: any) {
         } else {
           const user: User = result?.data.login.user;
           const token: string = result?.data.login.token;
-          await setItem('user', user);
           await setItem('token', token);
+          await setItem('user', user);
           meVar(user);
           noTokenVar(false);
         }

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
-import {ClassroomType, DisabledInfo, DisabledState, Mode, OccupiedInfo, OccupiedState} from "../models/models";
-import {fullName, isNotFree, isOccupiedOnSchedule, isOwnClassroom, isPendingForMe, typeStyle} from "../helpers/helpers";
+import {ClassroomType, DisabledInfo, DisabledState, Mode, OccupiedState} from "../models/models";
+import {fullName, isNotFree, isOwnClassroom, isPendingForMe, typeStyle} from "../helpers/helpers";
 import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "./InstrumentItem";
 import {useNavigation} from '@react-navigation/native';
@@ -53,9 +53,10 @@ export default function ClassroomsCell({
   );
 
   return <TouchableHighlight
-    onPress={mode === Mode.QUEUE_SETUP && isNotFree(occupied)
-      ? () => addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds)
-      : () => handleTouch(disabled)
+    onPress={
+      mode === Mode.QUEUE_SETUP && (isNotFree(occupied) || disabled.state === DisabledState.DISABLED)
+        ? () => addToFilteredList(id, isMinimalSetup, minimalClassroomIds, desirableClassroomIds)
+        : () => handleTouch(disabled)
     }
     underlayColor={disabled?.state === DisabledState.DISABLED ? '#f91354' : '#2b5dff'}
     style={{borderRadius: 4}}

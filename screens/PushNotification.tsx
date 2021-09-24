@@ -4,6 +4,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {Platform} from 'react-native';
 import {pushNotificationTokenVar} from "../api/client";
 import ErrorDialog from "../components/ErrorDialog";
+import WarningDialog from "../components/WarningDialog";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -48,7 +49,7 @@ export default function PushNotification({setPushNotificationToken}: PropTypes) 
   }, []);
 
   return (
-    <ErrorDialog visible={!!errorText} hideDialog={() => setErrorText(null)} message={errorText} />
+    <WarningDialog visible={!!errorText} hideDialog={() => setErrorText(null)} message={errorText} />
   )};
 
 // Can use this function below, OR use Expo's Push Notification Tool-> https://expo.io/notifications

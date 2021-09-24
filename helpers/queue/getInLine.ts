@@ -29,7 +29,7 @@ const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: 
     })
     modeVar(Mode.INLINE);
     minimalClassroomIdsVar(allClassroomIds);
-  } catch (e) {
+  } catch (e: any) {
     alert(JSON.stringify(e));
   }
 };

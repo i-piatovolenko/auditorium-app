@@ -1,12 +1,14 @@
 import React, {useCallback} from "react";
-import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View, Platform} from "react-native";
-import {ClassroomType, DisabledState, Platforms} from "../../models/models";
+import {Dimensions, Image, Platform, StyleSheet, Text, TouchableHighlight, View} from "react-native";
+import {ClassroomType, DisabledState, Mode, Platforms} from "../../models/models";
 import Colors from "../../constants/Colors";
-import {Surface} from "react-native-paper";
+import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
 import {useNavigation} from "@react-navigation/native";
 import TextTicker from "react-native-text-ticker";
 import moment from "moment";
+import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
+import {useLocal} from "../../hooks/useLocal";
 
 const WINDOW_WIDTH = Dimensions.get('window').width;
 const CELL_WIDTH = ((WINDOW_WIDTH - 10) / 3);
@@ -19,11 +21,43 @@ type PropTypes = {
 
 const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentUser}) => {
   const navigation = useNavigation();
+  const {data: {mode}} = useLocal('mode');
+  const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
+  const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
+  const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
   const special = !!classroom.special;
   const {instruments, disabled} = classroom;
   const isDisabled = disabled.state === DisabledState.DISABLED || !isEnabledForCurrentUser;
 
+  const handleCheck = () => {
+    if (isMinimalSetup) {
+      const minimalSet = new Set([...minimalClassroomIds]);
+      minimalSet.has(classroom.id) ? minimalSet.delete(classroom.id) : minimalSet.add(classroom.id)
+      minimalClassroomIdsVar([...minimalSet]);
+    } else {
+      const desiredSet = new Set([...desirableClassroomIds]);
+      desiredSet.has(classroom.id) ? desiredSet.delete(classroom.id) : desiredSet.add(classroom.id)
+      desirableClassroomIdsVar([...desiredSet]);
+    }
+  };
+
+  const isChecked = () => {
+    if (isMinimalSetup) {
+      return minimalClassroomIds.includes(classroom.id) && mode === Mode.QUEUE_SETUP;
+    } else {
+      return desirableClassroomIds.includes(classroom.id) && mode === Mode.QUEUE_SETUP;
+    }
+  };
+
   const handlePress = () => {
+    if (mode === Mode.QUEUE_SETUP && disabled.state === DisabledState.DISABLED) {
+      handleCheck();
+    } else {
+      navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
+    }
+  };
+
+  const handleLongPress = () => {
     navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
   };
 
@@ -40,8 +74,12 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
   }, [isDisabled, isEnabledForCurrentUser, classroom.queueInfo.queuePolicy])
 
   return (
-    <TouchableHighlight onPress={handlePress}>
+    <TouchableHighlight onPress={handlePress} onLongPress={handleLongPress}>
       <Surface style={[styles.cell, isDisabled ? styles.disabled : styles.free]}>
+        {isChecked() && (
+          <IconButton icon='check-bold' style={styles.checkMark} color='#0f0'
+                      onPress={handlePress} onLongPress={handleLongPress}/>
+        )}
         <View style={styles.cellHeader}>
           <Text style={classroom.name.length > 2 ? styles.longName : styles.name}>{classroom.name}</Text>
           <Image source={require('./../../assets/images/specialPiano.png')}

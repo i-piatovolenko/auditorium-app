@@ -26,7 +26,7 @@ import {getItem} from "../../api/asyncStorage";
 import {hasOwnClassroom, isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
-import {client, modeVar, noConnectionVar} from "../../api/client";
+import {client, maxDistanceVar, modeVar, noConnectionVar} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
 import Log from "../../components/Log";
 import {usePrevious} from "../../hooks/usePrevious";
@@ -39,7 +39,9 @@ import SkippedClassroomSnackbar from "../../components/SkippedClassroomSnackbar"
 import ClassroomAcceptedDialog from "../../components/ClassroomAcceptedDialog";
 import {GET_GENERAL_QUEUE} from "../../api/operations/queries/generalQueue";
 import Space from "../../components/Space";
-import { useNavigation } from '@react-navigation/native';
+import {MAX_DISTANCE} from "../../api/operations/queries/constant";
+import WarningDialog from "../../components/WarningDialog";
+import {isLastVersion} from "../../helpers/isLastVersion";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -47,12 +49,18 @@ const WINDOW_HEIGHT = Dimensions.get("window").height;
 const BOTTOM_SPACE = 80;
 
 export default function Home() {
-  const [currentUserId, setCurrentUserId] = useState(null);
   const appState = useRef(AppState.currentState);
   const {data: {me}} = useLocal('me');
 
   useEffect(() => {
-    getItem('user').then((data: User) => setCurrentUserId(data.id));
+    client.query({
+      query: MAX_DISTANCE
+    }).then(res => {
+      const distance = res.data.constant.value;
+      if (distance) {
+        maxDistanceVar(distance);
+      }
+    });
     AppState.addEventListener('change', _handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', _handleAppStateChange);
@@ -62,7 +70,8 @@ export default function Home() {
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (
       appState.current.match(/inactive|background/) &&
-      nextAppState === 'active'
+      nextAppState === 'active' &&
+      me.id
     ) {
       try {
         client.query({
@@ -82,7 +91,7 @@ export default function Home() {
           query: GENERAL_QUEUE_SIZE,
           fetchPolicy: 'network-only'
         });
-      } catch (e) {
+      } catch (e: any) {
         console.log(e)
       }
     }
@@ -90,18 +99,18 @@ export default function Home() {
     appState.current = nextAppState;
   };
 
-  if (!currentUserId) return null;
+  if (!me) return null;
   // @ts-ignore
   return <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName='ClassroomsList'>
     <Stack.Screen
       name={'ClassroomsList' as any}
       component={ClassroomsList}
-      initialParams={{currentUserId}}
+      initialParams={{currentUserId: me.id}}
     />
     <Stack.Screen
       name={'ClassroomInfo' as any}
       component={ClassroomInfo}
-      initialParams={{currentUserId}}
+      initialParams={{currentUserId: me.id}}
     />
   </Stack.Navigator>
 }
@@ -138,6 +147,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
   });
   const prevUserData: { user: User } = usePrevious(userData);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [latestVersion, setLatestVersion] = useState([true, '', '']);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -163,6 +173,12 @@ const ClassroomsList: React.FC = ({route}: any) => {
   }, []);
 
   useEffect(() => {
+    isLastVersion().then(res => {
+      setLatestVersion(res);
+    });
+  }, []);
+
+  useEffect(() => {
     if (userData && prevUserData) {
       const {currentSession} = userData.user?.queueInfo;
       const {currentSession: prevSession} = prevUserData.user?.queueInfo;
@@ -182,19 +198,21 @@ const ClassroomsList: React.FC = ({route}: any) => {
   }, [userData]);
 
   useEffect(() => {
-    const unsubscribeClassrooms = subscribeToMore({
-      document: FOLLOW_CLASSROOMS,
-    });
-    const unsubscribeUser = subscribeToMoreUser({
-      document: FOLLOW_USER,
-      variables: {
-        userId: route.params.currentUserId
-      }
-    });
-    return () => {
-      unsubscribeClassrooms();
-      unsubscribeUser();
-    };
+    getItem('user').then(({id}: any) => {
+      const unsubscribeClassrooms = subscribeToMore({
+        document: FOLLOW_CLASSROOMS,
+      });
+      const unsubscribeUser = subscribeToMoreUser({
+        document: FOLLOW_USER,
+        variables: {
+          userId: id
+        }
+      });
+      return () => {
+        unsubscribeClassrooms();
+        unsubscribeUser();
+      };
+    })
   }, []);
 
   useEffect(() => {
@@ -238,7 +256,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
 
     return userData.user.queue.some(({classroom: {id}, ...queueRecord}: any) => classroom.id === id)
       && !(userData.user.occupiedClassrooms.some(({id}: ClassroomType) => classroom.id === id))
-      && !(classroom.occupied.user.id === userData.user.id && classroom.occupied.state === OccupiedState.PENDING);
+      && !(classroom.occupied?.user?.id === userData?.user?.id && classroom.occupied.state === OccupiedState.PENDING);
   };
 
   /**
@@ -405,6 +423,15 @@ const ClassroomsList: React.FC = ({route}: any) => {
       <ClassroomAcceptedDialog/>
       {skippedClassroom && userData && (
         <SkippedClassroomSnackbar skipsCount={userData.user.queueInfo.currentSession?.skips}/>
+      )}
+      {!latestVersion?.[0] && (
+        <WarningDialog
+          visible
+          hideDialog={() => {
+          }}
+          buttonText=' '
+          message={`Доступна для завантеження нова версія додатку: ${latestVersion[2]}. Поточна версія: ${latestVersion[1]}. Будь ласка, завантажте оновлення з магазину!`}
+        />
       )}
     </ImageBackground>
   )

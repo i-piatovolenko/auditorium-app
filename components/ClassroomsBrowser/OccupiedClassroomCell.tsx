@@ -1,14 +1,13 @@
-import React, {CSSProperties} from "react";
+import React from "react";
 import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
 import {ClassroomType, DisabledState, Mode} from "../../models/models";
 import Colors from "../../constants/Colors";
 import {IconButton, Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
-import {fullName, isNotFree, typeStyle} from "../../helpers/helpers";
+import {fullName, typeStyle} from "../../helpers/helpers";
 import {useNavigation} from "@react-navigation/native";
 import {useLocal} from "../../hooks/useLocal";
 import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
-import useTimeLeft from "../../hooks/useTimeLeft";
 
 const windowWidth = Dimensions.get('window').width;
 const cellWidth = ((windowWidth - 10) / 3);
@@ -43,7 +42,8 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurr
   };
 
   const handlePress = () => {
-    if (mode === Mode.QUEUE_SETUP) {
+    if (mode === Mode.QUEUE_SETUP ||
+      (mode === Mode.QUEUE_SETUP && disabled.state === DisabledState.DISABLED)) {
       handleCheck();
     } else {
       navigation.navigate('ClassroomInfo', {classroomId: classroom.id});
