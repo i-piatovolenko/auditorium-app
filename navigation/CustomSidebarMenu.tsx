@@ -34,7 +34,8 @@ const CustomSidebarMenu = (props: any) => {
     <SafeAreaView style={{flex: 1}}>
       <Image
         source={require('../assets/images/au_logo.png')}
-        style={styles.sideMenuProfileIcon}
+        resizeMethod='scale'
+        style={styles.logo}
       />
       <View style={styles.userData}>
         <Avatar.Icon size={44} icon='account'/>
@@ -75,10 +76,10 @@ const CustomSidebarMenu = (props: any) => {
 };
 
 const styles = StyleSheet.create({
-  sideMenuProfileIcon: {
-    resizeMode: 'center',
+  logo: {
+    resizeMode: 'stretch',
     width: 200,
-    height: 70,
+    height: 63,
     marginTop: 50,
     alignSelf: 'center',
   },

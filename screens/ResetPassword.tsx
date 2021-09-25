@@ -2,67 +2,61 @@ import * as React from 'react';
 import {View, StyleSheet, Text, ImageBackground, Linking} from "react-native";
 import {Button, Surface, TextInput} from "react-native-paper";
 import {useState} from "react";
-import {PASSWORD_SOFT_VALID} from "../helpers/validators";
+import {PASSWORD_SOFT_VALID, validationErrors} from "../helpers/validators";
 import Colors from "../constants/Colors";
 import {client} from "../api/client";
 import {PASSWORD_RESET} from "../api/operations/mutations/resetPassword";
-
-const PASSWORDS_NOT_SAME = 'Паролі не співпадають'
-const INVALID_PASSWORD = 'Невірний формат'
 
 export default function ResetPassword({navigation, route: {params: {resetPasswordToken}}}: any) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [visited, setVisited] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(INVALID_PASSWORD);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
 
-  const checkIsValid = (value: string) => {
-    const validate = PASSWORD_SOFT_VALID.test(value);
-    if (!validate) {
-      setErrorMessage(INVALID_PASSWORD);
-    } else if (password !== value) {
-      setErrorMessage(PASSWORDS_NOT_SAME);
-    } else {
-      setErrorMessage(null);
-    }
-  };
-
   const handleChangePassword = (value: string) => {
-    checkIsValid(value);
+    setErrorMessage(null);
     setPassword(value);
   };
 
   const handleChangePasswordConfirm = (value: string) => {
-    checkIsValid(value);
+    setErrorMessage(null);
     setConfirmPassword(value);
   };
 
   const handleConfirmResetPassword = async () => {
-    try {
-      const result = await client.mutate({
-        mutation: PASSWORD_RESET,
-        variables: {
-          input: {
-            resetPasswordToken,
-            password
+    const validate = PASSWORD_SOFT_VALID.test(password);
+    if (!validate) {
+      setErrorMessage(validationErrors.INVALID_PASSWORD);
+    } else if (String(password) !== String(confirmPassword)) {
+      setErrorMessage(validationErrors.PASSWORDS_NOT_SAME);
+    } else {
+      setErrorMessage(null);
+      try {
+        const result = await client.mutate({
+          mutation: PASSWORD_RESET,
+          variables: {
+            input: {
+              resetPasswordToken,
+              password
+            }
           }
-        }
-      });
-      if (result.data.resetPassword.userErrors.length) {
-        result.data.resetPassword.userErrors.forEach(({message, code}: any) => {
-          // alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]));
-          alert(JSON.stringify(message));
-          setLoading(false);
         });
-      } else {
+        if (result.data.resetPassword.userErrors.length) {
+          result.data.resetPassword.userErrors.forEach(({message, code}: any) => {
+            // alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]));
+            alert(JSON.stringify(message));
+            setLoading(false);
+          });
+        } else {
+          setLoading(false);
+          navigation.navigate('ResetPasswordSuccess')
+        }
+      } catch (e) {
         setLoading(false);
-        navigation.navigate('ResetPasswordSuccess')
+        console.log(e)
       }
-    } catch (e) {
-      setLoading(false);
-      console.log(e)
     }
   };
 

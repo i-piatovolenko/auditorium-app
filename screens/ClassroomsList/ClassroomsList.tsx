@@ -344,9 +344,8 @@ const ClassroomsList: React.FC = ({route}: any) => {
         )}
         {!loading && !error && !userLoading && !userError && (
           <ScrollView style={styles.scrollView}
-                      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}
-                                                      progressViewOffset={30}
-                      />}>
+                      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}
+          >
             {/**
              My classroom: OCCUPIED or RESERVED classroom by current user
              Shown anytime except QUEUE_SETUP mode.
@@ -424,7 +423,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
       {skippedClassroom && userData && (
         <SkippedClassroomSnackbar skipsCount={userData.user.queueInfo.currentSession?.skips}/>
       )}
-      {!latestVersion?.[0] && (
+      {!latestVersion?.[0] && Platform.OS !== Platforms.WEB && (
         <WarningDialog
           visible
           hideDialog={() => {

@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {Dimensions, ScrollView, StyleSheet, Text, View} from "react-native";
+import React, {useCallback, useEffect, useState} from 'react';
+import {Dimensions, Platform, ScrollView, StyleSheet, Text, View} from "react-native";
 import {
   ClassroomType,
   DisabledState, ErrorCodes, ErrorCodesUa,
   InstrumentType, Mode,
-  OccupiedState,
+  OccupiedState, Platforms,
   UserQueueState
 } from "../models/models";
 import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-native-paper";
@@ -37,7 +37,9 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const {data: {maxDistance}} = useLocal('maxDistance');
+  const {data: {me}} = useLocal('me');
   const [classroom, setClassroom] = useState<ClassroomType | null>(null);
+  const [disableStatus, setDisableStatus] = useState(null);
   const {
     data: userData,
     loading: userLoading,
@@ -50,6 +52,24 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
     }
   });
   const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    if (classroom && userData) {
+      const isEnabledForCurrentUser = isEnabledForCurrentDepartment(classroom, userData.user);
+      const isDisabled = classroom.disabled.state === DisabledState.DISABLED || !isEnabledForCurrentUser;
+
+      isDisabled ? !isEnabledForCurrentUser ?
+        !classroom.queueInfo.queuePolicy.queueAllowedDepartments.length ?
+          Platform.OS === Platforms.WEB ? setDisableStatus('Недоступно')
+            : setDisableStatus('Недоступно для студентів')
+          : Platform.OS === Platforms.WEB ? setDisableStatus('Недоступно') :
+          setDisableStatus('Тільки ' + classroom.queueInfo.queuePolicy
+            .queueAllowedDepartments.map(({department: {name}}) => name.toLowerCase()).join(', '))
+        : Platform.OS === Platforms.WEB ? setDisableStatus(classroom.disabled?.comment)
+          : setDisableStatus(classroom.disabled?.comment + ' до ' + moment(classroom.disabled.until).format('DD-MM-YYYY HH:mm'))
+        : setDisableStatus(null)
+    }
+  }, [classroom, classroom?.queueInfo.queuePolicy, userData, userError, userLoading]);
 
   const requestLocation = async () => {
     let {status} = await Location.requestForegroundPermissionsAsync();
@@ -144,18 +164,9 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
     <View style={styles.wrapper}>
       {(userLoading || !classroom) ? <ActivityIndicator animating color='#fff' size={64}/> : (
         <ScrollView>
-          {!isEnabledForCurrentDepartment(classroom, userData.user) && (
+          {disableStatus && (
             <View style={styles.warning}>
-              <Title style={styles.warningText}>Аудиторія недоступна для вашої кафедри</Title>
-            </View>
-          )}
-          {classroom.disabled.state === DisabledState.DISABLED && (
-            <View style={styles.warning}>
-              <Title style={styles.warningText}>Аудиторія недоступна</Title>
-              <Title style={styles.warningText}>{classroom.disabled.comment}</Title>
-              <Title style={styles.warningText}>
-                до {moment(classroom.disabled.until).format('DD-MM-YYYY HH:mm')}
-              </Title>
+              <Title style={styles.warningText}>{disableStatus}</Title>
             </View>
           )}
           {classroom.isHidden && (
@@ -171,7 +182,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
                 {classroom.isOperaStudio && <Chip selected selectedColor='#00f' mode='outlined'
                                                   style={styles.tag}>Оперна студія</Chip>}
                 {!!classroom.special && <Chip selected selectedColor='#00f' mode='outlined'
-                                            style={styles.tag}>Спеціалізована</Chip>}
+                                              style={styles.tag}>Спеціалізована</Chip>}
               </View>
               <Divider style={styles.divider}/>
             </>
@@ -221,7 +232,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
       <ErrorDialog visible={!!errorMsg} hideDialog={() => setErrorMsg(null)}
                    message={errorMsg}
       />
-      <WaitDialog visible={loading} />
+      <WaitDialog visible={loading}/>
     </View>
   </View>
 };

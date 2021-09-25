@@ -14,7 +14,14 @@ import {ErrorCodes, ErrorCodesUa} from "../../models/models";
 import {GET_UNSIGNED_DEPARTMENTS} from "../../api/operations/queries/unsignedDepartments";
 import {client} from "../../api/client";
 import {GET_UNSIGNED_DEGREES} from "../../api/operations/queries/unsignedDegrees";
-import {EMAIL_VALID, PASSWORD_SOFT_VALID, PHONE_VALID} from "../../helpers/validators";
+import {
+  EMAIL_VALID,
+  ONLY_CYRILLIC,
+  ONLY_DIGITS,
+  PASSWORD_SOFT_VALID,
+  validationErrors
+} from "../../helpers/validators";
+import Colors from "../../constants/Colors";
 
 const currentYear: number = parseInt(moment().format('YYYY'));
 
@@ -26,6 +33,7 @@ const startYearsItems = [
 ];
 
 const windowHeight = Dimensions.get('window').height;
+const PHONE_PREFIX = '+380';
 
 
 export default function SignUp({navigation}: any) {
@@ -50,6 +58,7 @@ export default function SignUp({navigation}: any) {
 
   const [isSignupTouched, setIsSignupTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPatronymicHint, setShowPatronymicHint] = useState(false);
 
   const [isLastNameValidated, setIsLastNameValidated] = useState<string | null>(null);
   const [isFirstNameValidated, setIsFirstNameValidated] = useState<string | null>(null);
@@ -83,76 +92,82 @@ export default function SignUp({navigation}: any) {
   }, []);
 
   const checkLastNameValidation = (value: string) => {
+    if (!ONLY_CYRILLIC.test(value)) {
+      return setIsLastNameValidated(validationErrors.ONLY_CYRILLIC);
+    }
     if (!value) {
-      return setIsLastNameValidated("Обов'язкове поле");
+      return setIsLastNameValidated(validationErrors.REQUIRED_FIELD);
     }
     return setIsLastNameValidated(null);
   };
 
   const checkFirstNameValidation = (value: string) => {
+    if (!ONLY_CYRILLIC.test(value)) {
+      return setIsLastNameValidated(validationErrors.ONLY_CYRILLIC);
+    }
     if (!value) {
-      return setIsFirstNameValidated("Обов'язкове поле");
+      return setIsFirstNameValidated(validationErrors.REQUIRED_FIELD);
     }
     return setIsFirstNameValidated(null);
   };
 
   const checkEmailValidation = (value: string) => {
     if (!value) {
-      return setIsEmailValidated("Обов'язкове поле");
+      return setIsEmailValidated(validationErrors.REQUIRED_FIELD);
     }
     if (!EMAIL_VALID.test(value)) {
-      return setIsEmailValidated("Невірний формат");
+      return setIsEmailValidated(validationErrors.INVALID_FORMAT);
     }
     return setIsEmailValidated(null);
   };
 
   const checkPhoneValidation = (value: string) => {
     if (!value) {
-      return setIsPhoneValidated("Обов'язкове поле");
+      return setIsPhoneValidated(validationErrors.REQUIRED_FIELD);
     }
-    if (!PHONE_VALID.test(value)) {
-      return setIsPhoneValidated("Невірний формат");
+    if (!ONLY_DIGITS.test(value) || value.length !== 9) {
+      return setIsPhoneValidated(validationErrors.INVALID_FORMAT);
     }
     return setIsPhoneValidated(null);
   };
 
   const checkPasswordValidation = (value: string) => {
     if (!value) {
-      return setIsPasswordValidated("Обов'язкове поле");
+      return setIsPasswordValidated(validationErrors.REQUIRED_FIELD);
     }
     if (!PASSWORD_SOFT_VALID.test(value)) {
-      return setIsPasswordValidated("Невірний формат");
+      return setIsPasswordValidated(validationErrors.INVALID_PASSWORD);
     }
     return setIsPasswordValidated(null);
   };
 
   const checkPasswordConfirmValidation = (value: string) => {
     if (!value) {
-      return setIsPasswordConfirmValidated("Обов'язкове поле");
+      return setIsPasswordConfirmValidated(validationErrors.REQUIRED_FIELD);
     }
-    if (password && passwordConfirm && (password !== passwordConfirm)) {
-      return setIsPasswordConfirmValidated('Паролі не співпадають');
+    if (password && passwordConfirm && (password !== value)) {
+      return setIsPasswordConfirmValidated(validationErrors.PASSWORDS_NOT_SAME);
     }
     return setIsPasswordConfirmValidated(null);
   };
 
   const checkStartYearValidation = (value: number) => {
     if (value === -1 && (isStartYearModalVisited || isSignupTouched)) {
-      return setIsStartYearValidated("Рік вступу не вибрано");
+      return setIsStartYearValidated(validationErrors.NO_START_YEAR);
     }
     return setIsStartYearValidated(null);
   };
 
   const checkDepartmentValidation = (value: number) => {
     if (value === -1 && (isDegreeModalVisited || isSignupTouched)) {
-      return setIsDepartmentValidated("Кафедру не вибрано");
+      return setIsDepartmentValidated(validationErrors.NO_DEPARTMENT);
     }
     return setIsDepartmentValidated(null);
   };
 
   const checkDegreeValidation = (value: number) => {
     if (value === -1 && (isDegreeModalVisited || isSignupTouched)) {
-      return setIsDegreeValidated("Навчальний ступінь не вибрано");
+      return setIsDegreeValidated(validationErrors.NO_DEGREE);
     }
     return setIsDegreeValidated(null);
   };
@@ -180,7 +195,7 @@ export default function SignUp({navigation}: any) {
               patronymic: patronymic,
               password: password,
               email: email,
-              phoneNumber: phoneNumber,
+              phoneNumber: PHONE_PREFIX + phoneNumber,
               departmentId: selectedDepartment.id,
               degreeId: selectedDegree.id,
               startYear: selectedStartYear.id,
@@ -247,8 +262,7 @@ export default function SignUp({navigation}: any) {
                 }
               ]}
             >
-              Співробітники академії можуть отримати дані свого облікового запису, звернувшись до учбової частини.
-            </Banner>
+              Співробітники академії можуть без реєстрації отримати дані свого облікового запису, вказавши диспетчеру свій email.            </Banner>
             <Text style={styles.infoPanel}>
               Введіть дані, що співпадають з вашим студентським квитком або іншим документом.
             </Text>
@@ -267,11 +281,21 @@ export default function SignUp({navigation}: any) {
                          setFirstName(text);
                          checkFirstNameValidation(text);
                        }}
-                       onBlur={() => checkFirstNameValidation(firstName)}
+                       onBlur={() => {
+                         checkFirstNameValidation(firstName);
+                         setShowPatronymicHint(true);
+                       }}
             />
             <Error validator={isFirstNameValidated}/>
-            <TextInput placeholder="По-батькові" style={styles.input} value={patronymic}
-                       onChangeText={text => setPatronymic(text)}
+            {showPatronymicHint && <Text style={styles.infoPanel}>
+              Поле 'По-батькові' обов'язково для не іноземців
+            </Text>}
+            <TextInput
+              placeholder="По-батькові"
+              style={styles.input}
+              value={patronymic}
+              onBlur={() => setShowPatronymicHint(false)}
+              onChangeText={text => setPatronymic(text)}
             />
             <View style={{height: 10, backgroundColor: '#fff'}}/>
             <TextInput placeholder="E-mail *" style={styles.input} value={email}
@@ -284,15 +308,18 @@ export default function SignUp({navigation}: any) {
                        keyboardType='email-address'
             />
             <Error validator={isEmailValidated}/>
-            <TextInput placeholder="Тел. номер *" style={styles.input}
-                       underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
-                       onChangeText={text => {
-                         setPhoneNumber(text);
-                         checkPhoneValidation(text);
-                       }}
-                       onBlur={() => checkPhoneValidation(phoneNumber)}
-                       keyboardType='phone-pad'
-            />
+            <View style={styles.phoneInputWrapper}>
+              <Text style={styles.phonePrefix}>{PHONE_PREFIX}</Text>
+              <TextInput placeholder="Тел. номер *" style={styles.phoneInput}
+                         underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
+                         onChangeText={text => {
+                           setPhoneNumber(text);
+                           checkPhoneValidation(text);
+                         }}
+                         onBlur={() => checkPhoneValidation(phoneNumber)}
+                         keyboardType='phone-pad'
+              />
+            </View>
             <Error validator={isPhoneValidated}/>
             <TextInput placeholder="Пароль *" style={styles.input}
                        underlineColor={!isPasswordValidated ? '#ccc' : '#f91354'}
@@ -420,6 +447,13 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     margin: 0,
   },
+  phoneInput: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    fontSize: 22,
+    paddingLeft: 40,
+    margin: 0,
+  },
   top: {
     position: 'absolute',
     left: 0,
@@ -447,4 +481,14 @@ const styles = StyleSheet.create({
     padding: 8,
     marginTop: 16
   },
+  phoneInputWrapper: {
+    backgroundColor: Colors.light.background,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  phonePrefix: {
+    fontSize: 21,
+    color: Colors.lightGrey,
+    position: 'absolute'
+  }
 });
