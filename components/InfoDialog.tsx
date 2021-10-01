@@ -16,7 +16,7 @@ export default function InfoDialog({visible, message, hideDialog, navigateToLogi
         <Dialog visible={visible} dismissable={false}>
           <Dialog.Title style={{textAlign: 'center'}}>Увага</Dialog.Title>
           <Dialog.Content>
-            <Paragraph style={{textAlign: 'center'}}>{message}</Paragraph>
+            <Paragraph style={{textAlign: 'center', color: '#000'}}>{message}</Paragraph>
           </Dialog.Content>
           {confirmButton ? (
             <Dialog.Actions>

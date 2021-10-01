@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text} from 'react-native';
+import {Dimensions, ImageBackground, ScrollView, StyleSheet, Text, Platform} from 'react-native';
 import {View} from '../../components/Themed';
-import {Appbar, Banner, Button, HelperText, TextInput} from 'react-native-paper';
+import {Appbar, Banner, Button, Checkbox, HelperText, TextInput} from 'react-native-paper';
 import CheckBox from 'react-native-check-box'
 import Agreement from "./components/Agreement";
 import CustomPickerField from "../../components/CustomPicker/CustomPickerField";
@@ -10,7 +10,7 @@ import moment from "moment";
 import {useMutation} from "@apollo/client";
 import {SIGN_UP} from "../../api/operations/mutations/signUp";
 import InfoDialog from "../../components/InfoDialog";
-import {ErrorCodes, ErrorCodesUa} from "../../models/models";
+import {ErrorCodes, ErrorCodesUa, Platforms} from "../../models/models";
 import {GET_UNSIGNED_DEPARTMENTS} from "../../api/operations/queries/unsignedDepartments";
 import {client} from "../../api/client";
 import {GET_UNSIGNED_DEGREES} from "../../api/operations/queries/unsignedDegrees";
@@ -262,7 +262,8 @@ export default function SignUp({navigation}: any) {
                 }
               ]}
             >
-              Співробітники академії можуть без реєстрації отримати дані свого облікового запису, вказавши диспетчеру свій email.            </Banner>
+              Співробітники академії можуть без реєстрації отримати дані свого облікового запису, вказавши диспетчеру
+              свій email. </Banner>
             <Text style={styles.infoPanel}>
               Введіть дані, що співпадають з вашим студентським квитком або іншим документом.
             </Text>
@@ -288,7 +289,7 @@ export default function SignUp({navigation}: any) {
             />
             <Error validator={isFirstNameValidated}/>
             {showPatronymicHint && <Text style={styles.infoPanel}>
-              Поле 'По-батькові' обов'язково для не іноземців
+                Поле 'По-батькові' обов'язково для не іноземців
             </Text>}
             <TextInput
               placeholder="По-батькові"
@@ -349,14 +350,6 @@ export default function SignUp({navigation}: any) {
                        secureTextEntry={!showPassword}
             />
             <Error validator={isPasswordConfirmValidated}/>
-            <CustomPickerField selected={selectedStartYear} setSelected={setSelectedStartYear}
-                               name='Рік початку навчання' items={startYearsItems}
-                               checkValidation={checkStartYearValidation}
-                               setIsVisited={setIsStartYearModalVisited}
-                               underlineColor={!isStartYearValidated ? '#ccc' : '#f91354'}
-
-            />
-            <Error validator={isStartYearValidated}/>
             <CustomPickerField name='Кафедра' selected={selectedDepartment} items={departments}
                                setSelected={setSelectedDepartment}
                                checkValidation={checkDepartmentValidation}
@@ -373,15 +366,34 @@ export default function SignUp({navigation}: any) {
 
             />
             <Error validator={isDegreeValidated}/>
+            <CustomPickerField
+              selected={selectedStartYear}
+              setSelected={setSelectedStartYear}
+              name={`Рік вступу ${selectedDegree.name ? '(' + selectedDegree.name + ')' : ''}`}
+              items={startYearsItems}
+              checkValidation={checkStartYearValidation}
+              setIsVisited={setIsStartYearModalVisited}
+              underlineColor={!isStartYearValidated ? '#ccc' : '#f91354'}
+            />
+            <Error validator={isStartYearValidated}/>
             <View style={styles.agreement}>
-              <CheckBox
-                isChecked={checkAgreement}
-                onClick={() => {
-                  setIsSignupTouched(true);
-                  setCheckAgreement(prevState => !prevState);
-                }}
-                style={{paddingRight: 8}}
-              />
+              {Platform.OS === Platforms.WEB ? (
+                <Checkbox status={checkAgreement ? 'checked' : 'unchecked'}
+                          onPress={() => {
+                            setIsSignupTouched(true);
+                            setCheckAgreement(prevState => !prevState);
+                          }}
+                />
+              ) : (
+                <CheckBox
+                  isChecked={checkAgreement}
+                  onClick={() => {
+                    setIsSignupTouched(true);
+                    setCheckAgreement(prevState => !prevState);
+                  }}
+                  style={{paddingRight: 8}}
+                />
+              )}
               <Text style={{width: '90%', backgroundColor: '#fff'}}>Я прочитав і погоджуюсь з
                 <Text style={styles.link} onPress={showAgreement}> політикою конфіденційності</Text> *</Text>
             </View>

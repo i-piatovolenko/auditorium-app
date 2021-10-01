@@ -1,10 +1,14 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Dimensions, Platform, ScrollView, StyleSheet, Text, View} from "react-native";
 import {
   ClassroomType,
-  DisabledState, ErrorCodes, ErrorCodesUa,
-  InstrumentType, Mode,
-  OccupiedState, Platforms,
+  DisabledState,
+  ErrorCodes,
+  ErrorCodesUa,
+  InstrumentType,
+  Mode,
+  OccupiedState,
+  Platforms,
   UserQueueState
 } from "../models/models";
 import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-native-paper";
@@ -210,7 +214,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
             )}
           </View>
           <OccupantInfo classroom={classroom} user={userData.user} navigation={navigation}/>
-          {classroom.occupied.state !== OccupiedState.FREE
+          {classroom.occupied.state !== OccupiedState.FREE || classroom.disabled.state === DisabledState.DISABLED
           && !isOccupiedOrPendingByCurrentUser(classroom.occupied, userData.user)
           && <ClassroomQueueControlButtons classroom={classroom} currentUser={userData.user}/>
           }

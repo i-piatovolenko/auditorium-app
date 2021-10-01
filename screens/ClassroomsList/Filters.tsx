@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
-import {StyleSheet, Text, View, Dimensions} from "react-native";
+import {StyleSheet, Text, View, Dimensions, Platform} from "react-native";
 import {Button, Checkbox, Divider, Headline, Modal, Portal, RadioButton} from "react-native-paper";
+import CheckBox from 'react-native-check-box'
 import InstrumentFilters from "./InstrumentFilters";
-import {InstrumentType} from "../../models/models";
+import {InstrumentType, Platforms} from "../../models/models";
 
 export type SpecialT = 'with' | 'only' | 'without';
 
@@ -23,7 +24,7 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
 
   const showModalInstrumentFilters = () => setVisibleInstrumentFilters(true);
 
-  const hideModalInstrumentFilters= () => setVisibleInstrumentFilters(false);
+  const hideModalInstrumentFilters = () => setVisibleInstrumentFilters(false);
 
   const handleApply = () => {
     apply(instruments, withWing, onlyOperaStudio, special);
@@ -32,12 +33,18 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
 
   const getEnding = () => {
     switch (instruments.length) {
-      case 1: return '';
-      case 2: return 'а';
-      case 3: return 'и';
-      case 4: return 'и';
-      case 5: return 'ів';
-      default: return '...';
+      case 1:
+        return '';
+      case 2:
+        return 'а';
+      case 3:
+        return 'и';
+      case 4:
+        return 'и';
+      case 5:
+        return 'ів';
+      default:
+        return '...';
     }
   };
 
@@ -47,45 +54,61 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
         <Headline>Фільтри аудиторій для черги</Headline>
       </View>
       <View style={styles.body}>
-        <Button icon='pencil' onPress={showModalInstrumentFilters} style={styles.instrumentsButton} >
+        <Button icon='pencil' onPress={showModalInstrumentFilters} style={styles.instrumentsButton}>
           <Text numberOfLines={1}>
-            { !instruments.length
+            {!instruments.length
               ? 'Будь-які або без інструментів'
-              : `${instruments.length} інструмент${getEnding()}` }
+              : `${instruments.length} інструмент${getEnding()}`}
           </Text>
         </Button>
         <Divider style={styles.divider}/>
         <View style={styles.checkbox}>
-          <Checkbox status={!withWing ? 'checked' : 'unchecked'}
-                    onPress={() => setWithWing(prevState => !prevState)}/>
+          {Platform.OS !== Platforms.WEB ? (
+            <CheckBox
+              isChecked={!withWing}
+              onClick={() => setWithWing(prevState => !prevState)}
+              style={{paddingRight: 8}}
+            />
+          ) : (
+            <Checkbox status={!withWing ? 'checked' : 'unchecked'}
+                      onPress={() => setWithWing(prevState => !prevState)}/>
+          )}
           <Text>Без флігеля</Text>
         </View>
         <View style={styles.checkbox}>
-          <Checkbox status={onlyOperaStudio ? 'checked' : 'unchecked'}
-                    onPress={() => setOnlyOperaStudio(prevState => !prevState)}/>
+          {Platform.OS !== Platforms.WEB ? (
+            <CheckBox
+              isChecked={onlyOperaStudio}
+              onClick={() => setOnlyOperaStudio(prevState => !prevState)}
+              style={{paddingRight: 8}}
+            />
+          ) : (
+            <Checkbox status={onlyOperaStudio ? 'checked' : 'unchecked'}
+                      onPress={() => setOnlyOperaStudio(prevState => !prevState)}/>
+          )}
           <Text>Тільки оперна студія</Text>
         </View>
-        <Divider style={styles.divider}/>
-        <RadioButton.Group onValueChange={newValue => setSpecial(newValue as SpecialT)} value={special}>
-          <View style={styles.radioItem}>
-            <RadioButton value='with' />
-            <Text>Зі спеціалізованими (ф-но)</Text>
-          </View>
-          <View style={styles.radioItem}>
-            <RadioButton value='only' />
-            <Text>Тільки спеціалізовані (ф-но)</Text>
-          </View>
-          <View style={styles.radioItem}>
-            <RadioButton value='without' />
-            <Text>Без спеціалізованих (ф-но)</Text>
-          </View>
-        </RadioButton.Group>
+        {/*<Divider style={styles.divider}/>*/}
+        {/*<RadioButton.Group onValueChange={newValue => setSpecial(newValue as SpecialT)} value={special}>*/}
+        {/*  <View style={styles.radioItem}>*/}
+        {/*    <RadioButton value='with' />*/}
+        {/*    <Text>Зі спеціалізованими (ф-но)</Text>*/}
+        {/*  </View>*/}
+        {/*  <View style={styles.radioItem}>*/}
+        {/*    <RadioButton value='only' />*/}
+        {/*    <Text>Тільки спеціалізовані (ф-но)</Text>*/}
+        {/*  </View>*/}
+        {/*  <View style={styles.radioItem}>*/}
+        {/*    <RadioButton value='without' />*/}
+        {/*    <Text>Без спеціалізованих (ф-но)</Text>*/}
+        {/*  </View>*/}
+        {/*</RadioButton.Group>*/}
         <Divider style={styles.divider}/>
         <View style={styles.buttons}>
           <Button mode='contained' onPress={handleApply}>Застосувати</Button>
         </View>
         <InstrumentFilters hideModal={hideModalInstrumentFilters} visible={visibleInstrumentFilters}
-                           instruments={instruments} setInstruments={setInstruments} />
+                           instruments={instruments} setInstruments={setInstruments}/>
       </View>
     </Modal>
   </Portal>

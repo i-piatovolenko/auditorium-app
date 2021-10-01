@@ -19,7 +19,7 @@ const SkippedClassroomSnackbar: React.FC<PropTypes> = ({skipsCount}) => {
 
   return (
     <Snackbar
-      style={styles.snackbar}
+      wrapperStyle={styles.snackbar}
       visible
       onDismiss={() => skippedClassroomVar(false)}
     >
@@ -31,8 +31,9 @@ const SkippedClassroomSnackbar: React.FC<PropTypes> = ({skipsCount}) => {
 const styles = StyleSheet.create({
   snackbar: {
     position: 'absolute',
-    zIndex: 3,
-    bottom: 16
+    zIndex: 100,
+    bottom: 8,
+    elevation: 4
   }
 });
 

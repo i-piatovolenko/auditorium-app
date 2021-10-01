@@ -95,7 +95,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
             >Заберіть ключі від аудиторії в учбовій частині. Максимальний час знаходження в аудиторії - 3 години.
             </Banner>
             <Paragraph>
-                Час на прийняття рішення: {timeLeft}
+                Чаc, щоб забрати ключ: {timeLeft}
             </Paragraph>
             <ProgressBar progress={timeLeftInPer as number / 100} visible color={colors.red}
                          style={styles.progressBar}

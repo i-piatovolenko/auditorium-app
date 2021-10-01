@@ -9,7 +9,7 @@ interface PropTypes {
 export default function WaitDialog({visible, message}: PropTypes) {
   return (
       <Portal>
-        <Dialog visible={visible} dismissable={false}>
+        <Dialog visible={visible} dismissable={false} style={{zIndex: 50}}>
           <Dialog.Title style={{textAlign: 'center'}}>Зачекайте, будь ласка!</Dialog.Title>
           <Dialog.Content>
             {message && <Paragraph style={{textAlign: 'center'}}>{message}</Paragraph>}

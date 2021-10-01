@@ -39,6 +39,7 @@ export enum ErrorCodesUa {
   CLASSROOM_ACCESS_DENIED = 'Аудиторія недоступна для резервації.',
   EMAIL_ALREADY_TAKEN = 'Користувача з цією адресою вже зареєстровано.',
   CONFIRMATION_EMAIL_ALREADY_SENT = 'Лист підтвердження поштової адреси вже було відправлено.',
+  CLASSROOM_ALREADY_OCCUPIED = 'Аудиторія вже зайнята.',
 }
 
 export enum ErrorCodes {
@@ -69,6 +70,7 @@ export enum ErrorCodes {
   CLASSROOM_ACCESS_DENIED = 'CLASSROOM_ACCESS_DENIED',
   EMAIL_ALREADY_TAKEN = 'EMAIL_ALREADY_TAKEN',
   CONFIRMATION_EMAIL_ALREADY_SENT = 'CONFIRMATION_EMAIL_ALREADY_SENT',
+  CLASSROOM_ALREADY_OCCUPIED = 'CLASSROOM_ALREADY_OCCUPIED'
 }
 
 export enum EmploymentTypes {
@@ -419,4 +421,15 @@ export enum Platforms {
   WEB = 'web',
   ANDROID = 'android',
   IOS = 'ios'
+}
+
+export enum GlobalMessageViewType {
+  INFO = 'INFO',
+}
+
+export type GlobalMessageType = {
+  id: number;
+  title?: string;
+  body: string;
+  type: GlobalMessageViewType;
 }

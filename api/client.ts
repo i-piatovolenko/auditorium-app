@@ -1,5 +1,5 @@
 import {ApolloClient, ApolloLink, createHttpLink, from, InMemoryCache, makeVar, split} from "@apollo/client";
-import {ACCESS_RIGHTS, Langs, Mode, User} from "../models/models";
+import {ACCESS_RIGHTS, ClassroomType, Langs, Mode, User} from "../models/models";
 import {WebSocketLink} from '@apollo/client/link/ws';
 import {getMainDefinition} from "@apollo/client/utilities";
 import {setContext} from "@apollo/client/link/context";

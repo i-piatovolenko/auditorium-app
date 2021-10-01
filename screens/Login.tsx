@@ -166,10 +166,7 @@ export default function Login({navigation}: any) {
           </View>
         </ImageBackground>
         <InfoDialog
-          message={<Text>{
-            'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' + persNumber + " ) або П.І.Б."
-          }</Text>
-          }
+          message={'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' + persNumber + " ) або П.І.Б."}
           visible={visibleEmailConfirmSuccess}
           hideDialog={() => setVisibleEmailConfirmSuccess(false)}
           confirmButton

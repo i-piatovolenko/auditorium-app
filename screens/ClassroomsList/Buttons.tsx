@@ -5,7 +5,7 @@ import Colors from "../../constants/Colors";
 import {hasOwnClassroom} from "../../helpers/helpers";
 import {ClassroomType, Mode, OccupiedState, SavedFilterT} from "../../models/models";
 import {useLocal} from "../../hooks/useLocal";
-import {desirableClassroomIdsVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
+import {desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {getItem} from "../../api/asyncStorage";
 import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
@@ -79,6 +79,7 @@ const Buttons: React.FC<PropTypes> = ({
         return filterDisabledForQueue(classroom, currentUser);
       }).map(({id}) => id);
       modeVar(Mode.QUEUE_SETUP);
+      isMinimalSetupVar(true);
       const savedFilters: SavedFilterT[] | undefined = await getItem('filters');
       if (savedFilters) {
         const mainFilter = savedFilters!.find(filter => filter.main);
@@ -115,8 +116,7 @@ const Buttons: React.FC<PropTypes> = ({
     if (!classrooms.length) return false;
     return !!(classrooms.filter(classroom => {
       return filterDisabledForQueue(classroom, currentUser);
-    })
-      .filter(({occupied: {state}}) => state !== OccupiedState.FREE).length);
+    }).length);
   }
 
   return (

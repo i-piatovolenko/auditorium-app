@@ -22,7 +22,7 @@ import {GET_CLASSROOMS, GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/q
 import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {FOLLOW_USER} from "../../api/operations/subscriptions/user";
-import {getItem} from "../../api/asyncStorage";
+import {getItem, setItem} from "../../api/asyncStorage";
 import {hasOwnClassroom, isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
@@ -42,6 +42,7 @@ import Space from "../../components/Space";
 import {MAX_DISTANCE} from "../../api/operations/queries/constant";
 import WarningDialog from "../../components/WarningDialog";
 import {isLastVersion} from "../../helpers/isLastVersion";
+import {GET_GLOBAL_MESSAGES} from "../../api/operations/queries/globalMessages";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -127,6 +128,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const [freeClassroomsAmount, setFreeClassroomsAmount] = useState(0);
   const [showQueueInSuccess, setShownQueueInSuccess] = useState(false);
   const [showQueueOutSuccess, setShownQueueOutSuccess] = useState(false);
+  const [globalMessage, setGlobalMessage] = useState(null);
   const {
     data,
     loading,
@@ -173,12 +175,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
   }, []);
 
   useEffect(() => {
-    isLastVersion().then(res => {
-      setLatestVersion(res);
-    });
-  }, []);
-
-  useEffect(() => {
     if (userData && prevUserData) {
       const {currentSession} = userData.user?.queueInfo;
       const {currentSession: prevSession} = prevUserData.user?.queueInfo;
@@ -198,6 +194,27 @@ const ClassroomsList: React.FC = ({route}: any) => {
   }, [userData]);
 
   useEffect(() => {
+    isLastVersion().then(res => {
+      setLatestVersion(res);
+    });
+    try {
+    client.query({
+      query: GET_GLOBAL_MESSAGES
+    }).then((result) => {
+      const messages = result.data.globalMessages;
+      if (messages?.length) {
+        getItem('lastGlobalMessage').then(res => {
+          if (res !== messages[0].body) {
+            setGlobalMessage(messages[0]);
+          } else {
+            setGlobalMessage(null);
+          }
+        });
+      }
+    });
+    } catch (e: any) {
+      console.log(e)
+    }
     getItem('user').then(({id}: any) => {
       const unsubscribeClassrooms = subscribeToMore({
         document: FOLLOW_CLASSROOMS,
@@ -420,9 +437,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
         />
       )}
       <ClassroomAcceptedDialog/>
-      {skippedClassroom && userData && (
-        <SkippedClassroomSnackbar skipsCount={userData.user.queueInfo.currentSession?.skips}/>
-      )}
       {!latestVersion?.[0] && Platform.OS !== Platforms.WEB && (
         <WarningDialog
           visible
@@ -430,6 +444,18 @@ const ClassroomsList: React.FC = ({route}: any) => {
           }}
           buttonText=' '
           message={`Доступна для завантеження нова версія додатку: ${latestVersion[2]}. Поточна версія: ${latestVersion[1]}. Будь ласка, завантажте оновлення з магазину!`}
+        />
+      )}
+      {globalMessage && (
+        <WarningDialog
+          visible
+          hideDialog={() => {
+            setItem('lastGlobalMessage', globalMessage?.body);
+            setGlobalMessage(null);
+          }}
+          buttonText='Більше не показувати'
+          titleText={globalMessage?.title}
+          message={globalMessage?.body}
         />
       )}
     </ImageBackground>

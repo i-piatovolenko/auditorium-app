@@ -38,6 +38,7 @@
     "expo-web-browser": "~9.1.0",
     "graphql": "^15.5.0",
     "i18n-js": "^3.8.0",
+    "jsc-android": "^250230.2.1",
     "moment": "^2.29.1",
     "netlify-cli": "^6.0.8",
     "react": "16.13.1",
