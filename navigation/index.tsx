@@ -23,6 +23,8 @@ import SignUpStepTwo from "../screens/Signup/SignUpStepTwo";
 import ResetPassword from "../screens/ResetPassword";
 import ResetPasswordSuccess from "../screens/ResetPasswordSuccess";
 import FAQ from "../screens/FAQ";
+import SignupEmployee from "../screens/SignupEmployee";
+import SignupEmployeeSuccess from "../screens/SignupEmployeeSuccess";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -139,6 +141,14 @@ function RootNavigator() {
         <Stack.Screen
           name={"ResetPasswordSuccess" as any}
           component={ResetPasswordSuccess}
+        />
+        <Stack.Screen
+          name={"SignupEmployee" as any}
+          component={SignupEmployee}
+        />
+        <Stack.Screen
+          name={"SignupEmployeeSuccess" as any}
+          component={SignupEmployeeSuccess}
         />
       </Stack.Navigator>
   );

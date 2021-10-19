@@ -44,8 +44,12 @@ export default function Login({navigation}: any) {
       Linking.getInitialURL().then(url => {
           const confirmEmailToken = Linking.parse(url).queryParams.confirmEmailToken;
           const resetPasswordToken = Linking.parse(url).queryParams.resetPasswordToken;
+          const completeEmployeeAccountToken = Linking.parse(url).queryParams.completeEmployeeAccountToken;
           if (resetPasswordToken) {
             navigation.navigate('ResetPassword', {resetPasswordToken});
+          }
+          if (completeEmployeeAccountToken) {
+            navigation.navigate('SignupEmployee', {completeEmployeeAccountToken});
           }
           if (confirmEmailToken) {
             client.mutate({
