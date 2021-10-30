@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, View, Text, ImageBackground, Dimensions, Image} from "react-native";
-import {Appbar, Divider, Title} from "react-native-paper";
+import {Appbar, Button, Divider, Title} from "react-native-paper";
 import {useQuery} from "@apollo/client";
 import {GET_ME} from "../api/operations/queries/me";
 import {fullName} from "../helpers/helpers";
@@ -11,6 +11,10 @@ const windowHeight = Dimensions.get('window').height;
 
 export default function Profile({navigation}: any) {
   const {data: {me}} = useQuery(GET_ME);
+
+  const handleChangePassword = () => {
+    navigation.navigate('UpdatePassword');
+  };
 
   return (
     <ImageBackground source={require('../assets/images/bg.jpg')}
@@ -51,6 +55,11 @@ export default function Profile({navigation}: any) {
         <Title style={styles.whiteText}>Термін дії аккаунту</Title>
         <Text style={styles.marginBottomWhiteText}>{me.expireDate}</Text>
         <Divider style={{backgroundColor: '#ffffff33'}}/>
+        <Button
+          style={styles.changePasswordButton}
+          onPress={handleChangePassword}
+          mode='contained'
+        >Змінити пароль</Button>
       </View>
     </ImageBackground>
   )
@@ -83,5 +92,8 @@ const styles = StyleSheet.create({
     marginTop: 3,
     width: 20,
     height: 20
+  },
+  changePasswordButton: {
+    marginTop: 20,
   }
 });

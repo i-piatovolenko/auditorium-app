@@ -25,6 +25,9 @@ import ResetPasswordSuccess from "../screens/ResetPasswordSuccess";
 import FAQ from "../screens/FAQ";
 import SignupEmployee from "../screens/SignupEmployee";
 import SignupEmployeeSuccess from "../screens/SignupEmployeeSuccess";
+import UpdatePassword from "../screens/UpdatePassword";
+import UpdatePasswordSuccess from "../screens/UpdatePasswordSuccess";
+import ProfileStack from "../screens/ProfileStack";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (
@@ -103,7 +106,7 @@ function RootNavigator() {
         {/*<Drawer.Screen name="Schedule" component={Schedule} options={{*/}
         {/*  title: 'Розклад'*/}
         {/*}}/>*/}
-        <Drawer.Screen name="Profile" component={Profile} options={{
+        <Drawer.Screen name="Profile" component={ProfileStack} options={{
           title: 'Мій профіль'
         }}/>
         <Drawer.Screen name="PrivacyPolicy" component={PrivacyPolicy} options={{

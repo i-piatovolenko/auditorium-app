@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Image,
   Text,
-  Linking,
+  Linking, BackHandler,
 } from 'react-native';
 
 import {
@@ -14,7 +14,7 @@ import {
 } from '@react-navigation/drawer';
 import {Avatar, Button, Dialog, IconButton, Portal} from "react-native-paper";
 import {removeItem} from "../api/asyncStorage";
-import {meVar} from "../api/client";
+import {client, meVar, setWSToken} from "../api/client";
 
 const CustomSidebarMenu = (props: any) => {
   const [visible, setVisible] = useState(false);

@@ -35,7 +35,6 @@ import QueueOutDialog from "../../components/QueueOutDialog";
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import ErrorDialog from "../../components/ErrorDialog";
 import ReturnToQueueDialog from "../../components/ReturnToQueueDialog";
-import SkippedClassroomSnackbar from "../../components/SkippedClassroomSnackbar";
 import ClassroomAcceptedDialog from "../../components/ClassroomAcceptedDialog";
 import {GET_GENERAL_QUEUE} from "../../api/operations/queries/generalQueue";
 import Space from "../../components/Space";
@@ -122,6 +121,7 @@ type QueryClassroomsData = {
 
 const ClassroomsList: React.FC = ({route}: any) => {
   const {data: {mode}} = useLocal('mode');
+  const {data: {me}} = useLocal('me');
   const {data: {noConnection}} = useLocal('noConnection');
   const {data: {skippedClassroom}} = useLocal('skippedClassroom');
   const [showLog, setShowLog] = useState(false);
@@ -143,7 +143,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
   } = useQuery(GET_USER_BY_ID, {
     variables: {
       where: {
-        id: route.params.currentUserId
+        id: me.id
       }
     }
   });
@@ -151,28 +151,37 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const [latestVersion, setLatestVersion] = useState([true, '', '']);
 
-  const onRefresh = React.useCallback(async () => {
+  const onRefresh =async () => {
     setRefreshing(true);
     try {
+      await client.subscribe({
+        query: FOLLOW_USER,
+        variables: {
+          userId: me.id
+        }
+      })
       await client.query({
-        query: GET_CLASSROOMS_NO_SCHEDULE
+        query: GET_CLASSROOMS_NO_SCHEDULE,
+        fetchPolicy: 'network-only'
       })
       await client.query({
         query: GET_USER_BY_ID,
         variables: {
           where: {
-            id: route.params.currentUserId
+            id: me.id
           }
-        }
+        },
+        fetchPolicy: 'network-only'
       })
       await client.query({
-        query: GET_GENERAL_QUEUE
+        query: GET_GENERAL_QUEUE,
+        fetchPolicy: 'network-only'
       });
       setRefreshing(false);
     } catch (e) {
       setRefreshing(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (userData && prevUserData) {
@@ -215,21 +224,19 @@ const ClassroomsList: React.FC = ({route}: any) => {
     } catch (e: any) {
       console.log(e)
     }
-    getItem('user').then(({id}: any) => {
       const unsubscribeClassrooms = subscribeToMore({
         document: FOLLOW_CLASSROOMS,
       });
       const unsubscribeUser = subscribeToMoreUser({
         document: FOLLOW_USER,
         variables: {
-          userId: id
-        }
-      });
+          userId: me.id
+        },
+      })
       return () => {
         unsubscribeClassrooms();
         unsubscribeUser();
       };
-    })
   }, []);
 
   useEffect(() => {

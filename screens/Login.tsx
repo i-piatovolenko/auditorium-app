@@ -114,6 +114,7 @@ export default function Login({navigation}: any) {
           const token: string = result?.data.login.token;
           await setItem('token', token);
           await setItem('user', user);
+          await client.resetStore();
           meVar(user);
           noTokenVar(false);
         }

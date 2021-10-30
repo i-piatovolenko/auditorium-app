@@ -40,6 +40,7 @@ export enum ErrorCodesUa {
   EMAIL_ALREADY_TAKEN = 'Користувача з цією адресою вже зареєстровано.',
   CONFIRMATION_EMAIL_ALREADY_SENT = 'Лист підтвердження поштової адреси вже було відправлено.',
   CLASSROOM_ALREADY_OCCUPIED = 'Аудиторія вже зайнята.',
+  INVALID_OLD_PASSWORD = 'Неправильний старий пароль'
 }
 
 export enum ErrorCodes {
@@ -70,7 +71,8 @@ export enum ErrorCodes {
   CLASSROOM_ACCESS_DENIED = 'CLASSROOM_ACCESS_DENIED',
   EMAIL_ALREADY_TAKEN = 'EMAIL_ALREADY_TAKEN',
   CONFIRMATION_EMAIL_ALREADY_SENT = 'CONFIRMATION_EMAIL_ALREADY_SENT',
-  CLASSROOM_ALREADY_OCCUPIED = 'CLASSROOM_ALREADY_OCCUPIED'
+  CLASSROOM_ALREADY_OCCUPIED = 'CLASSROOM_ALREADY_OCCUPIED',
+  INVALID_OLD_PASSWORD = 'INVALID_OLD_PASSWORD'
 }
 
 export enum EmploymentTypes {

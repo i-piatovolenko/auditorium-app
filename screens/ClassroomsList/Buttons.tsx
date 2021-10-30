@@ -5,7 +5,7 @@ import Colors from "../../constants/Colors";
 import {hasOwnClassroom} from "../../helpers/helpers";
 import {ClassroomType, Mode, OccupiedState, SavedFilterT} from "../../models/models";
 import {useLocal} from "../../hooks/useLocal";
-import {desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
+import {client, desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {getItem} from "../../api/asyncStorage";
 import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
@@ -104,11 +104,11 @@ const Buttons: React.FC<PropTypes> = ({
 
   const handleReady = async () => {
     setLoading(true);
-    const isNear = await getIsNear();
-    if (isNear) {
+    // const isNear = await getIsNear();
+    // if (isNear) {
       await getInLine(minimalClassroomIds, desirableClassroomIds);
-      setLoading(false);
-    }
+      // setLoading(false);
+    // }
     setLoading(false);
   };
 

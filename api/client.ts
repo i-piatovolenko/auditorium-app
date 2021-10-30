@@ -25,10 +25,9 @@ const subscriptionMiddleware = {
   applyMiddleware: async (options: any, next: any) => {
     const token = await getItem('token');
     options.authorization = token ? `Bearer ${token}` : ""
-    next()
+    next();
   },
 }
-
 wsLink.subscriptionClient.use([subscriptionMiddleware]);
 
 const httpLink = createHttpLink({

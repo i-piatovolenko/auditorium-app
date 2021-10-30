@@ -38,6 +38,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
     }
   });
   const {data: {mode}} = useLocal('mode');
+  const {data: {me}} = useLocal('me');
   const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
   const [visible, setVisible] = useState(false);
   const [visibleSavedFilters, setVisibleSavedFilters] = useState(false);
@@ -64,7 +65,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
       const unsubscribePosition = subscribeToMorePosition({
           document: FOLLOW_GENERAL_QUEUE_POSITION,
           variables: {
-            userId: currentUser.id
+            userId: me.id
           },
           updateQuery: (prev, {subscriptionData}) => {
             if (!subscriptionData.data) return prev;

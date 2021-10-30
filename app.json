@@ -2,7 +2,7 @@
   "expo": {
     "name": "Auditorium",
     "slug": "auditorium-app",
-    "version": "1.0.16",
+    "version": "1.0.17",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -13,7 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "enabled": false,
+      "enabled": true,
       "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
@@ -22,7 +22,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ua.com.knmau.auditorium",
-      "buildNumber": "1.0.16",
+      "buildNumber": "1.0.17",
       "infoPlist": {
         "UIBackgroundModes": [
           "fetch"
