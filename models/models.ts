@@ -21,6 +21,7 @@ export enum ErrorCodesUa {
   ADD_QUEUE_RECORDS_WHILE_SANCTIONED = 'Неможливо стати в чергу при наявності накладенх санкцій.',
   USER_IS_NOT_IN_QUEUE = 'Ви не знаходитесь в черзі.',
   EMAIL_ALREADY_CONFIRMED = 'E-mail вже підтверджено.',
+  EMAIL_ALREADY_VERIFIED = 'E-mail вже верифіковано.',
   NO_SUCH_REGISTERED_USER = 'Користувача з такою поштовою адресою не знайдено.',
   BAD_EMAIL_CONFIRMATION_TOKEN = 'Посилання на підтвердження поштової адреси не дійсне.',
   CLASSROOM_NOT_FOUND = 'Аудиторію не знайдено.',
@@ -72,7 +73,8 @@ export enum ErrorCodes {
   EMAIL_ALREADY_TAKEN = 'EMAIL_ALREADY_TAKEN',
   CONFIRMATION_EMAIL_ALREADY_SENT = 'CONFIRMATION_EMAIL_ALREADY_SENT',
   CLASSROOM_ALREADY_OCCUPIED = 'CLASSROOM_ALREADY_OCCUPIED',
-  INVALID_OLD_PASSWORD = 'INVALID_OLD_PASSWORD'
+  INVALID_OLD_PASSWORD = 'INVALID_OLD_PASSWORD',
+  EMAIL_ALREADY_VERIFIED = 'EMAIL_ALREADY_VERIFIED'
 }
 
 export enum EmploymentTypes {

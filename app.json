@@ -5,7 +5,7 @@
     "version": "1.0.17",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "auditorium",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",

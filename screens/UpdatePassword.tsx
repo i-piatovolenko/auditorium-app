@@ -1,13 +1,25 @@
 import * as React from 'react';
-import {View, StyleSheet, Text, ImageBackground, Linking} from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  ImageBackground,
+  Linking,
+  KeyboardAvoidingView,
+  Dimensions,
+  Platform
+} from "react-native";
 import {Button, Surface, TextInput} from "react-native-paper";
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {PASSWORD_SOFT_VALID, validationErrors} from "../helpers/validators";
 import Colors from "../constants/Colors";
 import {client} from "../api/client";
-import {PASSWORD_RESET} from "../api/operations/mutations/resetPassword";
 import {PASSWORD_UPDATE} from "../api/operations/mutations/updatePassword";
-import {ErrorCodes, ErrorCodesUa} from "../models/models";
+import {ErrorCodes, ErrorCodesUa, Platforms} from "../models/models";
+import WithKeyboardDismissWrapper from "../components/WithKeyboardDismissWrapper";
+
+const {width: windowWidth} = Dimensions.get('window');
+const {height: windowHeight} = Dimensions.get('window');
 
 export default function UpdatePassword({navigation}: any) {
   const [oldPassword, setOldPassword] = useState('');
@@ -17,6 +29,9 @@ export default function UpdatePassword({navigation}: any) {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+
+  const newPasswordRef = useRef(null);
+  const newPasswordConfirmRef = useRef(null);
 
   const handleChangeOldPassword = (value: string) => {
     setErrorMessage(null);
@@ -62,6 +77,7 @@ export default function UpdatePassword({navigation}: any) {
         }
       } catch (e) {
         setLoading(false);
+        alert(JSON.stringify(e))
         console.log(e)
       }
     }
@@ -73,72 +89,79 @@ export default function UpdatePassword({navigation}: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
-        <Text style={styles.title}>Зміна паролю</Text>
-        <Surface style={styles.inputs}>
-          <Text style={styles.text}>
-            Введіть старий пароль
-          </Text>
-          <TextInput
-            placeholder="Старий пароль"
-            secureTextEntry={secureTextEntry}
-            style={styles.input}
-            value={oldPassword}
-            onChangeText={handleChangeOldPassword}
-            onFocus={() => setVisited(true)}
-            right={<TextInput.Icon name={secureTextEntry ? 'eye' : 'eye-off'} color='#ccc'
-                                   onPress={() => setSecureTextEntry(prevState => !prevState)}
-            />}
-          />
-          <Text style={styles.text}>
-            Введіть новий пароль
-          </Text>
-          <TextInput
-            placeholder="Новий пароль"
-            secureTextEntry={secureTextEntry}
-            style={styles.input}
-            value={newPassword}
-            onChangeText={handleChangePassword}
-            onFocus={() => setVisited(true)}
-            right={<TextInput.Icon name={secureTextEntry ? 'eye' : 'eye-off'} color='#ccc'
-                                   onPress={() => setSecureTextEntry(prevState => !prevState)}
-            />}
-          />
-          <TextInput
-            placeholder="Повторіть новий пароль"
-            secureTextEntry={secureTextEntry}
-            style={styles.input}
-            value={confirmNewPassword}
-            onChangeText={handleChangePasswordConfirm}
-            onFocus={() => setVisited(true)}
-            right={<TextInput.Icon name={secureTextEntry ? 'eye' : 'eye-off'} color='#ccc'
-                                   onPress={() => setSecureTextEntry(prevState => !prevState)}
-            />}
-          />
-          {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-          <View style={styles.buttons}>
-            <Button
-              onPress={handleConfirmResetPassword}
-              mode='contained'
-              color={Colors.blue}
-              style={styles.button}
-              disabled={!!errorMessage || !visited}
-              loading={loading}
-            >
-              Змінити пароль
-            </Button>
-            <Button
-              onPress={goBack}
-              style={styles.button}
-              disabled={loading}
-            >
-              Назад
-            </Button>
-          </View>
-        </Surface>
-      </ImageBackground>
-    </View>
+    <WithKeyboardDismissWrapper>
+      <View style={styles.container}>
+        <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
+          <KeyboardAvoidingView behavior='padding' style={styles.avoidingView} enabled={Platform.OS === Platforms.IOS}>
+            <Text style={styles.title}>Зміна паролю</Text>
+            <Surface style={styles.inputs}>
+              <TextInput
+                placeholder="Старий пароль"
+                secureTextEntry={secureTextEntry}
+                returnKeyType='next'
+                autoCompleteType='password'
+                style={styles.input}
+                value={oldPassword}
+                onChangeText={handleChangeOldPassword}
+                onFocus={() => setVisited(true)}
+                onSubmitEditing={() => newPasswordRef.current.focus()}
+                right={<TextInput.Icon name={secureTextEntry ? 'eye' : 'eye-off'} color='#ccc'
+                                       onPress={() => setSecureTextEntry(prevState => !prevState)}
+                />}
+              />
+              <TextInput
+                placeholder="Новий пароль"
+                ref={newPasswordRef}
+                secureTextEntry={secureTextEntry}
+                returnKeyType='next'
+                style={styles.input}
+                value={newPassword}
+                onChangeText={handleChangePassword}
+                onFocus={() => setVisited(true)}
+                onSubmitEditing={() => newPasswordConfirmRef.current.focus()}
+                right={<TextInput.Icon name={secureTextEntry ? 'eye' : 'eye-off'} color='#ccc'
+                                       onPress={() => setSecureTextEntry(prevState => !prevState)}
+                />}
+              />
+              <TextInput
+                placeholder="Повторіть новий пароль"
+                ref={newPasswordConfirmRef}
+                secureTextEntry={secureTextEntry}
+                style={styles.input}
+                value={confirmNewPassword}
+                onChangeText={handleChangePasswordConfirm}
+                returnKeyType='done'
+                onFocus={() => setVisited(true)}
+                onSubmitEditing={handleConfirmResetPassword}
+                right={<TextInput.Icon name={secureTextEntry ? 'eye' : 'eye-off'} color='#ccc'
+                                       onPress={() => setSecureTextEntry(prevState => !prevState)}
+                />}
+              />
+              {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+              <View style={styles.buttons}>
+                <Button
+                  onPress={handleConfirmResetPassword}
+                  mode='contained'
+                  color={Colors.blue}
+                  style={styles.button}
+                  disabled={!!errorMessage || !visited}
+                  loading={loading}
+                >
+                  Змінити пароль
+                </Button>
+                <Button
+                  onPress={goBack}
+                  style={styles.button}
+                  disabled={loading}
+                >
+                  Назад
+                </Button>
+              </View>
+            </Surface>
+          </KeyboardAvoidingView>
+        </ImageBackground>
+      </View>
+    </WithKeyboardDismissWrapper>
   );
 }
 
@@ -154,6 +177,13 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  avoidingView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: windowWidth,
+    height: windowHeight
   },
   title: {
     fontSize: 32,

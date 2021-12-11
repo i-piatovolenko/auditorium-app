@@ -1,12 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View, Dimensions, TextInput} from "react-native";
+import {StyleSheet, Text, View, Dimensions, TextInput, Platform} from "react-native";
 import {Button, Checkbox, Headline, IconButton, Modal, Portal} from "react-native-paper";
-import {ClassroomType, SavedFilterT, User} from "../../models/models";
+import {ClassroomType, Platforms, SavedFilterT, User} from "../../models/models";
 import {getItem, setItem} from "../../api/asyncStorage";
 import {useLocal} from "../../hooks/useLocal";
 import Colors from "../../constants/Colors";
 import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
 import useClassrooms from "../../hooks/useClassrooms";
+import CheckBox from "react-native-check-box";
+import WithKeyboardDismissWrapper from "../../components/WithKeyboardDismissWrapper";
 
 export type SpecialT = 'with' | 'only' | 'without';
 
@@ -80,7 +82,8 @@ export default function SavedFilters({hideModal, visible, currentUser}: PropType
       <View style={styles.header}>
         <Headline>Збережені фільтри</Headline>
       </View>
-      <View style={styles.body}>
+      <WithKeyboardDismissWrapper>
+        <View style={styles.body}>
         {savedFilters?.map((filterItem: SavedFilterT, index) => (
           <View key={index} style={styles.itemRow}>
             <Text style={selectedFilter === index ? styles.selectedItem : styles.item}
@@ -93,23 +96,38 @@ export default function SavedFilters({hideModal, visible, currentUser}: PropType
           </View>
         ))}
         <View style={styles.newFilterSection}>
-          <TextInput placeholder='Назва нового фільтру' value={inputName}
+          <TextInput placeholder='Назва нового фільтру'
+                     value={inputName}
                      onChangeText={text => setInputName(text)}
+                     style={styles.newFilterNameInput}
           />
-          <View style={styles.mainFilterCheckbox}>
-            <Checkbox status={saveAsMainFilter ? 'checked' : 'unchecked'}
-                    onPress={() => setSaveAsMainFilter(prevState => !prevState)}
-            />
-            <Text>Застосувати як основний фільтр</Text>
+          <View style={[styles.mainFilterCheckbox, { opacity: saveAsMainFilter ? 1 : .3 }]}>
+            {Platform.OS === Platforms.WEB ? (
+              <Checkbox status={saveAsMainFilter ? 'checked' : 'unchecked'}
+                        onPress={() => setSaveAsMainFilter(prevState => !prevState)}
+              />
+            ) : (
+              <CheckBox
+                isChecked={saveAsMainFilter}
+                onClick={() => setSaveAsMainFilter(prevState => !prevState)}
+              />
+            )}
+            <Text
+              onPress={() => setSaveAsMainFilter(prevState => !prevState)}
+              style={styles.checkboxLabel}
+            >
+              Застосувати як основний
+            </Text>
           </View>
           <Button mode='contained'
                   disabled={isSaving || !inputName}
                   onPress={handleSaveFilter}
           >
-            Зберегти новий сет аудиторій
+            + новий фільтр
           </Button>
         </View>
       </View>
+      </WithKeyboardDismissWrapper>
     </Modal>
   </Portal>
 };
@@ -165,8 +183,11 @@ const styles = StyleSheet.create({
   mainFilterCheckbox: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    marginLeft: -10
+    paddingBottom: 20,
+    paddingTop: 10,
+  },
+  checkboxLabel: {
+    paddingLeft: 8,
   },
   newFilterSection: {
     borderRadius: 6,
@@ -174,5 +195,10 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     padding: 16,
     marginTop: 50
+  },
+  newFilterNameInput: {
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    paddingBottom: 10,
   }
 });

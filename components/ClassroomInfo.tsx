@@ -127,8 +127,8 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
 
   const getReservedClassroom = async () => {
     setLoading(true);
-    // const isNear = await getIsNear();
-    // if (isNear) {
+    const isNear = await getIsNear();
+    if (isNear) {
       try {
         const result = await client.mutate({
           mutation: RESERVE_FREE_CLASSROOM,
@@ -151,7 +151,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
         alert(JSON.stringify(e));
         setLoading(false);
       }
-    // }
+    }
     setLoading(false);
   };
 

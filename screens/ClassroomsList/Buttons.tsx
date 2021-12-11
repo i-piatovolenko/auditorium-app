@@ -104,11 +104,11 @@ const Buttons: React.FC<PropTypes> = ({
 
   const handleReady = async () => {
     setLoading(true);
-    // const isNear = await getIsNear();
-    // if (isNear) {
+    const isNear = await getIsNear();
+    if (isNear) {
       await getInLine(minimalClassroomIds, desirableClassroomIds);
-      // setLoading(false);
-    // }
+      setLoading(false);
+    }
     setLoading(false);
   };
 

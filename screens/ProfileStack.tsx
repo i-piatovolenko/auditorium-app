@@ -3,6 +3,7 @@ import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../types";
 import Profile from "./Profile";
 import UpdatePassword from "./UpdatePassword";
+import UpdatePasswordSuccess from "./UpdatePasswordSuccess";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -19,7 +20,7 @@ function ProfileStack() {
     />
     <Stack.Screen
       name={'UpdatePasswordSuccess' as any}
-      component={UpdatePassword}
+      component={UpdatePasswordSuccess}
     />
   </Stack.Navigator>
 }

@@ -1,13 +1,11 @@
 import * as React from 'react';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {
   Dimensions,
   Image,
   ImageBackground,
-  Keyboard,
   StyleSheet,
-  TouchableWithoutFeedback,
-  Platform
+  Platform, KeyboardAvoidingView
 } from 'react-native';
 import {Button, Surface, TextInput} from 'react-native-paper';
 import {Text, View} from '../components/Themed';
@@ -27,6 +25,7 @@ import InfoDialog from "../components/InfoDialog";
 import WithKeyboardDismissWrapper from "../components/WithKeyboardDismissWrapper";
 
 const {width: windowWidth} = Dimensions.get('window');
+const {height: windowHeight} = Dimensions.get('window');
 
 export default function Login({navigation}: any) {
   const [login, {loading}] = useMutation(LOGIN);
@@ -39,6 +38,8 @@ export default function Login({navigation}: any) {
   const [pushNotificationToken, setPushNotificationToken] = useState('');
   const [persNumber, setPersNumber] = useState(-1);
   const [visibleEmailConfirmSuccess, setVisibleEmailConfirmSuccess] = useState(false);
+
+  const passwordRef = useRef(null);
 
   useEffect(() => {
       Linking.getInitialURL().then(url => {
@@ -132,43 +133,55 @@ export default function Login({navigation}: any) {
           <PushNotification setPushNotificationToken={setPushNotificationToken}/>
         )}
         <ImageBackground source={require('../assets/images/bg.jpg')} style={styles.bg}>
-          <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
-          <Text style={styles.title}>{i18n.t('login')}</Text>
-          <Surface style={styles.inputs}>
-            <TextInput label='E-mail'
-                       style={styles.input}
-                       onChangeText={(e) => setEmail(e)}
-            />
-            <TextInput label='Пароль'
-                       style={styles.input}
-                       onChangeText={(e) => setPassword(e)}
-                       secureTextEntry={!showPassword}
-                       selectionColor='#2b5dff'
-                       right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#2b5dff'
-                                              onPress={() => setShowPassword(prevState => !prevState)}
-                       />}
-            />
-            <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
-                    style={styles.button} disabled={(!email || !password) || loading}>
-              Увійти
+          <KeyboardAvoidingView behavior='padding' style={styles.avoidingView} enabled={Platform.OS === Platforms.IOS}>
+            <Image source={require('./../assets/images/au_logo_shadow.png')} style={styles.logo}/>
+            <Text style={styles.title}>{i18n.t('login')}</Text>
+            <Surface style={styles.inputs}>
+              <TextInput label='E-mail'
+                         style={styles.input}
+                         onChangeText={(e) => setEmail(e)}
+                         autoCapitalize='none'
+                         returnKeyType='next'
+                         keyboardType='email-address'
+                         autoCompleteType='email'
+                         onSubmitEditing={() => passwordRef.current.focus()}
+              />
+              <TextInput label='Пароль'
+                         style={styles.input}
+                         onChangeText={(e) => setPassword(e)}
+                         secureTextEntry={!showPassword}
+                         selectionColor='#2b5dff'
+                         autoCompleteType='password'
+                         right={<TextInput.Icon name={showPassword ? 'eye' : 'eye-off'} color='#2b5dff'
+                                                onPress={() => setShowPassword(prevState => !prevState)}
+                         />}
+                         returnKeyType='done'
+                         onSubmitEditing={handleSubmit}
+                         ref={passwordRef}
+                         autoCapitalize='none'
+              />
+              <Button onPress={handleSubmit} mode='contained' color='#2b5dff' loading={loading}
+                      style={styles.button} disabled={(!email || !password) || loading}>
+                Увійти
+              </Button>
+              <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'
+                      style={styles.button}>
+                Реєстрація
+              </Button>
+            </Surface>
+            <Button onPress={() => navigation.navigate('ForgotPassword')} uppercase={false}
+                    labelStyle={{color: '#fff'}} style={styles.button}>
+              Відновити пароль
             </Button>
-            <Button onPress={() => navigation.navigate('SignUp')} mode='contained' color='#f91354'
-                    style={styles.button}>
-              Реєстрація
-            </Button>
-          </Surface>
-          <Button onPress={() => navigation.navigate('ForgotPassword')} uppercase={false}
-                  labelStyle={{color: '#fff'}} style={styles.button}>
-            Відновити пароль
-          </Button>
-          <View style={styles.footer}>
-            <Text style={{color: '#fff', textAlign: 'center', marginHorizontal: 16}}>
-              Національна музична академія України ім. П. І. Чайковського
-            </Text>
-            <Text style={{color: '#fff', marginTop: 16, textAlign: 'center'}}>
-              Auditorium © 2021
-            </Text>
-          </View>
+            <View style={styles.footer}>
+              <Text style={{color: '#fff', textAlign: 'center', marginHorizontal: 16}}>
+                Національна музична академія України ім. П. І. Чайковського
+              </Text>
+              <Text style={{color: '#fff', marginTop: 16, textAlign: 'center'}}>
+                Auditorium © 2021
+              </Text>
+            </View>
+          </KeyboardAvoidingView>
         </ImageBackground>
         <InfoDialog
           message={'Ваш e-mail успішно підтверджено. Останній крок: підтвердіть свої дані. Для цього підійдіть до учбової частини з документом (студентський, аспірантський, тощо) та вкажіть ваш персональний номер ( ' + persNumber + " ) або П.І.Б."}
@@ -208,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   inputs: {
-    width: '90%',
+    width: windowWidth * .9,
     elevation: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -328,5 +341,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     padding: 8
+  },
+  avoidingView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: windowWidth,
+    height: windowHeight
   }
 });

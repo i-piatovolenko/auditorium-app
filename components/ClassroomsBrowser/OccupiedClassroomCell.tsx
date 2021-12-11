@@ -86,12 +86,12 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurr
                       onPress={handlePress} onLongPress={handleLongPress}/>
         )}
         <View style={styles.cellHeader}>
-          <Text style={styles.name}>{classroom.name}</Text>
+          <Text style={classroom.name.length > 2 ? styles.longName : styles.name}>{classroom.name}</Text>
           <Image source={require('./../../assets/images/specialPiano.png')}
                  style={[special ? styles.special : styles.notSpecial]}/>
         </View>
         <Text style={[styles.occupationInfo, typeStyle(occupied, isDisabled)]} numberOfLines={1}>
-          {isDisabled ? !isEnabledForCurrentUser ? 'Для студентів кафедри' : disabled?.comment : userFullName}
+          {userFullName}
         </Text>
         <View style={styles.instruments}>
           {instruments?.length
@@ -113,7 +113,8 @@ const styles = StyleSheet.create({
     width: cellWidth,
     margin: 2,
     paddingHorizontal: 4,
-    paddingBottom: 2,
+    paddingTop: 2,
+    paddingBottom: 4,
     textAlign: 'center'
   },
   cellHeader: {
@@ -126,6 +127,12 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 35,
+    lineHeight: 35,
+    fontWeight: 'bold',
+  },
+  longName: {
+    fontSize: 26,
+    lineHeight: 35,
     fontWeight: 'bold',
   },
   special: {

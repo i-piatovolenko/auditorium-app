@@ -5,6 +5,7 @@ export const GET_UNSIGNED_DEGREES = gql`
         signupDegrees {
             id
             name
+            durationMonths
         }
     }
 `;
