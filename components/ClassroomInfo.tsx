@@ -76,6 +76,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   }, [classroom, classroom?.queueInfo.queuePolicy, userData, userError, userLoading]);
 
   const requestLocation = async () => {
+    setLoading(true);
     let {status} = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію.');
@@ -86,8 +87,13 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
 
   const getIsNear = async () => {
     let isNear;
+    let location;
     await requestLocation();
-    let location = await Location.getCurrentPositionAsync({});
+    try {
+    location = await Location.getCurrentPositionAsync({});
+    } catch (e) {
+      setLoading(false);
+    }
     if (location) {
       const distance = getDistance(location.coords.latitude, location.coords.longitude,
         UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
