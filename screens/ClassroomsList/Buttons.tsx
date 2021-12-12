@@ -3,9 +3,9 @@ import {StyleSheet, Text, View} from "react-native";
 import {Button} from "react-native-paper";
 import Colors from "../../constants/Colors";
 import {hasOwnClassroom} from "../../helpers/helpers";
-import {ClassroomType, Mode, OccupiedState, SavedFilterT} from "../../models/models";
+import {ClassroomType, Mode, SavedFilterT} from "../../models/models";
 import {useLocal} from "../../hooks/useLocal";
-import {client, desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
+import {desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {getItem} from "../../api/asyncStorage";
 import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
@@ -17,8 +17,6 @@ import ConfirmLineOut from "../../components/ConfirmLineOut";
 import * as Location from 'expo-location';
 import {getDistance} from "../../helpers/getDistance";
 import {UNIVERSITY_LOCATION} from "../../constants/constants";
-import {useQuery} from "@apollo/client";
-import {PERMITTED_ACTION_HOURS} from "../../api/operations/queries/permittedActionHours";
 
 type PropTypes = {
   currentUser: any;
@@ -41,8 +39,10 @@ const Buttons: React.FC<PropTypes> = ({
   const [errorMsg, setErrorMsg] = useState(null);
 
   const requestLocation = async () => {
+    setLoading(true);
     let {status} = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
+      setLoading(false);
       setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію в налаштуваннях.');
     } else {
       setErrorMsg(null);
@@ -52,7 +52,7 @@ const Buttons: React.FC<PropTypes> = ({
   const getIsNear = async () => {
     let isNear;
     await requestLocation();
-    let location = await Location.getCurrentPositionAsync({});
+    const location = await Location.getCurrentPositionAsync({});
     if (location) {
       const distance = getDistance(location.coords.latitude, location.coords.longitude,
         UNIVERSITY_LOCATION.lat, UNIVERSITY_LOCATION.long, 'K');
@@ -63,6 +63,7 @@ const Buttons: React.FC<PropTypes> = ({
         setErrorMsg(`Щоб взяти аудиторію або стати в чергу, Ви маєте знаходитись від академії на відстані, що не перебільшує ${maxDistance * 1000} м. Ваша відстань: ${
           (distance * 1000).toFixed(0)
         } м.`);
+        setLoading(false);
       }
     } else {
       setErrorMsg('Щоб взяти аудиторію або стати в чергу, потрібно надати дозвіл на геолокацію в налаштуваннях.');
@@ -103,7 +104,6 @@ const Buttons: React.FC<PropTypes> = ({
   };
 
   const handleReady = async () => {
-    setLoading(true);
     const isNear = await getIsNear();
     if (isNear) {
       await getInLine(minimalClassroomIds, desirableClassroomIds);
@@ -123,41 +123,70 @@ const Buttons: React.FC<PropTypes> = ({
     <View style={styles.wrapper}>
       {mode === Mode.PRIMARY
       && !(hasOwnClassroom(currentUser.occupiedClassrooms)) && (
-        <Button style={styles.getInLine} mode='contained' color={Colors.blue}
-                onPress={handlePress} loading={loading} disabled={loading || !hasAvailableClassroomsForQueue()}>
+        <Button
+          style={styles.getInLine}
+          mode='contained'
+          color={Colors.blue}
+          onPress={handlePress}
+          loading={loading}
+          disabled={loading || !hasAvailableClassroomsForQueue()}
+        >
           <Text>Вибрати аудиторії для черги</Text>
         </Button>
       )}
       {mode === Mode.QUEUE_SETUP && (
         <>
-          <Button style={styles.getOutLine} mode='contained' color={Colors.red}
-                  onPress={handlePress} loading={loading} disabled={loading}>
+          <Button
+            style={styles.getOutLine}
+            mode='contained'
+            color={Colors.red}
+            onPress={handlePress}
+            loading={loading}
+            disabled={loading}
+          >
             <Text>Відміна</Text>
           </Button>
-          <Button style={styles.approve} mode='contained' color={Colors.blue}
-                  disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length)
-                  || loading || !hasAvailableClassroomsForQueue()}
-                  onPress={handleReady} loading={loading}>
+          <Button
+            style={styles.approve}
+            mode='contained'
+            color={Colors.blue}
+            disabled={(!minimalClassroomIds.length && !desirableClassroomIds.length)
+            || loading || !hasAvailableClassroomsForQueue()}
+            onPress={handleReady}
+            loading={loading}
+          >
             <Text>Стати в чергу</Text>
           </Button>
         </>
       )}
       {mode === Mode.INLINE && (
-        <Button style={styles.getOutLine} mode='contained' color={Colors.red}
-                onPress={() => setVisibleLineOut(true)} loading={loading} disabled={loading}>
+        <Button
+          style={styles.getOutLine}
+          mode='contained'
+          color={Colors.red}
+          onPress={() => setVisibleLineOut(true)}
+          loading={loading}
+          disabled={loading}
+        >
           <Text>Вийти з черги</Text>
         </Button>
       )}
-      <ErrorDialog visible={visibleModalError} hideDialog={() => setVisibleModalError(false)}
-                   message={queueErrorMessage}
+      <ErrorDialog
+        visible={visibleModalError}
+        hideDialog={() => setVisibleModalError(false)}
+        message={queueErrorMessage}
       />
-      <ErrorDialog visible={!!errorMsg}
-                   hideDialog={() => setErrorMsg(null)}
-                   message={errorMsg}
-                   buttonText='Зрозуміло'
+      <ErrorDialog
+        visible={!!errorMsg}
+        hideDialog={() => setErrorMsg(null)}
+        message={errorMsg}
+        buttonText='Зрозуміло'
       />
       <WaitDialog visible={loading}/>
-      <ConfirmLineOut hideDialog={() => setVisibleLineOut(false)} visible={visibleLineOut}/>
+      <ConfirmLineOut
+        hideDialog={() => setVisibleLineOut(false)}
+        visible={visibleLineOut}
+      />
     </View>
   );
 }
