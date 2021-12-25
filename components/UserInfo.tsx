@@ -13,32 +13,39 @@ interface PropTypes {
   visible: boolean;
 }
 
+const NO_PHONE_NUMBER = 'No phone number';
+
 export default function UserInfo({userId, hideModal, visible}: PropTypes) {
   const {data, loading, error} = useQuery(GET_USER_BY_ID, {
     variables: {where: {id: userId}}
   });
 
-  const openPhoneNumber = (phoneNumber: string) => Linking.openURL(`tel:${phoneNumber}`);
+  const openPhoneNumber = (phoneNumber: string) => phoneNumber !== NO_PHONE_NUMBER && Linking.openURL(`tel:${phoneNumber}`);
 
   return <Portal>
     <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
       {!loading && !error ? <>
-          <Title style={styles.occupantName}>{fullName(data.user)}</Title>
-          <Divider style={styles.divider}/>
-          <Text>Статус: {UserTypesUa[data.user.type as UserTypes]}</Text>
-          <Text>Кафедра: {data.user.department?.name}</Text>
-          <Divider style={styles.divider}/>
+        <Title style={styles.occupantName}>{fullName(data.user)}</Title>
+        <Divider style={styles.divider}/>
+        <Text style={styles.text}>Статус: {UserTypesUa[data.user.type as UserTypes].toLowerCase()}</Text>
+        <Text style={styles.text}>Кафедра: {data.user.department?.name || 'Немає даних'}</Text>
+        <Text style={styles.text}>Зайнята аудиторія: {data.user.occupiedClassrooms[0]?.classroom.name || 'відсутня'}</Text>
+        <Divider style={styles.divider}/>
         {isTeacherType(data.user.type) && <>
-            <View style={styles.phoneRow}><Text>Тел: </Text>
-                <Text onPress={() => openPhoneNumber(data.user.phoneNumber)} style={styles.phoneNumber}>
-                  {data.user.phoneNumber}
+            <View style={styles.phoneRow}>
+                <Text style={styles.phoneTitle}>Тел: </Text>
+                <Text
+                    onPress={() => openPhoneNumber(data.user.phoneNumber)}
+                    style={data.user.phoneNumber === NO_PHONE_NUMBER ? styles.noPhoneNumber : styles.phoneNumber}
+                >
+                  {data.user.phoneNumber === NO_PHONE_NUMBER ? 'Немає даних' : data.user.phoneNumber}
                 </Text>
             </View>
           {JSON.parse(data.user.extraPhoneNumbers)?.map((number: string, index: number) => {
             return <View key={index} style={styles.phoneRow}>
-              <Text>{`Тел. ${index + 2}: `}</Text>
+              <Text style={styles.phoneTitle}>{`Тел. ${index + 2}: `}</Text>
               <Text onPress={() => openPhoneNumber(number)} style={styles.phoneNumber}>
-                {number}
+                {number === NO_PHONE_NUMBER ? 'Немає даних' : number}
               </Text>
             </View>
           })}
@@ -63,7 +70,11 @@ const styles = StyleSheet.create(({
   phoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'flex-start'
+  },
+  phoneTitle: {
+    paddingTop: 6,
+    paddingRight: 8,
   },
   phoneNumber: {
     borderRadius: 8,
@@ -74,5 +85,18 @@ const styles = StyleSheet.create(({
     fontSize: 16,
     marginTop: 8,
     color: '#2b5dff'
-  }
+  },
+  noPhoneNumber: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#eee',
+    padding: 8,
+    fontSize: 16,
+    marginTop: 8,
+    color: '#ccc'
+  },
+  text: {
+    paddingBottom: 6,
+  },
 }));

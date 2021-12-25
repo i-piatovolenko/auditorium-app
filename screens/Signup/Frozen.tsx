@@ -7,7 +7,7 @@ import {getItem, removeItem, setItem} from "../../api/asyncStorage";
 import { useNavigation } from '@react-navigation/native';
 
 export default function Frozen() {
-  const message1 = 'Ваш аккаунт заблоковано. Для отримання доступу разблокуйте аккаунт в учбовій частині. Ваш номер:';
+  const message1 = 'Ваш акаунт заблоковано. Для отримання доступу разблокуйте аккаунт в учбовій частині. Ваш номер:';
   const message2 = 'Після разблокування оновіть сторінку або поверніться на сторінку входу.';
   const [storageUser, setStorageUser] = useState<any>(null);
   const [update, setUpdate] = useState(false);
@@ -44,7 +44,7 @@ export default function Frozen() {
                           style={{width: '100%', height: '100%'}}>
     <View style={styles.container}>
       <View style={styles.wrapper}>
-        <Title style={styles.title}>Аккаунт заблоковано</Title>
+        <Title style={styles.title}>Акаунт заблоковано</Title>
         <Text style={styles.message}>{message1}</Text>
         <Title style={styles.number}>{storageUser ? storageUser.id : ''}</Title>
         <Text style={styles.message}>{message2}</Text>

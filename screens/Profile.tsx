@@ -43,7 +43,7 @@ export default function Profile({navigation}: any) {
 
   return (
     <ImageBackground source={require('../assets/images/bg.jpg')}
-                     style={{width: '100%', height: windowHeight}}>
+                     style={{width: '100%', height: windowHeight + 80}}>
       <Appbar style={styles.top}>
         <Appbar.Action icon={() => <Image source={require('../assets/images/burger.png')}
                                           style={styles.menuIcon}/>}
@@ -55,7 +55,7 @@ export default function Profile({navigation}: any) {
         />
       </Appbar>
       {currentUser ? (
-        <ScrollView contentContainerStyle={styles.wrapper} style={{height: 160, paddingBottom: 100}}>
+        <ScrollView contentContainerStyle={styles.wrapper} style={styles.scrollView}>
           {currentUser.queueInfo.sanctionedUntil ? <View style={styles.sanctionsMessage}>
             <Title style={styles.sanctionsMessageText}>Увага!</Title>
             <Divider style={{backgroundColor: '#ffffff', marginVertical: 5,}}/>
@@ -70,7 +70,7 @@ export default function Profile({navigation}: any) {
           <Title style={styles.whiteText}>Персональний номер (ID)</Title>
           <Text style={styles.marginBottomWhiteText}>{currentUser.id}</Text>
           <Divider style={{backgroundColor: '#ffffff33'}}/>
-          <Title style={styles.whiteText}>Тип аккаунту</Title>
+          <Title style={styles.whiteText}>Тип акаунту</Title>
           <Text style={styles.marginBottomWhiteText}>{UserTypesUa[currentUser.type as UserTypes]}</Text>
           <Divider style={{backgroundColor: '#ffffff33'}}/>
           {currentUser.department && (
@@ -86,7 +86,7 @@ export default function Profile({navigation}: any) {
           <Title style={styles.whiteText}>Телефон</Title>
           <Text style={styles.marginBottomWhiteText}>{currentUser.phoneNumber}</Text>
           <Divider style={{backgroundColor: '#ffffff33'}}/>
-          <Title style={styles.whiteText}>Термін дії аккаунту</Title>
+          <Title style={styles.whiteText}>Термін дії акаунту</Title>
           <Text style={styles.marginBottomWhiteText}>{moment(currentUser.expireDate).format('YYYY-MM-DD')}</Text>
           <Divider style={{backgroundColor: '#ffffff33'}}/>
           <Button
@@ -114,10 +114,17 @@ const styles = StyleSheet.create({
     zIndex: 1000
   },
   wrapper: {
-    marginTop: 100,
     marginLeft: 16,
     marginRight: 16,
-    paddingBottom: 120,
+    paddingBottom: 8,
+    marginTop: 10,
+    backgroundColor: '#ffffff22',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  scrollView: {
+    marginTop: 80,
   },
   marginBottomWhiteText: {
     marginBottom: 10,

@@ -1,22 +1,28 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Text, ScrollView, Dimensions} from "react-native";
-import {Appbar, Surface, TextInput} from "react-native-paper";
+import {Appbar, Surface} from "react-native-paper";
 import {ActivityTypes, ClassroomType} from "../models/models";
 import {fullName, ISODateString} from "../helpers/helpers";
 import {GET_SCHEDULE} from "../api/operations/queries/schedule";
 import {useQuery} from "@apollo/client";
 import UserInfo from "../components/UserInfo";
+import moment from "moment";
 
 const windowWidth = Dimensions.get('window').width;
 
-export default function Schedule() {
-  const timeline = ['', 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const timeline = ['', 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const hour = (windowWidth - 40) / (timeline.length - 1);
+
+const Schedule = () => {
+  const [chosenDate, setChosenDate] = useState(new Date().toISOString());
   const {data, loading, error} = useQuery(GET_SCHEDULE, {
-    variables: {date: ISODateString(new Date())}
+    variables: {
+      date: chosenDate
+    },
   });
-  const hour = (windowWidth - 40) / (timeline.length - 1);
   const [visible, setVisible] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(0);
+
 
   const showModal = (userId: number) => {
     setCurrentUserId(userId);
@@ -27,9 +33,11 @@ export default function Schedule() {
 
   return <>
     <Appbar style={styles.top}>
-      <Appbar.Action icon="menu" onPress={() => {}}/>
+      <Appbar.Action icon="menu" onPress={() => {
+      }}/>
       <Appbar.Content title="Розклад"/>
-      <Appbar.Action icon="calendar-range" onPress={() => {}}/>
+      <Appbar.Action icon="calendar-range" onPress={() => {
+      }}/>
     </Appbar>
     <View style={styles.timeline} pointerEvents='none'>
       {timeline.slice(1).map(item => <Text style={{width: hour, ...styles.hour}}>{item}</Text>)}
@@ -84,6 +92,7 @@ const styles = StyleSheet.create({
   },
   schedule: {
     marginTop: 120,
+    backgroundColor: '#fff',
   },
   row: {
     flexDirection: 'row',
@@ -114,3 +123,5 @@ const styles = StyleSheet.create({
     zIndex: 1
   },
 });
+
+export default Schedule;

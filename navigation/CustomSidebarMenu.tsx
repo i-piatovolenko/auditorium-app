@@ -5,16 +5,16 @@ import {
   StyleSheet,
   Image,
   Text,
-  Linking, BackHandler,
+  Linking,
 } from 'react-native';
 
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from '@react-navigation/drawer';
-import {Avatar, Button, Dialog, IconButton, Portal} from "react-native-paper";
+import {Button, Dialog, IconButton, Portal} from "react-native-paper";
 import {removeItem} from "../api/asyncStorage";
-import {client, meVar, setWSToken} from "../api/client";
+import {meVar} from "../api/client";
 
 const CustomSidebarMenu = (props: any) => {
   const [visible, setVisible] = useState(false);
@@ -38,7 +38,6 @@ const CustomSidebarMenu = (props: any) => {
         style={styles.logo}
       />
       <View style={styles.userData}>
-        <Avatar.Icon size={44} icon='account'/>
         <Text style={styles.userName}>{meVar()?.firstName}, вітаємо!</Text>
         <IconButton
           icon="logout"
@@ -64,7 +63,7 @@ const CustomSidebarMenu = (props: any) => {
       </Text>
       <Portal>
         <Dialog visible={visible} onDismiss={hideDialog}>
-          <Dialog.Title>Ви дійсно бажаєте вийти з аккаунту?</Dialog.Title>
+          <Dialog.Title>Ви дійсно бажаєте вийти з акаунту?</Dialog.Title>
           <Dialog.Actions>
             <Button onPress={hideDialog}>Відміна</Button>
             <Button onPress={logout}>Так</Button>
@@ -95,12 +94,13 @@ const styles = StyleSheet.create({
   },
   userData: {
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     marginTop: 20,
     marginHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1,
-    padding: 12,
+    paddingVertical: 12,
+    paddingRight: 8,
     borderColor: '#ffffff22',
     flexDirection: 'row'
   },

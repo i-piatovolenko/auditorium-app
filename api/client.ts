@@ -6,8 +6,21 @@ import {setContext} from "@apollo/client/link/context";
 import {getItem, removeItem} from "./asyncStorage";
 import {onError} from "@apollo/client/link/error";
 
+const ENV = {
+  prod: {
+    wss: 'wss://api.auditoriu.me/',
+    https: 'https://api.auditoriu.me/',
+  },
+  stg: {
+    wss: 'wss://staging.api.auditoriu.me/',
+    https: 'https://staging.api.auditoriu.me/',
+  }
+}
+
+const CURRENT_ENV = ENV.prod;
+
 const wsLink: any = new WebSocketLink({
-    uri: 'wss://api.auditoriu.me/',
+    uri: CURRENT_ENV.wss,
     options: {
       reconnect: true,
       lazy: true,
@@ -31,7 +44,7 @@ const subscriptionMiddleware = {
 wsLink.subscriptionClient.use([subscriptionMiddleware]);
 
 const httpLink = createHttpLink({
-  uri: 'https://api.auditoriu.me/'
+  uri: CURRENT_ENV.https
 });
 
 const authLink = setContext(async function (_, {headers}) {

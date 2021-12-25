@@ -42,6 +42,7 @@
         "USER_FACING_NOTIFICATIONS"
       ],
       "package": "com.knmau.auditorium",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 16
     },
     "web": {

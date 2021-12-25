@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   AppState,
   AppStateStatus,
@@ -7,12 +7,21 @@ import {
   Platform,
   RefreshControl,
   ScrollView,
-  StyleSheet,
+  StyleSheet, Text,
   TouchableOpacity,
   View
 } from "react-native";
 import {ActivityIndicator} from "react-native-paper";
-import {ClassroomType, DisabledState, Mode, OccupiedState, Platforms, User, UserQueueState} from "../../models/models";
+import {
+  ClassroomType,
+  CrashModeT,
+  DisabledState,
+  Mode,
+  OccupiedState,
+  Platforms,
+  User,
+  UserQueueState
+} from "../../models/models";
 import {createStackNavigator} from "@react-navigation/stack";
 import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
@@ -42,11 +51,22 @@ import {MAX_DISTANCE} from "../../api/operations/queries/constant";
 import WarningDialog from "../../components/WarningDialog";
 import {isLastVersion} from "../../helpers/isLastVersion";
 import {GET_GLOBAL_MESSAGES} from "../../api/operations/queries/globalMessages";
+import {CURRENT_TEST_VERSION} from "../../constants/constants";
+import {FOLLOW_CRASH_MODE} from "../../api/operations/subscriptions/crashModeUpdate";
+import {CRASH_MODE} from "../../api/operations/queries/crashMode";
+import CrashModeAlert from "../../components/ClassroomsBrowser/CrashModeAlert";
+import {DISPATCHER_STATUS} from "../../api/operations/queries/dispatcherActive";
+import {FOLLOW_DISPATCHER_STATUS} from "../../api/operations/subscriptions/dispatcherStatus";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 const WINDOW_HEIGHT = Dimensions.get("window").height;
 const BOTTOM_SPACE = 80;
+
+type CrashModeDataT = {
+  crashMode: CrashModeT;
+  crashModeUpdate: CrashModeT;
+};
 
 export default function Home() {
   const appState = useRef(AppState.currentState);
@@ -129,12 +149,28 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const [showQueueInSuccess, setShownQueueInSuccess] = useState(false);
   const [showQueueOutSuccess, setShownQueueOutSuccess] = useState(false);
   const [globalMessage, setGlobalMessage] = useState(null);
+  const [crashMode, setCrashMode] = useState(false);
+  const [crashModeComment, setCrashModeComment] = useState('');
+  const [crashModeUntil, setCrashModeUntil] = useState('');
+  const [dispatcherActive, setDispatcherActive] = useState(true);
   const {
     data,
     loading,
     error,
     subscribeToMore
   } = useQuery<QueryClassroomsData>(GET_CLASSROOMS_NO_SCHEDULE);
+  const {
+    data: crashModeData,
+    loading: crashModeLoading,
+    error: crashModeError,
+    subscribeToMore: subscribeToMoreCrashMode
+  } = useQuery<CrashModeDataT>(CRASH_MODE);
+  const {
+    data: dispatcherStatusData,
+    loading: dispatcherStatusLoading,
+    error: dispatcherStatusError,
+    subscribeToMore: subscribeToMoreDispatcherStatus
+  } = useQuery(DISPATCHER_STATUS);
   const {
     data: userData,
     loading: userLoading,
@@ -184,6 +220,19 @@ const ClassroomsList: React.FC = ({route}: any) => {
   };
 
   useEffect(() => {
+    if (crashModeData) {
+      setCrashMode(crashModeData.crashMode.isActive);
+      setCrashModeComment(crashModeData.crashMode.comment);
+      setCrashModeUntil(crashModeData.crashMode.until as unknown as string);
+    }
+  }, [crashModeData])
+  useEffect(() => {
+    if (dispatcherStatusData) {
+      setDispatcherActive(dispatcherStatusData.dispatcherActive);
+    }
+  }, [dispatcherStatusData])
+
+  useEffect(() => {
     if (userData && prevUserData) {
       const {currentSession} = userData.user?.queueInfo;
       const {currentSession: prevSession} = prevUserData.user?.queueInfo;
@@ -227,6 +276,24 @@ const ClassroomsList: React.FC = ({route}: any) => {
       const unsubscribeClassrooms = subscribeToMore({
         document: FOLLOW_CLASSROOMS,
       });
+      const unsubscribeCrashMode = subscribeToMoreCrashMode({
+        document: FOLLOW_CRASH_MODE,
+        updateQuery: (prev, {subscriptionData}) => {
+          if (!subscriptionData.data) return prev;
+          setCrashMode(subscriptionData.data.crashModeUpdate.isActive);
+          setCrashModeComment(subscriptionData.data.crashModeUpdate.comment);
+          setCrashModeUntil(subscriptionData.data.crashModeUpdate.until as unknown as string);
+          return subscriptionData.data;
+        }
+      });
+      const unsubscribeDispatcherStatus = subscribeToMoreDispatcherStatus({
+        document: FOLLOW_DISPATCHER_STATUS,
+        updateQuery: (prev, {subscriptionData}) => {
+          if (!subscriptionData.data) return prev;
+          setDispatcherActive(subscriptionData.data.dispatcherActiveUpdate);
+          return subscriptionData.data;
+        }
+      });
       const unsubscribeUser = subscribeToMoreUser({
         document: FOLLOW_USER,
         variables: {
@@ -236,6 +303,8 @@ const ClassroomsList: React.FC = ({route}: any) => {
       return () => {
         unsubscribeClassrooms();
         unsubscribeUser();
+        unsubscribeCrashMode();
+        unsubscribeDispatcherStatus()
       };
   }, []);
 
@@ -244,7 +313,8 @@ const ClassroomsList: React.FC = ({route}: any) => {
       const freeClassrooms = data.classrooms.filter(classroom => {
         return classroom.occupied.state === OccupiedState.FREE
           && classroom.disabled.state === DisabledState.NOT_DISABLED
-          && isEnabledForCurrentDepartment(classroom, userData.user);
+          && isEnabledForCurrentDepartment(classroom, userData.user)
+          && !classroom.isHidden;
       });
       setFreeClassroomsAmount(freeClassrooms.length);
     }
@@ -254,7 +324,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
    * Find occupied classroom for current user (OCCUPIED or RESERVED)
    * */
   const own = ({id}: ClassroomType) => {
-    return id === hasOwnClassroom(userData.user.occupiedClassrooms);
+    return userData.user.occupiedClassrooms?.some(({classroom}: any) => classroom.id === id);
   };
 
   /**
@@ -263,13 +333,9 @@ const ClassroomsList: React.FC = ({route}: any) => {
    * Without occupied by current user
    * */
   const primary = (classroom: ClassroomType) => {
-    const ownClassroomId = hasOwnClassroom(userData.user.occupiedClassrooms);
     const fullHidden = classroom.occupied.state === OccupiedState.FREE && classroom.isHidden;
 
-    return classroom.id !== ownClassroomId && !fullHidden &&
-      !(userData.user.occupiedClassrooms.some((data: any) => {
-        return data.classroom.id === classroom.id && data.state === OccupiedState.PENDING
-      }));
+    return !own(classroom) && !fullHidden;
   };
 
   /**
@@ -279,7 +345,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
   const chosen = (classroom: ClassroomType) => {
 
     return userData.user.queue.some(({classroom: {id}, ...queueRecord}: any) => classroom.id === id)
-      && !(userData.user.occupiedClassrooms.some(({id}: ClassroomType) => classroom.id === id))
+      && !own(classroom)
       && !(classroom.occupied?.user?.id === userData?.user?.id && classroom.occupied.state === OccupiedState.PENDING);
   };
 
@@ -287,11 +353,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
    * Others not in queue classrooms
    * */
   const notChosen = (classroom: ClassroomType) => {
-    const ownClassroomId = hasOwnClassroom(userData.user.occupiedClassrooms);
     const fullHidden = classroom.occupied.state === OccupiedState.FREE && classroom.isHidden;
 
-    return !(userData.user.queue.some(({classroom: {id}}: any) => classroom.id === id)) &&
-      classroom.id !== ownClassroomId && !fullHidden;
+    return !(userData.user.queue.some(({classroom: {id}}: any) => classroom.id === id))
+      && !fullHidden && !own(classroom);
   };
 
   /**
@@ -357,14 +422,20 @@ const ClassroomsList: React.FC = ({route}: any) => {
         </TouchableOpacity>
       )}
       {!loading && !error && !userLoading && !userError && userData && (
-        <ClassroomsAppBar freeClassroomsAmount={freeClassroomsAmount} classrooms={data.classrooms}
-                          currentUser={userData.user}
+        <ClassroomsAppBar
+          freeClassroomsAmount={freeClassroomsAmount}
+          classrooms={data.classrooms}
+          currentUser={userData.user}
+          dispatcherActive={dispatcherActive}
         />
       )}
 
       <View style={styles.wrapper}>
+        {crashMode && (
+          <CrashModeAlert comment={crashModeComment} until={crashModeUntil}/>
+        )}
         {showLog && (
-          <Log data={JSON.stringify({...userData.user.queueInfo, ...userData.user.queue})}/>
+          <Log data={JSON.stringify({...userData.user.queueInfo, ...userData.user.queue, ver: CURRENT_TEST_VERSION})}/>
         )}
         {!loading && !error && !userLoading && !userError && (
           <ScrollView style={styles.scrollView}
@@ -384,7 +455,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
              Pending classroom: PENDING for approval by current user
              Shown in QUEUED mode
              */}
-            {mode === Mode.INLINE && (
+            {!!data?.classrooms.filter(pending).length && (
               <ClassroomsBrowser classrooms={data.classrooms.filter(pending)} currentUser={userData.user}
                                  title='Аудиторії, що очікують підтвердження'
               />
@@ -415,7 +486,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
             {/**
              All chosen for queue classrooms when IN_QUEUE mode is enabled
              */}
-            {mode === Mode.INLINE && (
+            {!!data?.classrooms.filter(chosen).length && (
               <ClassroomsBrowser classrooms={data.classrooms.filter(chosen)} currentUser={userData.user}
                                  title='Аудиторії, за якими я стою в черзі'
               />
@@ -541,7 +612,7 @@ const styles = StyleSheet.create(
       width: 100,
       height: 50,
       top: 16,
-      right: 16,
+      right: 60,
     },
     scrollView: {
       paddingTop: 8,

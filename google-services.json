@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "571320486197",
+    "project_id": "auditorium-app",
+    "storage_bucket": "auditorium-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:571320486197:android:489ab7359a93e5e484247c",
+        "android_client_info": {
+          "package_name": "com.knmau.auditorium"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "571320486197-kif3fvqqfmh6rg2c40spgbv1o0tekg3f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCUhEJRIEPV7GXhRnNbsIKWtciBRzaxQI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "571320486197-kif3fvqqfmh6rg2c40spgbv1o0tekg3f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

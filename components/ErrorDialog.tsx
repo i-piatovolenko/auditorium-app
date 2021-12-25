@@ -8,13 +8,14 @@ interface PropTypes {
   hideDialog: () => void;
   message?: string;
   buttonText?: string;
+  title?: string
 }
 
-export default function ErrorDialog({visible, hideDialog, message, buttonText = 'Закрити'}: PropTypes) {
+export default function ErrorDialog({visible, hideDialog, message, buttonText = 'Закрити', title}: PropTypes) {
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={hideDialog} style={{zIndex: 60}}>
-        <Dialog.Title style={{color: Colors.red}}>Упс!</Dialog.Title>
+        <Dialog.Title style={{color: Colors.red}}>{title || 'Упс!'}</Dialog.Title>
         <Dialog.Content>
           <Text style={{marginBottom: -20}}>{!message ? 'Щось пішло не так' : message}</Text>
         </Dialog.Content>

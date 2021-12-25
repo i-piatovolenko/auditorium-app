@@ -4,3 +4,5 @@ export const UNIVERSITY_LOCATION = {
 }
 
 export const MAX_DISTANCE = 0.750;
+
+export const CURRENT_TEST_VERSION = 4;

@@ -28,6 +28,7 @@ import SignupEmployeeSuccess from "../screens/SignupEmployeeSuccess";
 import UpdatePassword from "../screens/UpdatePassword";
 import UpdatePasswordSuccess from "../screens/UpdatePasswordSuccess";
 import ProfileStack from "../screens/ProfileStack";
+import Schedule from "../screens/Schedule";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (

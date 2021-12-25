@@ -1,11 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from "react-native";
+import {Platform, StyleSheet, Text, View} from "react-native";
 import {Button} from "react-native-paper";
 import Colors from "../../constants/Colors";
 import {hasOwnClassroom} from "../../helpers/helpers";
-import {ClassroomType, Mode, SavedFilterT} from "../../models/models";
+import {ClassroomType, Mode, Platforms, SavedFilterT} from "../../models/models";
 import {useLocal} from "../../hooks/useLocal";
-import {desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
+import {
+  client,
+  desirableClassroomIdsVar,
+  isMinimalSetupVar,
+  minimalClassroomIdsVar,
+  modeVar,
+  pushNotificationTokenVar
+} from "../../api/client";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {getItem} from "../../api/asyncStorage";
 import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
@@ -17,6 +24,9 @@ import ConfirmLineOut from "../../components/ConfirmLineOut";
 import * as Location from 'expo-location';
 import {getDistance} from "../../helpers/getDistance";
 import {UNIVERSITY_LOCATION} from "../../constants/constants";
+import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
+import {ADD_NOTIFICATION_TOKEN} from "../../api/operations/mutations/addNotificationToken";
 
 type PropTypes = {
   currentUser: any;
@@ -37,6 +47,7 @@ const Buttons: React.FC<PropTypes> = ({
   const [loading, setLoading] = useState(false);
   const [visibleLineOut, setVisibleLineOut] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [expoPushToken, setExpoPushToken] = useState<any>('');
 
   const requestLocation = async () => {
     setLoading(true);
@@ -102,8 +113,75 @@ const Buttons: React.FC<PropTypes> = ({
     }
     setLoading(false);
   };
+  //
+  // Notifications.setNotificationHandler({
+  //   handleNotification: async () => ({
+  //     shouldShowAlert: true,
+  //     shouldPlaySound: true,
+  //     shouldSetBadge: false,
+  //   }),
+  // });
+
+  async function registerForPushNotificationsAsync(setErrorText: (value: string) => void) {
+    let token;
+    if (Constants.isDevice) {
+      const {status: existingStatus} = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const {status} = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        setErrorText('Щоб стати в чергу за аудиторіями, увімкніть будь-ласка сповіщення додатку для коректної роботи черги за аудиторіями')
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+    }
+
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('auditorium', {
+        name: 'auditorium',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    return token;
+  }
 
   const handleReady = async () => {
+    let token;
+    try {
+      token = await registerForPushNotificationsAsync(setErrorMsg);
+    } catch (e) {
+      setErrorMsg('Щоб стати в чергу за аудиторіями, увімкніть будь-ласка сповіщення додатку для коректної роботи черги за аудиторіями');
+      setLoading(false);
+      return;
+    }
+
+    if (token) {
+      setExpoPushToken(token);
+      pushNotificationTokenVar(token);
+      try {
+        await client.mutate({
+          mutation: ADD_NOTIFICATION_TOKEN,
+          variables: {
+            input: {
+              notificationToken: token
+            }
+          }
+        })
+      } catch (e) {
+        setErrorMsg(JSON.stringify(e));
+        setLoading(false);
+      }
+    } else {
+      setErrorMsg('Щоб стати в чергу за аудиторіями, увімкніть будь-ласка сповіщення додатку для коректної роботи черги за аудиторіями');
+      setLoading(false);
+      return;
+    }
     const isNear = await getIsNear();
     if (isNear) {
       await getInLine(minimalClassroomIds, desirableClassroomIds);

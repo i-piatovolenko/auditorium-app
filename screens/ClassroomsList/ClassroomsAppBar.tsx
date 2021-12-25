@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Appbar, Button} from "react-native-paper";
 import {DrawerActions, useNavigation} from "@react-navigation/native";
-import {Image, StyleSheet, View, Text} from "react-native";
+import {Image, StyleSheet, View, Text, TouchableOpacity} from "react-native";
 import {useQuery} from "@apollo/client";
 import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize";
 import {FOLLOW_GENERAL_QUEUE_SIZE} from "../../api/operations/subscriptions/generalQueueSize";
@@ -15,16 +15,19 @@ import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {GENERAL_QUEUE_POSITION} from "../../api/operations/queries/generalQueuePosition";
 import {FOLLOW_GENERAL_QUEUE_POSITION} from "../../api/operations/subscriptions/generalQueuePosition";
 import {getItem} from "../../api/asyncStorage";
+import Colors from "../../constants/Colors";
+import ErrorDialog from "../../components/ErrorDialog";
 
 type PropTypes = {
   freeClassroomsAmount: number;
   classrooms: ClassroomType[];
   currentUser: User;
+  dispatcherActive: boolean;
 }
 
 const ClassroomsAppBar: React.FC<PropTypes> = (
   {
-    freeClassroomsAmount, classrooms, currentUser
+    freeClassroomsAmount, classrooms, currentUser, dispatcherActive
   }
 ) => {
   const navigation = useNavigation();
@@ -44,6 +47,7 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
   const [visibleSavedFilters, setVisibleSavedFilters] = useState(false);
   const [generalQueueSize, setGeneralQueueSize] = useState(0);
   const [generalQueuePosition, setGeneralQueuePosition] = useState(0);
+  const [visibleDispatcherActiveAlert, setVisibleDispatcherActiveAlert] = useState(false);
 
   useEffect(() => {
     if (!loadingPosition && !errorPosition) {
@@ -122,6 +126,14 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
 
   const hideModalSavedFilters = () => setVisibleSavedFilters(false);
 
+  const handlePressAlert = () => {
+    setVisibleDispatcherActiveAlert(true);
+  }
+
+  const onCloseAlert = () => {
+    setVisibleDispatcherActiveAlert(false);
+  }
+
   return (
     <Appbar style={styles.top}>
       <Appbar.Action icon={() => <Image source={require('../../assets/images/burger.png')}
@@ -135,10 +147,19 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
         />
       )}
       {mode === Mode.PRIMARY && (
+        <>
         <Appbar.Content title={`Людей в черзі: ${generalQueueSize}`}
-                        subtitle={`Вільних аудиторій: ${freeClassroomsAmount}`}
+                        subtitle={`Доступних аудиторій: ${freeClassroomsAmount}`}
                         color='#fff'
         />
+        </>
+      )}
+      {!dispatcherActive && mode !== Mode.QUEUE_SETUP && (
+        <TouchableOpacity onPress={handlePressAlert}>
+          <View style={styles.dispatcherActiveButtonWrapper}>
+            <Text style={styles.dispatcherActiveButton}>!</Text>
+          </View>
+        </TouchableOpacity>
       )}
       {mode === Mode.QUEUE_SETUP && (
         <>
@@ -173,6 +194,13 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
       )}
       <SavedFilters hideModal={hideModalSavedFilters} visible={visibleSavedFilters} currentUser={currentUser}/>
       <Filters hideModal={hideModal} visible={visible} apply={applyGeneralFilter}/>
+      <ErrorDialog
+        visible={visibleDispatcherActiveAlert}
+        hideDialog={onCloseAlert}
+        title='Автономний режим'
+        buttonText='Зрозуміло'
+        message={'Робота диспетчера завершена. Після завершення заняття здайте ключі на охорону. Якщо ви берете на охороні аудиторію, що на сітці позначена як вільна, обов\'язково зарезервуйте її в додатку.'}
+      />
     </Appbar>
   );
 }
@@ -210,7 +238,24 @@ const styles = StyleSheet.create({
   },
   switcherText: {
     fontSize: 10
-  }
+  },
+  dispatcherActiveButtonWrapper: {
+    borderRadius: 50,
+    overflow: 'hidden',
+    marginRight: 16,
+  },
+  dispatcherActiveButton: {
+    color: '#fff',
+    fontWeight: 'bold',
+    backgroundColor: Colors.red,
+    justifyContent: 'center',
+    textAlign: 'center',
+    width: 50,
+    height: 50,
+    fontSize: 28,
+    lineHeight: 45,
+    elevation: 8,
+  },
 });
 
 export default ClassroomsAppBar;

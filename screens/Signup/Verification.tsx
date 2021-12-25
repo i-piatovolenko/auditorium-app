@@ -6,7 +6,7 @@ import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {getItem, removeItem, setItem} from "../../api/asyncStorage";
 
 export default function Verification() {
-  const message1 = 'Для доступу до застосунку підтвердіть свій аккаунт в учбовій частині. \n' +
+  const message1 = 'Для доступу до застосунку підтвердіть свій акаунт в учбовій частині. \n' +
     'Ваш номер користувача:';
   const message2 = 'Після верифікації оновіть сторінку або поверніться на сторінку входу.';
   const [storageUser, setStorageUser] = useState<any>(null);

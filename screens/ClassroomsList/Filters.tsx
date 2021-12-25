@@ -51,13 +51,13 @@ export default function Filters({hideModal, visible, apply}: PropTypes) {
   return <Portal>
     <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
       <View style={styles.header}>
-        <Headline>Фільтри аудиторій для черги</Headline>
+        <Headline>Фільтри аудиторій</Headline>
       </View>
       <View style={styles.body}>
         <Button icon='pencil' onPress={showModalInstrumentFilters} style={styles.instrumentsButton}>
           <Text numberOfLines={1}>
             {!instruments.length
-              ? 'Будь-які або без інструментів'
+              ? 'Фільтр інструментів'
               : `${instruments.length} інструмент${getEnding()}`}
           </Text>
         </Button>
@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
   },
   instrumentsButton: {
     overflow: 'hidden',
-    width: 280
+    width: 280,
+    alignItems: 'flex-start',
   }
 });

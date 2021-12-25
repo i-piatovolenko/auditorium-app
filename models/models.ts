@@ -29,7 +29,7 @@ export enum ErrorCodesUa {
   CLASSROOM_NOT_RESERVED = 'Неможливо видати ключ. Аудиторія не зарезервована.',
   EMAIL_NOT_CONFIRMED = 'Будь-ласка, підтвердіть вашу e-mail адресу. Для цього перейдіть за посиланням яке було відправлене на вашу поштову скриньку.',
   INVALID_PASSWORD = 'Невірний пароль',
-  USER_ACADEMIC_LEAVE = 'Аккаунт не активний. Причина: академічна відпустка. Для активації підійдіть до учбовой частини.',
+  USER_ACADEMIC_LEAVE = 'Акаунт не активний. Причина: академічна відпустка. Для активації підійдіть до учбовой частини.',
   USER_UNVERIFIED = 'Ви не верифіковані. Підтвердіть ваші дані в учбовій частині.',
   CLASSROOM_NOT_PENDING = 'Неможливо підтвердити або пропустити аудиторію.',
   CLASSROOM_PENDING_DECISION_NO_ACCESS = 'Неможливо підтвердити або пропустити аудиторію.',
@@ -111,7 +111,7 @@ export enum UserTypesUa {
   PIANO_TUNER = "Настроювач фортепіано",
   STAFF = "Співробітник",
   CONCERTMASTER = "Концертмейстер",
-  ILLUSTRATOR = "Іллюстратор",
+  ILLUSTRATOR = "Ілюстратор",
   OTHER = "Користувач",
 }
 
@@ -436,4 +436,11 @@ export type GlobalMessageType = {
   title?: string;
   body: string;
   type: GlobalMessageViewType;
+}
+
+export type CrashModeT = {
+  isActive: boolean;
+  comment: string;
+  until: Date | null;
+  globalMessage?: string;
 }

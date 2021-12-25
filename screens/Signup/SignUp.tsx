@@ -194,7 +194,7 @@ export default function SignUp({navigation}: any) {
               firstName: firstName,
               patronymic: patronymic,
               password: password,
-              email: email,
+              email: email.toLowerCase().trim(),
               phoneNumber: PHONE_PREFIX + phoneNumber,
               departmentId: selectedDepartment.id,
               degreeId: selectedDegree.id,
@@ -299,14 +299,18 @@ export default function SignUp({navigation}: any) {
               onChangeText={text => setPatronymic(text)}
             />
             <View style={{height: 10, backgroundColor: '#fff'}}/>
-            <TextInput placeholder="E-mail *" style={styles.input} value={email}
-                       underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
-                       onChangeText={text => {
-                         setEmail(text);
-                         checkEmailValidation(text);
-                       }}
-                       onBlur={() => checkEmailValidation(email)}
-                       keyboardType='email-address'
+            <TextInput
+              placeholder="E-mail *"
+              style={styles.input}
+              value={email}
+              autoCompleteType='email'
+               underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
+               onChangeText={text => {
+                 setEmail(text);
+                 checkEmailValidation(text);
+               }}
+               onBlur={() => checkEmailValidation(email)}
+               keyboardType='email-address'
             />
             <Error validator={isEmailValidated}/>
             <View style={styles.phoneInputWrapper}>
