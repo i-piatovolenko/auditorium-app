@@ -117,3 +117,68 @@ export const GET_CLASSROOMS_NO_SCHEDULE = gql`
     }
   }
 `;
+
+export const GET_CLASSROOMS_WITH_SCHEDULE = gql`
+  query getClassrooms($date: DateTime!) {
+    classrooms {
+      id
+      description
+      name
+      floor
+      special
+      isHidden
+       chair {
+          id
+          name
+          exclusivelyQueueAllowedDepartmentsInfo {
+            department {
+              id
+              name
+            }
+          }
+      }
+      schedule(date: $date) {
+        id
+        from
+        to
+      }
+      isWing
+      isOperaStudio
+      occupied {
+        user {
+          id
+          firstName
+          patronymic
+          lastName
+          type
+          nameTemp
+          email
+          phoneNumber
+        }
+        until
+        state
+      }
+      instruments {
+        name
+        type
+        rate
+      }
+      disabled {
+        comment
+        until
+        state
+      }
+      queueInfo {
+        queuePolicy {
+          policy
+          queueAllowedDepartments {
+            department {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+`;

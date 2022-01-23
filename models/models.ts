@@ -41,7 +41,8 @@ export enum ErrorCodesUa {
   EMAIL_ALREADY_TAKEN = 'Користувача з цією адресою вже зареєстровано.',
   CONFIRMATION_EMAIL_ALREADY_SENT = 'Лист підтвердження поштової адреси вже було відправлено.',
   CLASSROOM_ALREADY_OCCUPIED = 'Аудиторія вже зайнята.',
-  INVALID_OLD_PASSWORD = 'Неправильний старий пароль'
+  INVALID_OLD_PASSWORD = 'Неправильний старий пароль',
+  ACTION_UNAVAILABLE_NON_WORKING_HOURS = 'Дану операцію не можна виконувати з 22:00 до 6:00'
 }
 
 export enum ErrorCodes {
@@ -74,7 +75,21 @@ export enum ErrorCodes {
   CONFIRMATION_EMAIL_ALREADY_SENT = 'CONFIRMATION_EMAIL_ALREADY_SENT',
   CLASSROOM_ALREADY_OCCUPIED = 'CLASSROOM_ALREADY_OCCUPIED',
   INVALID_OLD_PASSWORD = 'INVALID_OLD_PASSWORD',
-  EMAIL_ALREADY_VERIFIED = 'EMAIL_ALREADY_VERIFIED'
+  EMAIL_ALREADY_VERIFIED = 'EMAIL_ALREADY_VERIFIED',
+  ACTION_UNAVAILABLE_NON_WORKING_HOURS = 'ACTION_UNAVAILABLE_NON_WORKING_HOURS'
+}
+
+export type UserErrorT = {
+  code?: string;
+  message: string;
+  messageLocale: {
+    UK: string;
+    EN: string;
+  }
+};
+
+export type GQLErrorT = {
+  message: string;
 }
 
 export enum EmploymentTypes {
@@ -282,8 +297,20 @@ export type ScheduleUnitType = {
   dayOfWeek: number;
   from: string;
   to: string;
-  activity: string;
+  activity: ScheduleUnitActivityT;
+  type: ScheduleUnitTypeT;
+  primaryScheduleUnit: ScheduleUnitType;
 };
+
+export enum ScheduleUnitActivityT {
+  INDIVIDUAL_LESSON = 'Індивідуальні заняття',
+  LECTURE = 'Лекція'
+}
+
+export enum ScheduleUnitTypeT {
+  PRIMARY = 'PRIMARY',
+  SUBSTITUTION = 'SUBSTITUTION'
+}
 
 export type ClassroomType = {
   id: number;
@@ -408,7 +435,7 @@ export type SavedFilterT = {
 
 export enum Langs {
   EN = 'EN',
-  UA = 'UA'
+  UK = 'UK'
 }
 
 export enum EnqueuedBy {

@@ -1,17 +1,12 @@
-import React, {CSSProperties} from "react";
-import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
-import {ClassroomType, DisabledState, Mode} from "../../models/models";
+import React from "react";
+import {Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
+import {ClassroomType, DisabledState} from "../../models/models";
 import Colors from "../../constants/Colors";
-import {IconButton, Surface} from "react-native-paper";
+import {Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
-import {fullName, isNotFree, typeStyle} from "../../helpers/helpers";
 import {useNavigation} from "@react-navigation/native";
-import {useLocal} from "../../hooks/useLocal";
-import {minimalClassroomIdsVar} from "../../api/client";
 import useTimeLeft from "../../hooks/useTimeLeft";
-
-const windowWidth = Dimensions.get('window').width;
-const cellWidth = ((windowWidth - 10) / 3);
+import Layout from "../../constants/Layout";
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -19,10 +14,6 @@ type PropTypes = {
 
 const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
   const navigation = useNavigation();
-  const {data: {mode}} = useLocal('mode');
-  const {data: {isMinimalSetup}} = useLocal('isMinimalSetup');
-  const {data: {minimalClassroomIds}} = useLocal('minimalClassroomIds');
-  const {data: {desirableClassroomIds}} = useLocal('desirableClassroomIds');
 
   const special = !!classroom.special;
   const {instruments, occupied, disabled, isHidden} = classroom;
@@ -33,7 +24,7 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
     <View
       style={{
         ...styles.timeLeftProgress,
-        width: (cellWidth / 100) * (timeLeftInPer as number)
+        width: (Layout.cellWidth / 100) * (timeLeftInPer as number)
       }}
     />
   );
@@ -44,7 +35,7 @@ const OccupiedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
 
   const cellStyle = StyleSheet.create({
     cell: {
-      width: cellWidth,
+      width: Layout.cellWidth,
       justifyContent: 'center',
       alignItems: 'center',
       height: 100,
@@ -87,7 +78,7 @@ export default OccupiedClassroomCell;
 
 const styles = StyleSheet.create({
   occupationInfo: {
-    width: cellWidth,
+    width: Layout.cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,
@@ -96,7 +87,7 @@ const styles = StyleSheet.create({
   cellHeader: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: cellWidth,
+    width: Layout.cellWidth,
     paddingLeft: 16,
     paddingRight: 16,
     flexDirection: 'row',
@@ -133,13 +124,13 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     backgroundColor: '#00000033',
     height: 100,
-    width: cellWidth,
+    width: Layout.cellWidth,
   },
   timeLeft: {
     fontSize: 12,
     backgroundColor: '#f91354',
     color: '#fff',
-    width: cellWidth,
+    width: Layout.cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,

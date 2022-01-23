@@ -1,5 +1,5 @@
 import React, {useCallback} from "react";
-import {Dimensions, Image, Platform, StyleSheet, Text, TouchableHighlight, View} from "react-native";
+import {Image, Platform, StyleSheet, Text, TouchableHighlight, View} from "react-native";
 import {ClassroomType, DisabledState, Mode, Platforms} from "../../models/models";
 import Colors from "../../constants/Colors";
 import {IconButton, Surface} from "react-native-paper";
@@ -9,10 +9,8 @@ import TextTicker from "react-native-text-ticker";
 import moment from "moment";
 import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
 import {useLocal} from "../../hooks/useLocal";
-
-const WINDOW_WIDTH = Dimensions.get('window').width;
-const CELL_WIDTH = ((WINDOW_WIDTH - 10) / 3);
-const TICKER_SCROLL_DURATION = 6000;
+import {getMinutesFromHHMM} from "../../helpers/helpers";
+import Layout from "../../constants/Layout";
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -62,6 +60,13 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
   };
 
   const defineStatus = useCallback(() => {
+    const schedule = classroom.schedule.filter(unit => {
+      const currentHHMM = getMinutesFromHHMM(moment().format('HH:MM'));
+      const unitFromHHMM = getMinutesFromHHMM(unit.from);
+      return unitFromHHMM >= currentHHMM;
+    }).slice().sort((a, b) => {
+      return getMinutesFromHHMM(a.from) - getMinutesFromHHMM(b.from);
+    });
     return isDisabled ? !isEnabledForCurrentUser ?
       !classroom.queueInfo.queuePolicy
         .queueAllowedDepartments.length ? Platform.OS === Platforms.WEB ? 'Недоступно'
@@ -70,7 +75,7 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
           .queueAllowedDepartments.map(({department: {name}}) => name.toLowerCase()).join(', ')
       : Platform.OS === Platforms.WEB ? disabled?.comment
         : disabled?.comment + ' до ' + moment(disabled.until).format('DD-MM-YYYY HH:mm')
-      : 'Вільно'
+      : schedule.length ? `Зайнято з ${schedule[0].from}` : 'Вільно';
   }, [isDisabled, isEnabledForCurrentUser, classroom.queueInfo.queuePolicy])
 
   return (
@@ -88,8 +93,8 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
         <View style={styles.statusWrapper}>
           <TextTicker
             style={styles.occupationInfo}
-            animationType='scroll'
-            duration={TICKER_SCROLL_DURATION}
+            animationType='auto'
+            duration={defineStatus().length * 500}
             loop
             repeatSpacer={10}
             marqueeDelay={0}
@@ -114,7 +119,7 @@ export default FreeClassroomCell;
 
 const styles = StyleSheet.create({
   cell: {
-    width: CELL_WIDTH,
+    width: Layout.cellWidth,
     justifyContent: 'center',
     alignItems: 'center',
     height: 100,
@@ -125,7 +130,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   statusWrapper: {
-    width: CELL_WIDTH,
+    width: Layout.cellWidth,
     backgroundColor: '#00000011',
     alignItems: 'center',
     paddingHorizontal: 2,
@@ -146,7 +151,7 @@ const styles = StyleSheet.create({
   cellHeader: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: CELL_WIDTH,
+    width: Layout.cellWidth,
     paddingLeft: 16,
     paddingRight: 16,
     flexDirection: 'row',
@@ -189,13 +194,13 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     backgroundColor: '#00000033',
     height: 100,
-    width: CELL_WIDTH,
+    width: Layout.cellWidth,
   },
   timeLeft: {
     fontSize: 12,
     backgroundColor: '#f91354',
     color: '#fff',
-    width: CELL_WIDTH,
+    width: Layout.cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,

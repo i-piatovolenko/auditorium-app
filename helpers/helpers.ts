@@ -299,3 +299,8 @@ export const isEnabledForQueue = (classroom: ClassroomType, user: any) => {
         return data.classroom.id === classroom.id && data.state === OccupiedState.PENDING
       }));
 };
+
+export const getMinutesFromHHMM = (time: string) => {
+  const [hh, mm] = time.split(':');
+  return (+hh * 60) + +mm;
+};

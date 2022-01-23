@@ -25,8 +25,13 @@ export const GET_SCHEDULE = gql`
       schedule(date: $date) {
         id
         from
+        classroom {
+          id
+          name
+        }
         to
         activity
+        type
         user {
           id
           lastName

@@ -27,7 +27,11 @@ import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
 import {useQuery} from "@apollo/client";
 import ClassroomsBrowser from "../../components/ClassroomsBrowser/ClassroomsBrowser";
-import {GET_CLASSROOMS, GET_CLASSROOMS_NO_SCHEDULE} from "../../api/operations/queries/classrooms";
+import {
+  GET_CLASSROOMS,
+  GET_CLASSROOMS_NO_SCHEDULE,
+  GET_CLASSROOMS_WITH_SCHEDULE
+} from "../../api/operations/queries/classrooms";
 import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {FOLLOW_USER} from "../../api/operations/subscriptions/user";
@@ -57,6 +61,7 @@ import {CRASH_MODE} from "../../api/operations/queries/crashMode";
 import CrashModeAlert from "../../components/ClassroomsBrowser/CrashModeAlert";
 import {DISPATCHER_STATUS} from "../../api/operations/queries/dispatcherActive";
 import {FOLLOW_DISPATCHER_STATUS} from "../../api/operations/subscriptions/dispatcherStatus";
+import moment from "moment";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -94,6 +99,10 @@ export default function Home() {
       me.id
     ) {
       try {
+        client.query({
+          query: DISPATCHER_STATUS,
+          fetchPolicy: 'network-only'
+        });
         client.query({
           query: GET_CLASSROOMS,
           fetchPolicy: 'network-only'
@@ -157,8 +166,14 @@ const ClassroomsList: React.FC = ({route}: any) => {
     data,
     loading,
     error,
-    subscribeToMore
-  } = useQuery<QueryClassroomsData>(GET_CLASSROOMS_NO_SCHEDULE);
+    subscribeToMore,
+    refetch: refetchClassrooms
+  } = useQuery<QueryClassroomsData>(GET_CLASSROOMS_WITH_SCHEDULE, {
+    fetchPolicy: 'network-only',
+    variables: {
+      date: moment().endOf('day').toISOString()
+    }
+  });
   const {
     data: crashModeData,
     loading: crashModeLoading,
@@ -175,8 +190,10 @@ const ClassroomsList: React.FC = ({route}: any) => {
     data: userData,
     loading: userLoading,
     error: userError,
-    subscribeToMore: subscribeToMoreUser
+    subscribeToMore: subscribeToMoreUser,
+    refetch: refetchUsers
   } = useQuery(GET_USER_BY_ID, {
+    fetchPolicy: 'network-only',
     variables: {
       where: {
         id: me.id
@@ -197,18 +214,13 @@ const ClassroomsList: React.FC = ({route}: any) => {
         }
       })
       await client.query({
-        query: GET_CLASSROOMS_NO_SCHEDULE,
-        fetchPolicy: 'network-only'
-      })
-      await client.query({
-        query: GET_USER_BY_ID,
+        query: GET_CLASSROOMS_WITH_SCHEDULE,
+        fetchPolicy: 'network-only',
         variables: {
-          where: {
-            id: me.id
-          }
-        },
-        fetchPolicy: 'network-only'
-      })
+          date: moment().endOf('day').toISOString()
+        }
+      });
+      await refetchUsers()
       await client.query({
         query: GET_GENERAL_QUEUE,
         fetchPolicy: 'network-only'
@@ -518,10 +530,9 @@ const ClassroomsList: React.FC = ({route}: any) => {
       {!latestVersion?.[0] && Platform.OS !== Platforms.WEB && (
         <WarningDialog
           visible
-          hideDialog={() => {
-          }}
-          buttonText=' '
-          message={`Доступна для завантеження нова версія додатку: ${latestVersion[2]}. Поточна версія: ${latestVersion[1]}. Будь ласка, завантажте оновлення з магазину!`}
+          hideDialog={() => setLatestVersion([true, '', ''])}
+          buttonText='Зрозуміло'
+          message={`Доступна для завантеження версія додатку: ${latestVersion[2]}. Поточна версія: ${latestVersion[1]}. Будь ласка, завантажте оновлення з магазину!`}
         />
       )}
       {globalMessage && (

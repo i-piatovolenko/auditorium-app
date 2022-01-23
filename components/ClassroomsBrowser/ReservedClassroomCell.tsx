@@ -1,14 +1,12 @@
 import React from "react";
-import {Dimensions, Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
+import {Image, StyleSheet, Text, TouchableHighlight, View} from "react-native";
 import {ClassroomType, DisabledState} from "../../models/models";
 import Colors from "../../constants/Colors";
 import {Surface} from "react-native-paper";
 import InstrumentItem from "../InstrumentItem";
 import useTimeLeft from "../../hooks/useTimeLeft";
 import {useNavigation} from "@react-navigation/native";
-
-const windowWidth = Dimensions.get('window').width;
-const cellWidth = ((windowWidth - 10) / 3);
+import Layout from "../../constants/Layout";
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -29,7 +27,7 @@ const ReservedClassroomCell: React.FC<PropTypes> = ({classroom}) => {
     <View
       style={{
         ...styles.timeLeftProgress,
-        width: (cellWidth / 100) * (timeLeftInPer as number)
+        width: (Layout.cellWidth / 100) * (timeLeftInPer as number)
       }}
     />
   );
@@ -64,7 +62,7 @@ export default ReservedClassroomCell;
 
 const styles = StyleSheet.create({
   cell: {
-    width: cellWidth,
+    width: Layout.cellWidth,
     justifyContent: 'center',
     alignItems: 'center',
     height: 100,
@@ -79,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   occupationInfo: {
-    width: cellWidth,
+    width: Layout.cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,
@@ -88,7 +86,7 @@ const styles = StyleSheet.create({
   cellHeader: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: cellWidth,
+    width: Layout.cellWidth,
     paddingLeft: 16,
     paddingRight: 16,
     flexDirection: 'row',
@@ -125,13 +123,13 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     backgroundColor: '#00000033',
     height: 100,
-    width: cellWidth,
+    width: Layout.cellWidth,
   },
   timeLeft: {
     fontSize: 12,
     backgroundColor: '#f91354',
     color: '#fff',
-    width: cellWidth,
+    width: Layout.cellWidth,
     margin: 2,
     paddingHorizontal: 4,
     paddingBottom: 2,
@@ -141,7 +139,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     zIndex: 2,
     top: 8,
-    right: cellWidth / 2 - 15,
+    right: Layout.cellWidth / 2 - 15,
     width: 30,
     height: 30,
     resizeMode: "stretch",

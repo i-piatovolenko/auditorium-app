@@ -1,104 +1,136 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Text, ScrollView, Dimensions} from "react-native";
-import {Appbar, Surface} from "react-native-paper";
-import {ActivityTypes, ClassroomType} from "../models/models";
-import {fullName, ISODateString} from "../helpers/helpers";
+import React, {useEffect, useRef, useState} from 'react';
+import {StyleSheet, View, Text, ScrollView, Dimensions, TouchableOpacity} from "react-native";
+import {ActivityIndicator, Appbar, Button, IconButton, TextInput} from "react-native-paper";
+import {ClassroomType, ScheduleUnitType} from "../models/models";
 import {GET_SCHEDULE} from "../api/operations/queries/schedule";
 import {useQuery} from "@apollo/client";
-import UserInfo from "../components/UserInfo";
 import moment from "moment";
+import sortAB from "../helpers/sortAB";
+import ScheduleUnit from "../components/ScheduleUnit";
+import ScheduleInfo from "../components/ScheduleInfo";
+import ChooseDayModal from "../components/ChooseDayModal";
+import {fullName} from "../helpers/helpers";
+import {DrawerActions} from "@react-navigation/native";
 
 const windowWidth = Dimensions.get('window').width;
 
-const timeline = ['', 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const timeline = ['', 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 const hour = (windowWidth - 40) / (timeline.length - 1);
 
-const Schedule = () => {
-  const [chosenDate, setChosenDate] = useState(new Date().toISOString());
-  const {data, loading, error} = useQuery(GET_SCHEDULE, {
+const daysHeader = ['неділю', 'понеділок', 'вівторок', 'середу', 'четвер', 'п\'ятницю', 'суботу'];
+
+const Schedule = ({navigation}: any) => {
+  const [chosenDay, setChosenDay] = useState(moment().weekday());
+  const [showDaysModal, setShowDaysModal] = useState(false);
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchedText, setSearchedText] = useState('');
+  const inputRef = useRef(null);
+  const {data, loading, error, refetch} = useQuery(GET_SCHEDULE, {
     variables: {
-      date: chosenDate
+      date: moment().set('day', chosenDay).endOf('day').toISOString(),
     },
   });
-  const [visible, setVisible] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState(0);
 
+  const openDrawer = () => navigation.dispatch(DrawerActions.openDrawer());
 
-  const showModal = (userId: number) => {
-    setCurrentUserId(userId);
-    setVisible(true);
+  useEffect(() => {
+    refetch();
+  }, [chosenDay]);
+
+  const toggleSearchedMode = () => {
+    setSearchMode(prev => !prev);
+    setSearchedText('');
   };
 
-  const hideModal = () => setVisible(false);
+  const [chosenUnit, setChosenUnit] = useState(null);
+
+  const hideModal = () => setChosenUnit(null);
+
+  const filterSearched = (classroom: ClassroomType) => {
+    const unitUsers = classroom.schedule.map(unit => fullName(unit.user)).join(' ').toLowerCase();
+    return unitUsers.includes(searchedText.toLowerCase());
+  }
 
   return <>
     <Appbar style={styles.top}>
-      <Appbar.Action icon="menu" onPress={() => {
-      }}/>
-      <Appbar.Content title="Розклад"/>
-      <Appbar.Action icon="calendar-range" onPress={() => {
-      }}/>
+      <Appbar.Action icon="menu" onPress={openDrawer}/>
+      <Appbar.Content title={`Розклад на ${daysHeader[chosenDay]}`}
+      />
+      <Appbar.Action
+        icon={searchMode ? "close-circle" : "account-search"}
+        onPress={toggleSearchedMode}
+      />
+      <Appbar.Action icon="calendar-range" onPress={() => setShowDaysModal(true)}/>
     </Appbar>
+    <View style={styles.container}>
     <View style={styles.timeline} pointerEvents='none'>
-      {timeline.slice(1).map(item => <Text style={{width: hour, ...styles.hour}}>{item}</Text>)}
+      {timeline.slice(1).map(item => (
+        <View style={[{width: hour}, styles.hour]}>
+          <Text>
+            {item}
+          </Text>
+        </View>
+      ))}
     </View>
     <ScrollView style={styles.schedule}>
-      {!loading && !error && (data.classrooms as ClassroomType[])?.slice().sort((a, b) => {
-        return a.name - b.name
-      }).map(classroom => {
-        let lastValue = timeline[1] as number;
-        return <View style={styles.row}>
-          <Text style={{width: 40, textAlign: 'center'}}>{classroom.name}</Text>
-          {classroom.schedule.slice().sort((a, b) => {
-            return parseInt(a.from) - parseInt(b.from)
-          }).map(unit => {
-            const from = parseInt(unit.from);
-            const to = parseInt(unit.to);
-            const length = (to - from) * hour;
-            const gap = (from - lastValue) * hour;
-            lastValue = to;
-            return <View style={{flexDirection: 'row'}} onTouchEnd={() => showModal(unit.user.id)}>
-              <View style={{...styles.gap, width: gap}}/>
-              <Surface style={{
-                ...styles.item,
-                width: length,
-                backgroundColor: unit.activity === ActivityTypes.INDIVIDUAL_LESSON ? '#2b5dff' : '#ffc000'
-              }}>
-                <Text style={{color: '#fff'}} numberOfLines={1}>
-                  {fullName(unit.user, true)}
-                </Text>
-              </Surface>
-            </View>
-          })}
-        </View>
-      })}
+      {searchMode && (
+        <TextInput
+          style={styles.searchInput}
+          placeholder='Введіть П.І.Б. викладача'
+          value={searchedText}
+          onChangeText={text => setSearchedText(text)}
+        />
+      )}
+      {loading && <ActivityIndicator style={styles.loader}/>}
+      {(data?.classrooms as ClassroomType[])?.filter(({schedule}) => schedule.length)
+        .filter(filterSearched)
+        .slice().sort(sortAB as any).map(({schedule, name, id}) => {
+          return <View style={styles.row} key={id}>
+            <Text style={{width: '10%', textAlign: 'center'}}>{name}</Text>
+            {schedule.slice().sort(sortAB as any).map(unit => (
+              <ScheduleUnit unit={unit} setChosenUnit={setChosenUnit} key={unit.id}/>
+            ))}
+          </View>
+        })}
     </ScrollView>
-    {currentUserId ? <UserInfo userId={currentUserId} hideModal={hideModal} visible={visible}/> : null}
+    </View>
+    <ChooseDayModal
+      chosenDay={chosenDay}
+      setChosenDay={setChosenDay}
+      hideModal={() => setShowDaysModal(false)} visible={showDaysModal}
+    />
+    {chosenUnit && <ScheduleInfo unit={chosenUnit} hideModal={hideModal} visible={chosenUnit}/>}
   </>
 };
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff'
+  },
   timeline: {
     marginTop: 90,
     height: '100%',
-    marginLeft: 40,
+    marginLeft: '10%',
     flexDirection: 'row',
     position: 'absolute',
-    elevation: 10,
+    elevation: 4,
+    shadowColor: 'transparent'
   },
   hour: {
-    borderLeftColor: 'rgba(221 ,221 ,221, .2)',
-    borderLeftWidth: 1
+    borderLeftColor: '#cccccc33',
+    borderLeftWidth: 1,
+    height: '100%',
   },
   schedule: {
     marginTop: 120,
     backgroundColor: '#fff',
   },
   row: {
-    flexDirection: 'row',
+    position: 'relative',
+    width: '100%',
     borderBottomColor: 'rgba(221 ,221 ,221, .5)',
     borderBottomWidth: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   gap: {
     height: 40,
@@ -122,6 +154,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#2e287c',
     zIndex: 1
   },
+  loader: {
+    paddingTop: 16,
+  },
+  closeButton: {
+    width: 24,
+    height: 24,
+  },
+  searchInput: {
+    borderRadius: 0,
+  }
 });
 
 export default Schedule;

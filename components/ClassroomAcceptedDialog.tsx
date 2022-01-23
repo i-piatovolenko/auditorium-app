@@ -14,11 +14,16 @@ export default function ClassroomAcceptedDialog() {
              contentContainerStyle={styles.containerStyle}>
         <View>
           <Text style={styles.header}>Вітаємо!</Text>
-          <Text style={styles.paragraph}>Ви підтвердили аудиторію. У вас є 15 хв. щоб взяти ключ в учбовій
-            частині.</Text>
-          <Text style={styles.paragraph}>Максимальний час знаходження в аудиторії - 3 год. (включно з 15 хв.)</Text>
-          <Text style={styles.paragraph}>Поверніть ключ в учбову частину <Text
-            style={{fontWeight: 'bold'}}>до</Text> закінчення 3-х годин.</Text>
+          <Text style={styles.paragraph}>
+            Ви підтвердили аудиторію. У вас є 15 хв., щоб взяти ключ в учбовій частині.
+          </Text>
+          <Text style={styles.paragraph}>Максимальний час заняття – 3 год. (включно з 15 хв.).</Text>
+          <Text style={styles.paragraph}>
+            Якщо по закінченню Вашого заняття аудиторія дістанеться іншій людині, Ви можете або очікувати її в аудиторії, або ж маєте одразу здати ключ до навчальної частини.
+          </Text>
+          <Text style={styles.paragraph}>
+            Якщо інших бажаючих не знайдеться, Ваш час заняття буде автоматично продовжено на 3 години.
+          </Text>
           <View style={styles.buttons}>
             <Button mode='contained' onPress={() => acceptedClassroomVar(false)}>Закрити</Button>
           </View>

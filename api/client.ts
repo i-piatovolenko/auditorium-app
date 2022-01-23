@@ -1,5 +1,5 @@
-import {ApolloClient, createHttpLink, from, InMemoryCache, makeVar, split} from "@apollo/client";
-import {ACCESS_RIGHTS, Langs, Mode, User} from "../models/models";
+import {ApolloClient, ApolloLink, createHttpLink, from, InMemoryCache, makeVar, split} from "@apollo/client";
+import {ACCESS_RIGHTS, ErrorCodes, ErrorCodesUa, Langs, Mode, User} from "../models/models";
 import {WebSocketLink} from '@apollo/client/link/ws';
 import {getMainDefinition} from "@apollo/client/utilities";
 import {setContext} from "@apollo/client/link/context";
@@ -17,7 +17,7 @@ const ENV = {
   }
 }
 
-const CURRENT_ENV = ENV.prod;
+const CURRENT_ENV = ENV.stg;
 
 const wsLink: any = new WebSocketLink({
     uri: CURRENT_ENV.wss,
@@ -69,22 +69,51 @@ const splitLink = split(
   httpLink,
 );
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors)
-    graphQLErrors.forEach(({ message,
-                             locations,
-                             path }) => {
-      if (message === 'AUTHENTICATION_ERROR') {
-        noTokenVar(true);
-        removeItem('token');
-        removeItem('user');
-        meVar(null);
+const userErrorsLink = new ApolloLink((operation, forward) => {
+  console.log('!!!', operation)
+  return forward(operation).map((data: any) => {
+    const userErrors = data?.data[operation.operationName]?.userErrors;
+
+    if (userErrors && userErrors.length) {
+      const errorCodes = Object.keys(ErrorCodes);
+      const errorCode = userErrors[0]?.code;
+      const errorMessageLocale = userErrors[0]?.messageLocale;
+
+      if (errorCodes.includes(errorCode)) {
+        globalErrorVar(ErrorCodesUa[errorCode as ErrorCodes]);
       }
-      console.log(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-        )
+      else if (errorMessageLocale) {
+        if (errorMessageLocale[langVar()]) {
+          globalErrorVar(errorMessageLocale[langVar()]);
+        } else if (errorMessageLocale.EN) {
+          globalErrorVar(errorMessageLocale.EN);
+        } else {
+          globalErrorVar(userErrors[0].message);
+        }
+      }
+    }
+    return data;
+  });
+});
+
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({
+                             message,
+                             locations,
+                             path
+                           }) => {
+        globalErrorVar('Сталася помилка!');
+        if (message === 'AUTHENTICATION_ERROR') {
+          noTokenVar(true);
+          removeItem('token');
+          removeItem('user');
+          meVar(null);
+        }
+        console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`);
       }
     );
+  }
 
   // @ts-ignore
   if (networkError && networkError.bodyText === 'Invalid options provided to ApolloServer: BAD_TOKEN') {
@@ -100,7 +129,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 export const client = new ApolloClient({
-  link: from([errorLink, authLink, splitLink]),
+  link: from([userErrorsLink, errorLink, authLink, splitLink]),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
@@ -170,6 +199,11 @@ export const client = new ApolloClient({
             read() {
               return maxDistanceVar();
             },
+          },
+          globalError: {
+            read() {
+              return globalErrorVar();
+            },
           }
         },
       },
@@ -178,7 +212,7 @@ export const client = new ApolloClient({
 });
 
 export const meVar = makeVar<User | null>(null);
-export const langVar = makeVar<Langs>(Langs.UA);
+export const langVar = makeVar<Langs>(Langs.UK);
 export const accessRightsVar = makeVar(ACCESS_RIGHTS.USER);
 export const modeVar = makeVar(Mode.PRIMARY);
 export const minimalClassroomIdsVar = makeVar<number[]>([]);
@@ -190,3 +224,4 @@ export const noTokenVar = makeVar(false);
 export const skippedClassroomVar = makeVar(false);
 export const acceptedClassroomVar = makeVar(false);
 export const maxDistanceVar = makeVar(0.750);
+export const globalErrorVar = makeVar(null);

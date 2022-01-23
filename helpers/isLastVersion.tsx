@@ -4,6 +4,7 @@ import {client} from "../api/client";
 import {LATEST_ANDROID_VERSION} from "../api/operations/queries/latestAndroidversion";
 import {LATEST_IOS_VERSION} from "../api/operations/queries/latestIOSversion";
 import {Platforms} from "../models/models";
+import semver from "semver/preload";
 
 export const isLastVersion = async () => {
   const currentPlatform = Platform.OS;
@@ -19,15 +20,14 @@ export const isLastVersion = async () => {
 
   if (currentPlatform === Platforms.IOS) {
     return [
-      String(currentVersionIOS) === String(latestVersionIOS.data.constant.value),
+      semver.satisfies(currentVersionIOS, `>=${latestVersionIOS.data.constant.value}`),
       currentVersionIOS,
       latestVersionIOS.data.constant.value
     ];
   } else if (currentPlatform === Platforms.ANDROID) {
     return [
-      String(currentVersionAndroid) === String(latestVersionAndroid.data.constant.value),
+      currentVersionAndroid >= latestVersionAndroid.data.constant.value,
       currentVersionAndroid,
-      latestVersionAndroid.data.constant.value]
-      ;
+      latestVersionAndroid.data.constant.value];
   }
 };

@@ -104,9 +104,9 @@ function RootNavigator() {
         <Drawer.Screen name="Users" component={Users} options={{
           title: 'Довідник',
         }}/>
-        {/*<Drawer.Screen name="Schedule" component={Schedule} options={{*/}
-        {/*  title: 'Розклад'*/}
-        {/*}}/>*/}
+        <Drawer.Screen name="Schedule" component={Schedule} options={{
+          title: 'Розклад'
+        }}/>
         <Drawer.Screen name="Profile" component={ProfileStack} options={{
           title: 'Мій профіль'
         }}/>

@@ -9,12 +9,19 @@ import {
   Mode,
   OccupiedState,
   Platforms,
+  ScheduleUnitType,
+  ScheduleUnitTypeT,
   UserQueueState
 } from "../models/models";
 import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-native-paper";
 import {useNavigation} from "@react-navigation/native";
 import {useQuery} from "@apollo/client";
-import {isEnabledForCurrentDepartment, isOccupiedOrPendingByCurrentUser} from "../helpers/helpers";
+import {
+  fullName,
+  getMinutesFromHHMM,
+  isEnabledForCurrentDepartment,
+  isOccupiedOrPendingByCurrentUser
+} from "../helpers/helpers";
 import {client, modeVar} from "../api/client";
 import Colors from "../constants/Colors";
 import {GET_CLASSROOM} from "../api/operations/queries/classroom";
@@ -30,6 +37,9 @@ import * as Location from "expo-location";
 import ErrorDialog from "./ErrorDialog";
 import WaitDialog from "./WaitDialog";
 import {useLocal} from "../hooks/useLocal";
+import {GET_SCHEDULE_UNITS} from "../api/operations/queries/scheduleUnits";
+import ScheduleInfoButton from "./ScheduleInfoButton";
+import ClassroomScheduleInfo from "./ClassroomScheduleInfo";
 
 interface PropTypes {
   route: any;
@@ -55,6 +65,22 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
       }
     }
   });
+  const {data: scheduleData} = useQuery(GET_SCHEDULE_UNITS, {
+    variables: {
+      where: {
+        AND: [{
+          classroomId: {
+            equals: classroomId
+          }
+        }, {
+          dayOfWeek: {
+            equals: moment().endOf('day').weekday()
+          }
+        }]
+      }
+    }
+  });
+
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
@@ -63,14 +89,14 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
       const isDisabled = classroom.disabled.state === DisabledState.DISABLED || !isEnabledForCurrentUser;
 
       isDisabled ? !isEnabledForCurrentUser ?
-        !classroom.queueInfo.queuePolicy.queueAllowedDepartments.length ?
-          Platform.OS === Platforms.WEB ? setDisableStatus('Недоступно')
-            : setDisableStatus('Недоступно для студентів')
-          : Platform.OS === Platforms.WEB ? setDisableStatus('Недоступно') :
-          setDisableStatus('Тільки ' + classroom.queueInfo.queuePolicy
-            .queueAllowedDepartments.map(({department: {name}}) => name.toLowerCase()).join(', '))
-        : Platform.OS === Platforms.WEB ? setDisableStatus(classroom.disabled?.comment)
-          : setDisableStatus(classroom.disabled?.comment + ' до ' + moment(classroom.disabled.until).format('DD-MM-YYYY HH:mm'))
+          !classroom.queueInfo.queuePolicy.queueAllowedDepartments.length ?
+            Platform.OS === Platforms.WEB ? setDisableStatus('Недоступно')
+              : setDisableStatus('Недоступно для студентів')
+            : Platform.OS === Platforms.WEB ? setDisableStatus('Недоступно') :
+              setDisableStatus('Тільки ' + classroom.queueInfo.queuePolicy
+                .queueAllowedDepartments.map(({department: {name}}) => name.toLowerCase()).join(', '))
+          : Platform.OS === Platforms.WEB ? setDisableStatus(classroom.disabled?.comment)
+            : setDisableStatus(classroom.disabled?.comment + ' до ' + moment(classroom.disabled.until).format('DD-MM-YYYY HH:mm'))
         : setDisableStatus(null)
     }
   }, [classroom, classroom?.queueInfo.queuePolicy, userData, userError, userLoading]);
@@ -90,7 +116,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
     let location;
     await requestLocation();
     try {
-    location = await Location.getCurrentPositionAsync({});
+      location = await Location.getCurrentPositionAsync({});
     } catch (e) {
       setLoading(false);
     }
@@ -144,17 +170,13 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
             }
           }
         });
-        if (result.data.reserveFreeClassroom.userErrors.length) {
-          result.data.reserveFreeClassroom.userErrors.forEach(({message, code}: any) => {
-            alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]))
-          })
-        } else {
+        if (!result.data.reserveFreeClassroom.userErrors?.length) {
           modeVar(Mode.PRIMARY);
           goBack();
           setLoading(false);
         }
       } catch (e) {
-        alert(JSON.stringify(e));
+        console.log(e)
         setLoading(false);
       }
     }
@@ -205,6 +227,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
               <Divider style={styles.divider}/>
             </>
           )}
+          {scheduleData && <ClassroomScheduleInfo units={scheduleData.scheduleUnits}/>}
           <View>
             <Text style={{textAlign: 'center'}}>Поверх: {classroom.floor}</Text>
           </View>
@@ -347,5 +370,5 @@ const styles = StyleSheet.create({
   spaceBottom30: {
     marginBottom: 30,
     backgroundColor: '#ffffff'
-  }
+  },
 });
