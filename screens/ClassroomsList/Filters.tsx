@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, View, Dimensions, Platform} from "react-native";
-import {Button, Checkbox, Divider, Headline, Modal, Portal, RadioButton} from "react-native-paper";
+import {Button, Checkbox, Divider, Headline, Modal, Portal} from "react-native-paper";
 import CheckBox from 'react-native-check-box'
 import InstrumentFilters from "./InstrumentFilters";
 import {InstrumentType, Platforms} from "../../models/models";

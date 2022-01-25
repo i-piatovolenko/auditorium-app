@@ -14,7 +14,7 @@ import {
 } from "../models/models";
 import moment from "moment";
 import {ReactElement} from "react";
-import {accessRightsVar} from "../api/client";
+import {accessRightsVar} from "../api/localClient";
 
 export const getScheduleTimeline = (start: number, end: number): string[] => {
   let timeSnippets: string[] = [];

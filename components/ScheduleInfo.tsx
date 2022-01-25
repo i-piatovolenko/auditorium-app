@@ -4,7 +4,7 @@ import {ActivityIndicator, Divider, Modal, Portal, Title} from "react-native-pap
 import {fullName, isTeacherType} from "../helpers/helpers";
 import {useQuery} from "@apollo/client";
 import {GET_USER_BY_ID} from "../api/operations/queries/users";
-import {ScheduleUnitType, UserTypes, UserTypesUa} from "../models/models";
+import {ScheduleUnitType} from "../models/models";
 import {Linking} from 'react-native'
 
 type PropTypes = {

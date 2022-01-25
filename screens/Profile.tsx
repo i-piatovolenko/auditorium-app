@@ -11,6 +11,7 @@ import {GET_USER_BY_ID} from "../api/operations/queries/users";
 import Loading from "./Loading";
 import moment from "moment";
 import Colors from "../constants/Colors";
+import {globalErrorVar} from "../api/localClient";
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -35,8 +36,8 @@ export default function Profile({navigation}: any) {
         }).then(result => {
           setCurrentUser(result.data.user)
         })
-      } catch (e) {
-        console.log(e)
+      } catch (e: any) {
+        globalErrorVar(e.message);
       }
     }
   }, [me]);

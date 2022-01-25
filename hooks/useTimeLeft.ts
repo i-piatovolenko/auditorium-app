@@ -1,9 +1,8 @@
-import {Mode, OccupiedInfo, OccupiedState, User} from "../models/models";
+import {OccupiedInfo} from "../models/models";
 import React, {useEffect, useRef, useState} from "react";
 import {useQuery} from "@apollo/client";
 import {GET_ME} from "../api/operations/queries/me";
-import {useLocal} from "./useLocal";
-import {getTimeFromUntil, isNotFree, isPendingForMe} from "../helpers/helpers";
+import {getTimeFromUntil, isNotFree} from "../helpers/helpers";
 
 const useTimeLeft = (occupied: OccupiedInfo, minutesDuration: number) => {
   const [timeLeft, setTimeLeft] = useState('');

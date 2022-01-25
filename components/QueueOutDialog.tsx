@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {Portal, Button, Modal} from 'react-native-paper';
 import {View, Text, StyleSheet} from "react-native";
-import {useState} from "react";
 
 interface PropTypes {
   visible: boolean;

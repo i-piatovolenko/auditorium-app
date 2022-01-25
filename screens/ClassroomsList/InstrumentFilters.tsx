@@ -1,12 +1,6 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, View, Dimensions, ScrollView} from "react-native";
-import {
-  Button,
-  IconButton,
-  Modal,
-  Portal,
-  TextInput
-} from "react-native-paper";
+import {Button, IconButton, Modal, Portal} from "react-native-paper";
 import {InstrumentType} from "../../models/models";
 import InstrumentsList from "./InstrumentsList";
 import CustomRating from "../../components/CustomRating/CustomRating";

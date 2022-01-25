@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import {client} from "../api/client";
 import {Faculty} from "../models/models";
 import {GET_FACULTIES} from "../api/operations/queries/faculties";
+import {globalErrorVar} from "../api/localClient";
 
 const useFaculties = (updateList: boolean = false): Array<Faculty> => {
   const [faculties, setFaculties] = useState<Faculty[]>([]);
@@ -15,7 +16,7 @@ const useFaculties = (updateList: boolean = false): Array<Faculty> => {
     }).then((data) => {
       setFaculties(data.data.faculties
           .slice().sort((a: Faculty, b: Faculty) => a.id - b.id));
-      });
+      }).catch((e: any) => globalErrorVar(e.message));
   }, [updateList]);
 
   return faculties;

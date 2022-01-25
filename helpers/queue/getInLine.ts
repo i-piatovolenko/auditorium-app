@@ -1,6 +1,7 @@
-import {client, meVar, minimalClassroomIdsVar, modeVar} from "../../api/client";
-import {EnqueuedBy, Mode, QueueState, QueueType, User} from "../../models/models";
+import {EnqueuedBy, Mode, QueueType, User} from "../../models/models";
 import {ADD_USER_TO_QUEUE} from "../../api/operations/mutations/addUserToQueue";
+import {globalErrorVar, meVar, minimalClassroomIdsVar, modeVar} from "../../api/localClient";
+import {client} from "../../api/client";
 
 const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: number[]) => {
   const user: User | null = meVar();
@@ -30,7 +31,7 @@ const getInLine = async (minimalClassroomsIds: number[], desirableClassroomIds: 
     modeVar(Mode.INLINE);
     minimalClassroomIdsVar(allClassroomIds);
   } catch (e: any) {
-    alert(JSON.stringify(e));
+    globalErrorVar(e.message);
   }
 };
 

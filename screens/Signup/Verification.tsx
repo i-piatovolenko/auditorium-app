@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, ImageBackground} from "react-native";
 import {Appbar, Button, Title} from "react-native-paper";
-import {client, meVar} from "../../api/client";
+import {client} from "../../api/client";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {getItem, removeItem, setItem} from "../../api/asyncStorage";
+import {globalErrorVar, meVar} from "../../api/localClient";
 
 export default function Verification() {
   const message1 = 'Для доступу до застосунку підтвердіть свій акаунт в учбовій частині. \n' +
@@ -30,7 +31,7 @@ export default function Verification() {
         setItem('user', user).then(() => {
           setIsLoading(false);
         });
-      });
+      }).catch((e: any) => globalErrorVar(e.message));
     }
   }, [update]);
 

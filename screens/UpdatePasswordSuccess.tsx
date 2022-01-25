@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {View, StyleSheet, Text, Linking, ImageBackground} from "react-native";
 import {Button} from "react-native-paper";
-import moment from "moment";
 
 export default function UpdatePasswordSuccess({navigation}: any) {
 

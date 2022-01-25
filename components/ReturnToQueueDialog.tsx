@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Paragraph, Dialog, Portal, Button} from 'react-native-paper';
 import {client} from "../api/client";
 import {MAKE_DECISION_ON_QUEUE_RESERVED} from "../api/operations/mutations/returnToQueue";
+import {globalErrorVar} from "../api/localClient";
 
 type PropTypes = {
   remainingOccupationTime: number;
@@ -9,14 +10,18 @@ type PropTypes = {
 
 const ReturnToQueueDialog: React.FC<PropTypes> = ({remainingOccupationTime}) => {
   const handleReturnToQueue = async (value: boolean) => {
-    await client.mutate({
-      mutation: MAKE_DECISION_ON_QUEUE_RESERVED,
-      variables: {
-        input: {
-          returnToQueue: value
+    try {
+      await client.mutate({
+        mutation: MAKE_DECISION_ON_QUEUE_RESERVED,
+        variables: {
+          input: {
+            returnToQueue: value
+          }
         }
-      }
-    })
+      });
+    } catch (e: any) {
+      globalErrorVar(e.message);
+    }
   };
 
   return (

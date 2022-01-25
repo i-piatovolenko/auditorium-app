@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, ImageBackground} from "react-native";
-import {Appbar, Button, Title} from "react-native-paper";
-import {client, meVar} from "../../api/client";
+import {Button, Title} from "react-native-paper";
+import {client} from "../../api/client";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {getItem, removeItem, setItem} from "../../api/asyncStorage";
-import { useNavigation } from '@react-navigation/native';
+import {globalErrorVar, meVar} from "../../api/localClient";
 
 export default function Frozen() {
   const message1 = 'Ваш акаунт заблоковано. Для отримання доступу разблокуйте аккаунт в учбовій частині. Ваш номер:';
@@ -12,7 +12,6 @@ export default function Frozen() {
   const [storageUser, setStorageUser] = useState<any>(null);
   const [update, setUpdate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation();
 
   useEffect(() => {
     getItem('user').then(u => setStorageUser(u));
@@ -31,7 +30,7 @@ export default function Frozen() {
         setItem('user', user).then(() => {
           setIsLoading(false);
         });
-      });
+      }).catch((e: any) => globalErrorVar(e.message));
     }
   }, [update]);
 

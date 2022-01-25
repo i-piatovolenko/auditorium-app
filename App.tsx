@@ -17,6 +17,19 @@ i18n.locale = Localization.locale;
 i18n.fallbacks = true;
 i18n.translations = {en, ua};
 
+const ENV = {
+  prod: {
+    wss: 'wss://api.auditoriu.me/',
+    https: 'https://api.auditoriu.me/',
+  },
+  stg: {
+    wss: 'wss://staging.api.auditoriu.me/',
+    https: 'https://staging.api.auditoriu.me/',
+  }
+}
+
+export const CURRENT_ENV = ENV.stg;
+
 export default function App() {
   const colorScheme = useColorScheme();
 

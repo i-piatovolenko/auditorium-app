@@ -1,16 +1,16 @@
 import React, {useState} from 'react';
 import {fullName, getTimeHHMM, isNotFree, isOwnClassroom, isPendingForMe} from "../helpers/helpers";
-import {CheckBox, StyleSheet, Text, View} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import {Banner, Button, Paragraph, ProgressBar, Surface} from "react-native-paper";
 import {ClassroomType, Mode, OccupiedState, User, UserTypeColors, UserTypes, UserTypesUa} from "../models/models";
 import colors from "../constants/Colors";
 import UserInfo from "./UserInfo";
 import {useLocal} from "../hooks/useLocal";
 import useTimeLeft from "../hooks/useTimeLeft";
-import {acceptedClassroomVar, client, skippedClassroomVar} from "../api/client";
 import {MAKE_DECISION_ON_PENDING_CLASSROOM} from "../api/operations/mutations/makeDecisionOnPendingClassroom";
-import {useNavigation} from '@react-navigation/native';
 import WaitDialog from "./WaitDialog";
+import {client} from "../api/client";
+import {acceptedClassroomVar, globalErrorVar, skippedClassroomVar} from "../api/localClient";
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -42,12 +42,12 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
           }
         }
       });
+    } catch (e: any) {
+      globalErrorVar(e.message);
+    } finally {
       setLoading(false);
-    } catch (e) {
-      console.log(JSON.stringify(e));
-      setLoading(false);
+      navigation.navigate('ClassroomsList');
     }
-    navigation.navigate('ClassroomsList');
   }
   const showModal = () => setVisible(true);
 

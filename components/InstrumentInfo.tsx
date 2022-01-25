@@ -1,11 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image} from "react-native";
 import {Divider, Modal, Portal, Title} from "react-native-paper";
-import {fullName, isTeacherType} from "../helpers/helpers";
-import {useQuery} from "@apollo/client";
-import {GET_USER_BY_ID} from "../api/operations/queries/users";
-import {InstrumentType, UserTypes, UserTypesUa} from "../models/models";
-import {Linking} from 'react-native'
+import {InstrumentType} from "../models/models";
 
 interface PropTypes {
   instrument: InstrumentType;

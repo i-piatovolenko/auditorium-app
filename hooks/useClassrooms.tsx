@@ -3,7 +3,6 @@ import {GET_CLASSROOMS} from "../api/operations/queries/classrooms";
 import {ISODateString} from "../helpers/helpers";
 import {ClassroomType} from "../models/models";
 import {useQuery} from "@apollo/client";
-import {FOLLOW_CLASSROOMS} from "../api/operations/subscriptions/classrooms";
 
 const useClassrooms = (props?: any): [Array<ClassroomType>, any] => {
   const [classrooms, setClassrooms] = useState<ClassroomType[]>([]);
@@ -24,7 +23,7 @@ const useClassrooms = (props?: any): [Array<ClassroomType>, any] => {
     );
   }, [data, loading, error]);
 
-  return classrooms;
+  return [classrooms, subscribeToMore];
 };
 
 export default useClassrooms;

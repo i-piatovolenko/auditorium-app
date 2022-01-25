@@ -7,10 +7,10 @@ import InstrumentItem from "../InstrumentItem";
 import {useNavigation} from "@react-navigation/native";
 import TextTicker from "react-native-text-ticker";
 import moment from "moment";
-import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
 import {useLocal} from "../../hooks/useLocal";
 import {getMinutesFromHHMM} from "../../helpers/helpers";
 import Layout from "../../constants/Layout";
+import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/localClient";
 
 type PropTypes = {
   classroom: ClassroomType;

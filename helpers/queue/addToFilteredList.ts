@@ -1,4 +1,4 @@
-import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
+import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/localClient";
 
 const addToFilteredList = (classroomId: number, isMinimalSetup: boolean,
                            minimalClassroomIds: any, desirableClassroomIds: any) => {

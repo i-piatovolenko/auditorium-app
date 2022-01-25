@@ -1,7 +1,13 @@
 import {QueueSession, QueueType, User, UserQueueState} from "../../models/models";
 import {getItem} from "../../api/asyncStorage";
-import {client, desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar} from "../../api/client";
 import {REMOVE_USER_FROM_QUEUE} from "../../api/operations/mutations/removeUserFromQueue";
+import {client} from "../../api/client";
+import {
+  desirableClassroomIdsVar,
+  globalErrorVar,
+  isMinimalSetupVar,
+  minimalClassroomIdsVar
+} from "../../api/localClient";
 
 export default async function removeFromLine(classroomId?: number, currentSession?: QueueSession) {
   const user: User | undefined = await getItem('user');
@@ -27,8 +33,8 @@ export default async function removeFromLine(classroomId?: number, currentSessio
       minimalClassroomIdsVar([]);
       desirableClassroomIdsVar([]);
       isMinimalSetupVar(true);
-    } catch (e) {
-      alert(JSON.stringify(e))
+    } catch (e: any) {
+      globalErrorVar(e.message);
     }
   } else {
     try {
@@ -43,8 +49,8 @@ export default async function removeFromLine(classroomId?: number, currentSessio
       minimalClassroomIdsVar([]);
       desirableClassroomIdsVar([]);
       isMinimalSetupVar(true);
-    } catch (e) {
-      alert(JSON.stringify(e))
+    } catch (e: any) {
+      globalErrorVar(e.message);
     }
   }
 };

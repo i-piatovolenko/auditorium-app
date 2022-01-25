@@ -1,9 +1,8 @@
 import * as React from 'react';
 import {Portal, Button, Modal} from 'react-native-paper';
 import {View, Text, StyleSheet} from "react-native";
-import {useState} from "react";
-import {acceptedClassroomVar} from "../api/client";
 import {useLocal} from "../hooks/useLocal";
+import {acceptedClassroomVar} from "../api/localClient";
 
 export default function ClassroomAcceptedDialog() {
   const {data: {acceptedClassroom}} = useLocal('acceptedClassroom');

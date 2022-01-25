@@ -1,9 +1,9 @@
 import {Button, Dialog, Paragraph, Portal} from "react-native-paper";
 import {Mode} from "../models/models";
 import React, {useState} from "react";
-import {modeVar} from "../api/client";
 import removeFromLine from "../helpers/queue/removeFromLine";
 import WaitDialog from "./WaitDialog";
+import {modeVar} from "../api/localClient";
 
 export default function ConfirmContinueDesiredQueue() {
   const [loading, setLoading] = useState(false);

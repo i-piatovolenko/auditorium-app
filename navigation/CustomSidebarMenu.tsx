@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   View,
@@ -14,7 +14,7 @@ import {
 } from '@react-navigation/drawer';
 import {Button, Dialog, IconButton, Portal} from "react-native-paper";
 import {removeItem} from "../api/asyncStorage";
-import {meVar} from "../api/client";
+import {meVar} from "../api/localClient";
 
 const CustomSidebarMenu = (props: any) => {
   const [visible, setVisible] = useState(false);

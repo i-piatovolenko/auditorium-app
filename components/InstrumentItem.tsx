@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, Text, Dimensions, Image} from "react-native";
-import {ClassroomType, InstrumentType} from "../models/models";
+import {View, StyleSheet, Text, Image} from "react-native";
+import {InstrumentType} from "../models/models";
 import InstrumentInfo from "./InstrumentInfo";
 
 interface PropTypes {

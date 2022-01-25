@@ -7,16 +7,20 @@ import {GENERAL_QUEUE_SIZE} from "../../api/operations/queries/generalQueueSize"
 import {FOLLOW_GENERAL_QUEUE_SIZE} from "../../api/operations/subscriptions/generalQueueSize";
 import {useLocal} from "../../hooks/useLocal";
 import {ClassroomType, InstrumentType, Mode, User} from "../../models/models";
-import {desirableClassroomIdsVar, isMinimalSetupVar, minimalClassroomIdsVar} from "../../api/client";
 import SavedFilters from "./SavedFilters";
 import Filters, {SpecialT} from "./Filters";
 import {getClassroomsFilteredByInstruments} from "./helpers";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {GENERAL_QUEUE_POSITION} from "../../api/operations/queries/generalQueuePosition";
 import {FOLLOW_GENERAL_QUEUE_POSITION} from "../../api/operations/subscriptions/generalQueuePosition";
-import {getItem} from "../../api/asyncStorage";
 import Colors from "../../constants/Colors";
 import ErrorDialog from "../../components/ErrorDialog";
+import {
+  desirableClassroomIdsVar,
+  globalErrorVar,
+  isMinimalSetupVar,
+  minimalClassroomIdsVar
+} from "../../api/localClient";
 
 type PropTypes = {
   freeClassroomsAmount: number;
@@ -38,7 +42,8 @@ const ClassroomsAppBar: React.FC<PropTypes> = (
   } = useQuery(GENERAL_QUEUE_POSITION, {
     variables: {
       userId: currentUser.id
-    }
+    },
+    onError: (error) => globalErrorVar(error.message)
   });
   const {data: {mode}} = useLocal('mode');
   const {data: {me}} = useLocal('me');

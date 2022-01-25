@@ -2,9 +2,8 @@ import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import React, {useState, useEffect, useRef} from 'react';
 import {Platform} from 'react-native';
-import {pushNotificationTokenVar} from "../api/client";
-import ErrorDialog from "../components/ErrorDialog";
 import WarningDialog from "../components/WarningDialog";
+import {pushNotificationTokenVar} from "../api/localClient";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

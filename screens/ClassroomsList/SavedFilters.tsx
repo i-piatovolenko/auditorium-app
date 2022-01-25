@@ -18,8 +18,6 @@ interface PropTypes {
   currentUser: User;
 }
 
-const windowWidth = Dimensions.get('window').width;
-
 export default function SavedFilters({hideModal, visible, currentUser}: PropTypes) {
   const classrooms: ClassroomType[] = useClassrooms();
   const [savedFilters, setSavedFilters] = useState<SavedFilterT[]>([]);

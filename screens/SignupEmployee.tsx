@@ -5,8 +5,8 @@ import {useState} from "react";
 import {PASSWORD_SOFT_VALID, PHONE_VALID, validationErrors} from "../helpers/validators";
 import Colors from "../constants/Colors";
 import {client} from "../api/client";
-import {PASSWORD_RESET} from "../api/operations/mutations/resetPassword";
 import {COMPLETE_EMPLOYEE_ACCOUNT} from "../api/operations/mutations/completeEmployeeAccount";
+import {globalErrorVar} from "../api/localClient";
 
 export default function SignupEmployee({navigation, route: {params: {completeEmployeeAccountToken}}}: any) {
   const [password, setPassword] = useState('');
@@ -46,7 +46,7 @@ export default function SignupEmployee({navigation, route: {params: {completeEmp
       setErrorMessage(null);
       setErrorMessagePhoneNumber(null);
       try {
-        const result = await client.mutate({
+        await client.mutate({
           mutation: COMPLETE_EMPLOYEE_ACCOUNT,
           variables: {
             input: {
@@ -56,19 +56,11 @@ export default function SignupEmployee({navigation, route: {params: {completeEmp
             }
           }
         });
-        if (result.data.completeEmployeeAccount.userErrors.length) {
-          result.data.completeEmployeeAccount.userErrors.forEach(({message, code}: any) => {
-            // alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]));
-            alert(JSON.stringify(message));
-            setLoading(false);
-          });
-        } else {
-          setLoading(false);
-          navigation.navigate('SignupEmployeeSuccess')
-        }
-      } catch (e) {
+        navigation.navigate('SignupEmployeeSuccess')
+      } catch (e: any) {
+        globalErrorVar(e.message);
+      } finally {
         setLoading(false);
-        console.log(e)
       }
     }
   };

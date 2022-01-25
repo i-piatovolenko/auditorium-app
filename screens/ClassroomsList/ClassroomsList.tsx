@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   AppState,
   AppStateStatus,
@@ -27,19 +27,15 @@ import {RootStackParamList} from "../../types";
 import ClassroomInfo from "../../components/ClassroomInfo";
 import {useQuery} from "@apollo/client";
 import ClassroomsBrowser from "../../components/ClassroomsBrowser/ClassroomsBrowser";
-import {
-  GET_CLASSROOMS,
-  GET_CLASSROOMS_NO_SCHEDULE,
-  GET_CLASSROOMS_WITH_SCHEDULE
-} from "../../api/operations/queries/classrooms";
+import {GET_CLASSROOMS, GET_CLASSROOMS_WITH_SCHEDULE} from "../../api/operations/queries/classrooms";
 import {FOLLOW_CLASSROOMS} from "../../api/operations/subscriptions/classrooms";
 import {GET_USER_BY_ID} from "../../api/operations/queries/users";
 import {FOLLOW_USER} from "../../api/operations/subscriptions/user";
 import {getItem, setItem} from "../../api/asyncStorage";
-import {hasOwnClassroom, isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
+import {isEnabledForCurrentDepartment, isEnabledForQueue} from "../../helpers/helpers";
 import Buttons from "./Buttons";
 import {useLocal} from "../../hooks/useLocal";
-import {client, maxDistanceVar, modeVar, noConnectionVar} from "../../api/client";
+import {client} from "../../api/client";
 import ClassroomsAppBar from "./ClassroomsAppBar";
 import Log from "../../components/Log";
 import {usePrevious} from "../../hooks/usePrevious";
@@ -62,6 +58,7 @@ import CrashModeAlert from "../../components/ClassroomsBrowser/CrashModeAlert";
 import {DISPATCHER_STATUS} from "../../api/operations/queries/dispatcherActive";
 import {FOLLOW_DISPATCHER_STATUS} from "../../api/operations/subscriptions/dispatcherStatus";
 import moment from "moment";
+import {globalErrorVar, maxDistanceVar, modeVar, noConnectionVar} from "../../api/localClient";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -176,15 +173,11 @@ const ClassroomsList: React.FC = ({route}: any) => {
   });
   const {
     data: crashModeData,
-    loading: crashModeLoading,
-    error: crashModeError,
     subscribeToMore: subscribeToMoreCrashMode
   } = useQuery<CrashModeDataT>(CRASH_MODE);
   const {
     data: dispatcherStatusData,
-    loading: dispatcherStatusLoading,
-    error: dispatcherStatusError,
-    subscribeToMore: subscribeToMoreDispatcherStatus
+    subscribeToMore: subscribeToMoreDispatcherStatus,
   } = useQuery(DISPATCHER_STATUS);
   const {
     data: userData,
@@ -226,7 +219,8 @@ const ClassroomsList: React.FC = ({route}: any) => {
         fetchPolicy: 'network-only'
       });
       setRefreshing(false);
-    } catch (e) {
+    } catch (e: any) {
+      globalErrorVar(e.message);
       setRefreshing(false);
     }
   };
@@ -283,7 +277,7 @@ const ClassroomsList: React.FC = ({route}: any) => {
       }
     });
     } catch (e: any) {
-      console.log(e)
+      globalErrorVar(e.message);
     }
       const unsubscribeClassrooms = subscribeToMore({
         document: FOLLOW_CLASSROOMS,
@@ -384,30 +378,13 @@ const ClassroomsList: React.FC = ({route}: any) => {
     setShowLog(prevState => !prevState);
   }
 
-  const handleReload = () => {
+  const handleReload = async () => {
     try {
-      client.query({
-        query: GET_CLASSROOMS,
-        fetchPolicy: 'network-only'
-      });
-      client.query({
-        query: GET_USER_BY_ID,
-        variables: {
-          where: {
-            id: route.params.currentUserId
-          }
-        },
-        fetchPolicy: 'network-only'
-      });
-      client.query({
-        query: GENERAL_QUEUE_SIZE,
-        fetchPolicy: 'network-only'
-      });
-      noConnectionVar(false);
-    } catch (e) {
-      console.log(e)
+      await client.resetStore();
+    } catch (e: any) {
+      globalErrorVar(e.message);
     }
-  }
+  };
 
   return noConnection ? (
     <ErrorDialog visible={noConnection}

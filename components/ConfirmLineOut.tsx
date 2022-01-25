@@ -1,10 +1,9 @@
-import {StyleSheet} from "react-native";
 import {Button, Dialog, Paragraph, Portal} from "react-native-paper";
-import {InstrumentType, Mode} from "../models/models";
+import {Mode} from "../models/models";
 import React, {useState} from "react";
-import {modeVar} from "../api/client";
 import removeFromLine from "../helpers/queue/removeFromLine";
 import WaitDialog from "./WaitDialog";
+import {modeVar} from "../api/localClient";
 
 interface PropTypes {
   hideDialog: () => void;

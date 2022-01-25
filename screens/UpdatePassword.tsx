@@ -15,8 +15,9 @@ import {PASSWORD_SOFT_VALID, validationErrors} from "../helpers/validators";
 import Colors from "../constants/Colors";
 import {client} from "../api/client";
 import {PASSWORD_UPDATE} from "../api/operations/mutations/updatePassword";
-import {ErrorCodes, ErrorCodesUa, Platforms} from "../models/models";
+import {Platforms} from "../models/models";
 import WithKeyboardDismissWrapper from "../components/WithKeyboardDismissWrapper";
+import {globalErrorVar} from "../api/localClient";
 
 const {width: windowWidth} = Dimensions.get('window');
 const {height: windowHeight} = Dimensions.get('window');
@@ -57,7 +58,7 @@ export default function UpdatePassword({navigation}: any) {
     } else {
       setErrorMessage(null);
       try {
-        const result = await client.mutate({
+        await client.mutate({
           mutation: PASSWORD_UPDATE,
           variables: {
             input: {
@@ -66,19 +67,11 @@ export default function UpdatePassword({navigation}: any) {
             }
           }
         });
-        if (result.data.updatePassword.userErrors.length) {
-          result.data.updatePassword.userErrors.forEach(({message, code}: any) => {
-            alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]));
-            setLoading(false);
-          });
-        } else {
-          setLoading(false);
-          navigation.navigate('UpdatePasswordSuccess')
-        }
-      } catch (e) {
+        navigation.navigate('UpdatePasswordSuccess')
+      } catch (e: any) {
+        globalErrorVar(e.message);
+      } finally {
         setLoading(false);
-        alert(JSON.stringify(e))
-        console.log(e)
       }
     }
   };

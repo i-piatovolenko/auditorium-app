@@ -3,26 +3,20 @@ import {Dimensions, Platform, ScrollView, StyleSheet, Text, View} from "react-na
 import {
   ClassroomType,
   DisabledState,
-  ErrorCodes,
-  ErrorCodesUa,
   InstrumentType,
   Mode,
   OccupiedState,
   Platforms,
-  ScheduleUnitType,
-  ScheduleUnitTypeT,
   UserQueueState
 } from "../models/models";
 import {ActivityIndicator, Appbar, Button, Chip, Divider, Title} from "react-native-paper";
 import {useNavigation} from "@react-navigation/native";
 import {useQuery} from "@apollo/client";
 import {
-  fullName,
-  getMinutesFromHHMM,
   isEnabledForCurrentDepartment,
   isOccupiedOrPendingByCurrentUser
 } from "../helpers/helpers";
-import {client, modeVar} from "../api/client";
+import {client} from "../api/client";
 import Colors from "../constants/Colors";
 import {GET_CLASSROOM} from "../api/operations/queries/classroom";
 import {GET_USER_BY_ID} from "../api/operations/queries/users";
@@ -38,8 +32,8 @@ import ErrorDialog from "./ErrorDialog";
 import WaitDialog from "./WaitDialog";
 import {useLocal} from "../hooks/useLocal";
 import {GET_SCHEDULE_UNITS} from "../api/operations/queries/scheduleUnits";
-import ScheduleInfoButton from "./ScheduleInfoButton";
 import ClassroomScheduleInfo from "./ClassroomScheduleInfo";
+import {globalErrorVar, modeVar} from "../api/localClient";
 
 interface PropTypes {
   route: any;
@@ -51,7 +45,6 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const {data: {maxDistance}} = useLocal('maxDistance');
-  const {data: {me}} = useLocal('me');
   const [classroom, setClassroom] = useState<ClassroomType | null>(null);
   const [disableStatus, setDisableStatus] = useState(null);
   const {
@@ -147,10 +140,10 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
         },
       }).then(({data}: any) => {
         setClassroom(data.classroom);
-        setLoading(false);
       });
-    } catch (e) {
-      alert(JSON.stringify(e));
+    } catch (e: any) {
+      globalErrorVar(e.message);
+    } finally {
       setLoading(false);
     }
   }, []);
@@ -162,7 +155,7 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
     const isNear = await getIsNear();
     if (isNear) {
       try {
-        const result = await client.mutate({
+        await client.mutate({
           mutation: RESERVE_FREE_CLASSROOM,
           variables: {
             input: {
@@ -170,13 +163,11 @@ export default function ClassroomInfo({route: {params: {classroomId, currentUser
             }
           }
         });
-        if (!result.data.reserveFreeClassroom.userErrors?.length) {
-          modeVar(Mode.PRIMARY);
-          goBack();
-          setLoading(false);
-        }
-      } catch (e) {
-        console.log(e)
+        modeVar(Mode.PRIMARY);
+        goBack();
+      } catch (e: any) {
+        globalErrorVar(e.message);
+      } finally {
         setLoading(false);
       }
     }

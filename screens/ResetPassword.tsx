@@ -6,6 +6,7 @@ import {PASSWORD_SOFT_VALID, validationErrors} from "../helpers/validators";
 import Colors from "../constants/Colors";
 import {client} from "../api/client";
 import {PASSWORD_RESET} from "../api/operations/mutations/resetPassword";
+import {globalErrorVar} from "../api/localClient";
 
 export default function ResetPassword({navigation, route: {params: {resetPasswordToken}}}: any) {
   const [password, setPassword] = useState('');
@@ -34,7 +35,7 @@ export default function ResetPassword({navigation, route: {params: {resetPasswor
     } else {
       setErrorMessage(null);
       try {
-        const result = await client.mutate({
+        await client.mutate({
           mutation: PASSWORD_RESET,
           variables: {
             input: {
@@ -43,19 +44,11 @@ export default function ResetPassword({navigation, route: {params: {resetPasswor
             }
           }
         });
-        if (result.data.resetPassword.userErrors.length) {
-          result.data.resetPassword.userErrors.forEach(({message, code}: any) => {
-            // alert(JSON.stringify(ErrorCodesUa[code as ErrorCodes]));
-            alert(JSON.stringify(message));
-            setLoading(false);
-          });
-        } else {
-          setLoading(false);
-          navigation.navigate('ResetPasswordSuccess')
-        }
-      } catch (e) {
+        navigation.navigate('ResetPasswordSuccess')
+      } catch (e: any) {
+        globalErrorVar(e.message);
+      } finally {
         setLoading(false);
-        console.log(e)
       }
     }
   };

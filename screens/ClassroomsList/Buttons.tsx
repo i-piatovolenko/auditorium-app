@@ -1,18 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Platform, StyleSheet, Text, View} from "react-native";
 import {Button} from "react-native-paper";
 import Colors from "../../constants/Colors";
 import {hasOwnClassroom} from "../../helpers/helpers";
-import {ClassroomType, Mode, Platforms, SavedFilterT} from "../../models/models";
+import {ClassroomType, Mode, SavedFilterT} from "../../models/models";
 import {useLocal} from "../../hooks/useLocal";
-import {
-  client,
-  desirableClassroomIdsVar,
-  isMinimalSetupVar,
-  minimalClassroomIdsVar,
-  modeVar,
-  pushNotificationTokenVar
-} from "../../api/client";
+import {client} from "../../api/client";
 import {filterDisabledForQueue} from "../../helpers/filterDisabledForQueue";
 import {getItem} from "../../api/asyncStorage";
 import {filterSavedFilter} from "../../helpers/filterSavedFIlters";
@@ -27,6 +20,13 @@ import {UNIVERSITY_LOCATION} from "../../constants/constants";
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import {ADD_NOTIFICATION_TOKEN} from "../../api/operations/mutations/addNotificationToken";
+import {
+  desirableClassroomIdsVar, globalErrorVar,
+  isMinimalSetupVar,
+  minimalClassroomIdsVar,
+  modeVar,
+  pushNotificationTokenVar
+} from "../../api/localClient";
 
 type PropTypes = {
   currentUser: any;
@@ -173,8 +173,8 @@ const Buttons: React.FC<PropTypes> = ({
             }
           }
         })
-      } catch (e) {
-        setErrorMsg(JSON.stringify(e));
+      } catch (e: any) {
+        globalErrorVar(e.message);
         setLoading(false);
       }
     } else {

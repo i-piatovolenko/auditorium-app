@@ -1,8 +1,8 @@
 import {DarkTheme, DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import * as React from 'react';
-import {useEffect, useRef, useState} from 'react';
-import {Alert, AppState, AppStateStatus, BackHandler, ColorSchemeName, StyleSheet} from 'react-native';
+import {useEffect, useState} from 'react';
+import {Alert, BackHandler, ColorSchemeName, StyleSheet} from 'react-native';
 import {RootStackParamList} from '../types';
 import Login from "../screens/Login";
 import SignUp from "../screens/Signup/SignUp";
@@ -11,10 +11,8 @@ import ForgotPasswordSuccess from "../screens/ForgotPasswordSuccess";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import Users from "../screens/Users";
 import CustomSidebarMenu from "./CustomSidebarMenu";
-import Profile from "../screens/Profile";
 import {getItem} from "../api/asyncStorage";
 import Home from "../screens/ClassroomsList/ClassroomsList";
-import {meVar} from "../api/client";
 import * as SplashScreen from "expo-splash-screen";
 import Splash from "../screens/Splash";
 import PrivacyPolicy from "../screens/PrivacyPolicy";
@@ -25,10 +23,9 @@ import ResetPasswordSuccess from "../screens/ResetPasswordSuccess";
 import FAQ from "../screens/FAQ";
 import SignupEmployee from "../screens/SignupEmployee";
 import SignupEmployeeSuccess from "../screens/SignupEmployeeSuccess";
-import UpdatePassword from "../screens/UpdatePassword";
-import UpdatePasswordSuccess from "../screens/UpdatePasswordSuccess";
 import ProfileStack from "../screens/ProfileStack";
 import Schedule from "../screens/Schedule";
+import {meVar} from "../api/localClient";
 
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
   return (

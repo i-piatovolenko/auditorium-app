@@ -7,8 +7,8 @@ import InstrumentItem from "../InstrumentItem";
 import {fullName, typeStyle} from "../../helpers/helpers";
 import {useNavigation} from "@react-navigation/native";
 import {useLocal} from "../../hooks/useLocal";
-import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/client";
 import Layout from "../../constants/Layout";
+import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/localClient";
 
 type PropTypes = {
   classroom: ClassroomType;

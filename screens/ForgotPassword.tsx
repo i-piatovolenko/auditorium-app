@@ -7,8 +7,9 @@ import {EMAIL_VALID} from "../helpers/validators";
 import {client} from "../api/client";
 import {EMAIL_FOR_PASSWORD_RESET} from "../api/operations/mutations/resetPasswordRequestEmail";
 import ErrorDialog from "../components/ErrorDialog";
-import {ErrorCodes, ErrorCodesUa, Platforms} from "../models/models";
+import {Platforms} from "../models/models";
 import WithKeyboardDismissWrapper from "../components/WithKeyboardDismissWrapper";
+import {globalErrorVar} from "../api/localClient";
 
 const {width: windowWidth} = Dimensions.get('window');
 const {height: windowHeight} = Dimensions.get('window');
@@ -33,7 +34,7 @@ export default function ForgotPassword({navigation}: any) {
   const handleSendEmail = async () => {
     setLoading(true);
     try {
-      const result = await client.mutate({
+      await client.mutate({
         mutation: EMAIL_FOR_PASSWORD_RESET,
         variables: {
           input: {
@@ -41,18 +42,11 @@ export default function ForgotPassword({navigation}: any) {
           }
         }
       });
-      if (result.data.resetPasswordRequestEmail.userErrors.length) {
-        result.data.resetPasswordRequestEmail.userErrors.forEach(({message, code}: any) => {
-          setErrorMessage(ErrorCodesUa[code as ErrorCodes]);
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-        navigation.navigate('ForgotPasswordSuccess')
-      }
-    } catch (e) {
+      navigation.navigate('ForgotPasswordSuccess')
+    } catch (e: any) {
+      globalErrorVar(e.message);
+    } finally {
       setLoading(false);
-      console.log(e);
     }
   };
 

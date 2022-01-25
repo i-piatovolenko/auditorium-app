@@ -18,7 +18,6 @@ export default function CustomRating({size = 5, count, setCount, visible, hideDi
     hideDialog();
   };
 
-
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={hideDialog}>

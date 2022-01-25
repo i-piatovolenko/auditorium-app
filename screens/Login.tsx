@@ -14,8 +14,8 @@ import {LOGIN} from "../api/operations/mutations/login";
 import WaitDialog from "../components/WaitDialog";
 import {setItem} from "../api/asyncStorage";
 import ErrorDialog from "../components/ErrorDialog";
-import {ErrorCodes, ErrorCodesUa, Platforms, User} from "../models/models";
-import {client, meVar, noTokenVar} from "../api/client";
+import {Platforms, User} from "../models/models";
+import {client} from "../api/client";
 import PushNotification from "./PushNotification";
 import i18n from "i18n-js";
 import Colors from "../constants/Colors";
@@ -23,6 +23,7 @@ import * as Linking from "expo-linking";
 import {CONFIRM_EMAIL} from "../api/operations/mutations/confirmEmail";
 import InfoDialog from "../components/InfoDialog";
 import WithKeyboardDismissWrapper from "../components/WithKeyboardDismissWrapper";
+import {globalErrorVar, meVar, noTokenVar} from "../api/localClient";
 
 const {width: windowWidth} = Dimensions.get('window');
 const {height: windowHeight} = Dimensions.get('window');
@@ -32,9 +33,6 @@ export default function Login({navigation}: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [modalActivator, setModalActivator] = useState<boolean | null>(null);
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [pushNotificationToken, setPushNotificationToken] = useState('');
   const [persNumber, setPersNumber] = useState(-1);
   const [visibleEmailConfirmSuccess, setVisibleEmailConfirmSuccess] = useState(false);
@@ -61,38 +59,17 @@ export default function Login({navigation}: any) {
                 }
               }
             }).then((result: any) => {
-                if (result.data.confirmEmail.userErrors.length) {
-                  setErrorMessage(ErrorCodesUa[result.data.confirmEmail.userErrors[0] as ErrorCodes]);
-                  setModalActivator(prevState => !prevState);
-                } else {
                   const userId = result.data.confirmEmail.userId;
                   setPersNumber(userId);
                   setVisibleEmailConfirmSuccess(true);
-                  setErrorMessage(null);
-                }
               }
-            ).catch(() => {
-              setVisibleEmailConfirmSuccess(true);
-              setErrorMessage('E-mail не було верифіковано');
-              setModalActivator(prevState => !prevState);
-            })
+            ).catch((e: Error) => {
+              globalErrorVar(e.message);
+            });
           }
         }
       )
-    },
-    []
-  )
-  ;
-
-  useEffect(() => {
-    if (modalActivator !== null) {
-      setShowError(true);
-    }
-  }, [modalActivator]);
-
-  const hideError = () => {
-    setShowError(false);
-  };
+    }, []);
 
   const handleSubmit = async () => {
     let result: any;
@@ -107,10 +84,6 @@ export default function Login({navigation}: any) {
             }
           }
         });
-        if (result?.data.login.userErrors?.length) {
-          setErrorMessage(ErrorCodesUa[result?.data.login.userErrors[0].code as ErrorCodes]);
-          setModalActivator(prevState => !prevState);
-        } else {
           const user: User = result?.data.login.user;
           const token: string = result?.data.login.token;
           await setItem('token', token);
@@ -118,10 +91,8 @@ export default function Login({navigation}: any) {
           await client.resetStore();
           meVar(user);
           noTokenVar(false);
-        }
-      } catch (e) {
-        setErrorMessage(e?.graphQLErrors[0]?.message || JSON.stringify(e));
-        setModalActivator(prevState => !prevState);
+      } catch (e: any) {
+        globalErrorVar(e.message);
       }
     }
   };
@@ -190,7 +161,6 @@ export default function Login({navigation}: any) {
           confirmButton
         />
         <WaitDialog message='Відбувається вхід у систему' visible={loading}/>
-        <ErrorDialog visible={showError} hideDialog={hideError} message={errorMessage}/>
       </View>
     </WithKeyboardDismissWrapper>
   );

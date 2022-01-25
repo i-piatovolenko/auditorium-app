@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {useLocal} from "../hooks/useLocal";
 import {Button, Divider} from "react-native-paper";
-import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../api/client";
 import {StyleSheet, Text} from "react-native";
 import {ClassroomType, Mode, QueueRecord, QueueType, User, UserQueueState} from "../models/models";
 import getInLine from "../helpers/queue/getInLine";
@@ -9,6 +8,7 @@ import WaitDialog from "./WaitDialog";
 import {isEnabledForQueue} from "../helpers/helpers";
 import {useNavigation} from "@react-navigation/native";
 import removeFromLine from "../helpers/queue/removeFromLine";
+import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../api/localClient";
 
 type PropTypes = {
   classroom: ClassroomType;

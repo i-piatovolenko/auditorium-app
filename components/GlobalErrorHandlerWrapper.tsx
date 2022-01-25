@@ -1,7 +1,8 @@
 import React, {FC} from 'react';
 import {useLocal} from "../hooks/useLocal";
 import ErrorDialog from "./ErrorDialog";
-import {client, globalErrorVar} from "../api/client";
+import {client} from "../api/client";
+import {globalErrorVar} from "../api/localClient";
 
 const GlobalErrorHandlerWrapper: FC = ({children}) => {
   const {data: {globalError}} = useLocal('globalError');

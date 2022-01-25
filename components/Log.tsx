@@ -1,7 +1,7 @@
 import {View, StyleSheet, Text, ScrollView, Dimensions, TextInput, Image} from "react-native";
 import React, {useEffect, useState} from "react";
 import {UserTypes} from "../models/models";
-import {maxDistanceVar} from "../api/client";
+import {maxDistanceVar} from "../api/localClient";
 
 export default function Log({data}: any) {
   const [text, setText] = useState('');

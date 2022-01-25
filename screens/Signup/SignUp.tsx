@@ -10,7 +10,7 @@ import moment from "moment";
 import {useMutation} from "@apollo/client";
 import {SIGN_UP} from "../../api/operations/mutations/signUp";
 import InfoDialog from "../../components/InfoDialog";
-import {ErrorCodes, ErrorCodesUa, Platforms} from "../../models/models";
+import {Platforms} from "../../models/models";
 import {GET_UNSIGNED_DEPARTMENTS} from "../../api/operations/queries/unsignedDepartments";
 import {client} from "../../api/client";
 import {GET_UNSIGNED_DEGREES} from "../../api/operations/queries/unsignedDegrees";
@@ -22,6 +22,7 @@ import {
   validationErrors
 } from "../../helpers/validators";
 import Colors from "../../constants/Colors";
+import {globalErrorVar} from "../../api/localClient";
 
 const currentYear: number = parseInt(moment().format('YYYY'));
 
@@ -30,11 +31,11 @@ const startYearsItems = [
   {name: currentYear - 1, id: currentYear - 1},
   {name: currentYear - 2, id: currentYear - 2},
   {name: currentYear - 3, id: currentYear - 3},
+  {name: currentYear - 4, id: currentYear - 4},
 ];
 
 const windowHeight = Dimensions.get('window').height;
 const PHONE_PREFIX = '+380';
-
 
 export default function SignUp({navigation}: any) {
   const [selectedDepartment, setSelectedDepartment] = useState({name: '', id: -1});
@@ -77,18 +78,22 @@ export default function SignUp({navigation}: any) {
   const [signup, {loading, error}] = useMutation(SIGN_UP);
 
   useEffect(() => {
-    client.query({
-      query: GET_UNSIGNED_DEPARTMENTS,
-      fetchPolicy: 'network-only',
-    }).then(({data}) => {
-      setDepartments(data.signupDepartments);
-    });
-    client.query({
-      query: GET_UNSIGNED_DEGREES,
-      fetchPolicy: 'network-only',
-    }).then(({data}) => {
-      setDegrees(data.signupDegrees);
-    });
+    try {
+      client.query({
+        query: GET_UNSIGNED_DEPARTMENTS,
+        fetchPolicy: 'network-only',
+      }).then(({data}) => {
+        setDepartments(data.signupDepartments);
+      });
+      client.query({
+        query: GET_UNSIGNED_DEGREES,
+        fetchPolicy: 'network-only',
+      }).then(({data}) => {
+        setDegrees(data.signupDegrees);
+      });
+    } catch (e: any) {
+      globalErrorVar(e.message);
+    }
   }, []);
 
   const checkLastNameValidation = (value: string) => {
@@ -187,7 +192,7 @@ export default function SignUp({navigation}: any) {
       && !isPasswordConfirmValidated && !isStartYearValidated && !isDepartmentValidated
       && !isDegreeValidated) {
       try {
-        const result = await signup({
+        await signup({
           variables: {
             input: {
               lastName: lastName,
@@ -202,15 +207,9 @@ export default function SignUp({navigation}: any) {
             }
           }
         });
-        const hasErrors = result?.data.signup.userErrors?.length;
-        if (hasErrors) {
-          const errorMessage = ErrorCodesUa[result?.data.signup.userErrors[0].code as ErrorCodes];
-          alert(errorMessage);
-        } else {
-          navigation.navigate('SignUpStepTwo');
-        }
-      } catch (e) {
-        alert(e)
+        navigation.navigate('SignUpStepTwo');
+      } catch (e: any) {
+        globalErrorVar(e.message);
       }
     }
   }
@@ -304,13 +303,13 @@ export default function SignUp({navigation}: any) {
               style={styles.input}
               value={email}
               autoCompleteType='email'
-               underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
-               onChangeText={text => {
-                 setEmail(text);
-                 checkEmailValidation(text);
-               }}
-               onBlur={() => checkEmailValidation(email)}
-               keyboardType='email-address'
+              underlineColor={!isEmailValidated ? '#ccc' : '#f91354'}
+              onChangeText={text => {
+                setEmail(text);
+                checkEmailValidation(text);
+              }}
+              onBlur={() => checkEmailValidation(email)}
+              keyboardType='email-address'
             />
             <Error validator={isEmailValidated}/>
             <View style={styles.phoneInputWrapper}>

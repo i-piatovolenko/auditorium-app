@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {StyleSheet, Text, TouchableOpacity} from "react-native";
+import {StyleSheet, TouchableOpacity} from "react-native";
 import {Surface} from "react-native-paper";
 import {ScheduleUnitType, ScheduleUnitTypeT} from "../models/models";
 import {fullName, getMinutesFromHHMM} from "../helpers/helpers";

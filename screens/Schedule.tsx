@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, View, Text, ScrollView, Dimensions, TouchableOpacity} from "react-native";
-import {ActivityIndicator, Appbar, Button, IconButton, TextInput} from "react-native-paper";
-import {ClassroomType, ScheduleUnitType} from "../models/models";
+import {StyleSheet, View, Text, ScrollView, Dimensions} from "react-native";
+import {ActivityIndicator, Appbar, TextInput} from "react-native-paper";
+import {ClassroomType} from "../models/models";
 import {GET_SCHEDULE} from "../api/operations/queries/schedule";
 import {useQuery} from "@apollo/client";
 import moment from "moment";
@@ -11,6 +11,7 @@ import ScheduleInfo from "../components/ScheduleInfo";
 import ChooseDayModal from "../components/ChooseDayModal";
 import {fullName} from "../helpers/helpers";
 import {DrawerActions} from "@react-navigation/native";
+import {globalErrorVar} from "../api/localClient";
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -24,8 +25,7 @@ const Schedule = ({navigation}: any) => {
   const [showDaysModal, setShowDaysModal] = useState(false);
   const [searchMode, setSearchMode] = useState(false);
   const [searchedText, setSearchedText] = useState('');
-  const inputRef = useRef(null);
-  const {data, loading, error, refetch} = useQuery(GET_SCHEDULE, {
+  const {data, loading, refetch} = useQuery(GET_SCHEDULE, {
     variables: {
       date: moment().set('day', chosenDay).endOf('day').toISOString(),
     },
@@ -34,7 +34,11 @@ const Schedule = ({navigation}: any) => {
   const openDrawer = () => navigation.dispatch(DrawerActions.openDrawer());
 
   useEffect(() => {
-    refetch();
+    try {
+      refetch();
+    } catch (e: any) {
+      globalErrorVar(e.message);
+    }
   }, [chosenDay]);
 
   const toggleSearchedMode = () => {
@@ -63,36 +67,36 @@ const Schedule = ({navigation}: any) => {
       <Appbar.Action icon="calendar-range" onPress={() => setShowDaysModal(true)}/>
     </Appbar>
     <View style={styles.container}>
-    <View style={styles.timeline} pointerEvents='none'>
-      {timeline.slice(1).map(item => (
-        <View style={[{width: hour}, styles.hour]}>
-          <Text>
-            {item}
-          </Text>
-        </View>
-      ))}
-    </View>
-    <ScrollView style={styles.schedule}>
-      {searchMode && (
-        <TextInput
-          style={styles.searchInput}
-          placeholder='Введіть П.І.Б. викладача'
-          value={searchedText}
-          onChangeText={text => setSearchedText(text)}
-        />
-      )}
-      {loading && <ActivityIndicator style={styles.loader}/>}
-      {(data?.classrooms as ClassroomType[])?.filter(({schedule}) => schedule.length)
-        .filter(filterSearched)
-        .slice().sort(sortAB as any).map(({schedule, name, id}) => {
-          return <View style={styles.row} key={id}>
-            <Text style={{width: '10%', textAlign: 'center'}}>{name}</Text>
-            {schedule.slice().sort(sortAB as any).map(unit => (
-              <ScheduleUnit unit={unit} setChosenUnit={setChosenUnit} key={unit.id}/>
-            ))}
+      <View style={styles.timeline} pointerEvents='none'>
+        {timeline.slice(1).map(item => (
+          <View style={[{width: hour}, styles.hour]}>
+            <Text>
+              {item}
+            </Text>
           </View>
-        })}
-    </ScrollView>
+        ))}
+      </View>
+      <ScrollView style={styles.schedule}>
+        {searchMode && (
+          <TextInput
+            style={styles.searchInput}
+            placeholder='Введіть П.І.Б. викладача'
+            value={searchedText}
+            onChangeText={text => setSearchedText(text)}
+          />
+        )}
+        {loading && <ActivityIndicator style={styles.loader}/>}
+        {(data?.classrooms as ClassroomType[])?.filter(({schedule}) => schedule.length)
+          .filter(filterSearched)
+          .slice().sort(sortAB as any).map(({schedule, name, id}) => {
+            return <View style={styles.row} key={id}>
+              <Text style={{width: '10%', textAlign: 'center'}}>{name}</Text>
+              {schedule.slice().sort(sortAB as any).map(unit => (
+                <ScheduleUnit unit={unit} setChosenUnit={setChosenUnit} key={unit.id}/>
+              ))}
+            </View>
+          })}
+      </ScrollView>
     </View>
     <ChooseDayModal
       chosenDay={chosenDay}
