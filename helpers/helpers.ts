@@ -280,7 +280,7 @@ export const shouldOccupiedByTeacher = (classroomName: string, scheduleUnits: Sc
     return hasIntersection;
   });
   if (occupiedOnSchedule) return 'Зайнято за розкладом';
-  return 'Вільно';
+  return `Зайнято з ${scheduleUnits[0].from}`;
 };
 
 export const isNotFree = (occupied: OccupiedInfo) => {
