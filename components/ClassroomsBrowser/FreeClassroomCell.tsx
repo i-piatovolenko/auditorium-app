@@ -8,7 +8,7 @@ import {useNavigation} from "@react-navigation/native";
 import TextTicker from "react-native-text-ticker";
 import moment from "moment";
 import {useLocal} from "../../hooks/useLocal";
-import {getMinutesFromHHMM} from "../../helpers/helpers";
+import {getMinutesFromHHMM, shouldOccupiedByTeacher} from "../../helpers/helpers";
 import Layout from "../../constants/Layout";
 import {desirableClassroomIdsVar, minimalClassroomIdsVar} from "../../api/localClient";
 
@@ -75,7 +75,8 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
           .queueAllowedDepartments.map(({department: {name}}) => name.toLowerCase()).join(', ')
       : Platform.OS === Platforms.WEB ? disabled?.comment
         : disabled?.comment + ' до ' + moment(disabled.until).format('DD-MM-YYYY HH:mm')
-      : schedule.length ? `Зайнято з ${schedule[0].from}` : 'Вільно';
+      : schedule.length ? `Зайнято з ${schedule[0].from}`
+        : shouldOccupiedByTeacher(classroom.name, schedule);
   }, [isDisabled, isEnabledForCurrentUser, classroom.queueInfo.queuePolicy])
 
   return (

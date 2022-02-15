@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Platform, StyleSheet, Text, View} from "react-native";
 import {Button} from "react-native-paper";
 import Colors from "../../constants/Colors";
@@ -85,7 +85,11 @@ const Buttons: React.FC<PropTypes> = ({
 
   const handlePress = async () => {
     setLoading(true);
-    if (sanctionedUntil) return setVisibleModalError(true);
+    if (sanctionedUntil) {
+      setVisibleModalError(true);
+      setLoading(false);
+      return;
+    }
     if (mode === Mode.PRIMARY) {
       const availableClassroomsIds = classrooms.filter(classroom => {
         return filterDisabledForQueue(classroom, currentUser);

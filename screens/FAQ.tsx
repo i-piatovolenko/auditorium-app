@@ -1,6 +1,6 @@
 import React from 'react';
-import {StyleSheet, View, Text, ImageBackground, Dimensions, Image} from "react-native";
-import {Appbar, Title} from "react-native-paper";
+import {StyleSheet, View, Text, ImageBackground, Dimensions, Image, Linking} from "react-native";
+import {Appbar, Divider, Title} from "react-native-paper";
 import {DrawerActions} from "@react-navigation/native";
 
 const windowHeight = Dimensions.get('window').height;
@@ -19,8 +19,19 @@ const FAQ = ({navigation}: any) => (
       />
     </Appbar>
     <View style={styles.wrapper}>
-      <Title style={styles.whiteText}>Є запитання?</Title>
-      <Text style={styles.marginBottomWhiteText}>auditorium.knmau@gmail.com</Text>
+      <Title style={styles.whiteText}>Є запитання? Переходь за посиланнями:</Title>
+      <Text
+        style={styles.marginBottomWhiteText}
+        onPress={() => Linking.openURL('https://www.facebook.com/auditoriumApplication')}
+      >
+        Технічна підтримка на сторінці Facebook
+      </Text>
+      <Text
+        style={styles.marginBottomWhiteText}
+        onPress={() => Linking.openURL('https://docs.google.com/document/d/11h6mm8OEQaG2kNODZXHHWkV1cAt5iCTdaRQ4iE6M5SU/edit')}
+      >
+        Інструкція користування
+      </Text>
     </View>
   </ImageBackground>
 );
@@ -41,11 +52,16 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   marginBottomWhiteText: {
-    marginBottom: 10,
-    color: '#fff'
+    marginVertical: 5,
+    color: '#fff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#fff',
+    padding: 10,
   },
   whiteText: {
-    color: '#fff'
+    color: '#fff',
+    marginBottom: 30,
   },
   menuIcon: {
     marginLeft: 3,

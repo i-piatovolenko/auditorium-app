@@ -13,7 +13,6 @@ import {useMutation} from "@apollo/client";
 import {LOGIN} from "../api/operations/mutations/login";
 import WaitDialog from "../components/WaitDialog";
 import {setItem} from "../api/asyncStorage";
-import ErrorDialog from "../components/ErrorDialog";
 import {Platforms, User} from "../models/models";
 import {client} from "../api/client";
 import PushNotification from "./PushNotification";

@@ -266,6 +266,23 @@ export const isOccupiedOrPendingByCurrentUser = (occupied: OccupiedInfo, current
         ) && occupied.user.id === currentUser.id;
 }
 
+export const shouldOccupiedByTeacher = (classroomName: string, scheduleUnits: ScheduleUnitType[]) => {
+  if (!scheduleUnits.length) return 'Вільно'
+  const occupiedOnSchedule = scheduleUnits.some(scheduleUnit => {
+    const [fromH, fromM] = scheduleUnit.from.split(':');
+    const [toH, toM] = scheduleUnit.to.split(':');
+    const fromDate = moment().set('hours', +fromH).set('minutes', +fromM);
+    const toDate = moment().set('hours', +toH).set('minutes', +toM);
+    const currentDate = moment();
+
+    const hasIntersection = currentDate.isBetween(fromDate, toDate)
+
+    return hasIntersection;
+  });
+  if (occupiedOnSchedule) return 'Зайнято за розкладом';
+  return 'Вільно';
+};
+
 export const isNotFree = (occupied: OccupiedInfo) => {
   return occupied.state !== OccupiedState.FREE;
 };
