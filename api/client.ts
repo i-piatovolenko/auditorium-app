@@ -17,7 +17,7 @@ const ENV = {
   }
 }
 
-const CURRENT_ENV = ENV.stg;
+const CURRENT_ENV = ENV.prod;
 
 const httpLink = createHttpLink({
   uri: CURRENT_ENV.https

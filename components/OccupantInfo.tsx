@@ -11,6 +11,7 @@ import {MAKE_DECISION_ON_PENDING_CLASSROOM} from "../api/operations/mutations/ma
 import WaitDialog from "./WaitDialog";
 import {client} from "../api/client";
 import {acceptedClassroomVar, globalErrorVar, skippedClassroomVar} from "../api/localClient";
+import UserInfoCard from "./UserInfoCard";
 
 type PropTypes = {
   classroom: ClassroomType;
@@ -20,7 +21,11 @@ type PropTypes = {
 
 const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
   const {data: {mode}} = useLocal('mode');
-  const userFullName = isNotFree(classroom?.occupied) ? fullName(classroom.occupied?.user) : '';
+  const {data: {me}} = useLocal('me');
+  const {occupied} = classroom;
+  const occupiedUser = occupied.state === OccupiedState.RESERVED ? occupied.user : occupied.keyHolder
+    ? occupied.keyHolder : occupied.user;
+  const userFullName = isNotFree(classroom?.occupied) ? fullName(occupiedUser) : '';
   const occupiedTotalTime = classroom.occupied.state === OccupiedState.OCCUPIED ? 180 :
     classroom.occupied.state === OccupiedState.RESERVED ? 15 : 2;
   const [timeLeft, timeLeftInPer] = useTimeLeft(classroom?.occupied, occupiedTotalTime);
@@ -56,35 +61,37 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
   return <>{!isNotFree(classroom.occupied)
     ? <Text style={styles.freeText}>Вільно</Text>
     : !isPendingForMe(classroom.occupied, user, mode) && (
-    <Surface style={[{elevation: visible ? 0 : 4}, styles.occupationInfo]}
-             onTouchEnd={showModal}
-    >
-      <Text style={styles.occupantName}>{userFullName}</Text>
-      <Text style={[{
-        backgroundColor: UserTypeColors[classroom.occupied.user.type as UserTypes]
-      },
-        styles.occupantType
-      ]}
-      >
-        {UserTypesUa[classroom.occupied.user.type as UserTypes]}
-      </Text>
-      {isOwnClassroom(classroom.occupied, user) ? (
-        timeLeftInPer > 0 && <View style={{marginTop: 30}}>
-            <Paragraph>
-                Часу на заняття залишилось: {timeLeft}
-            </Paragraph>
-            <ProgressBar progress={timeLeftInPer as number / 100} visible color={colors.red}
-                         style={styles.progressBar}
-            />
-        </View>
-      ) : (
-        <Text style={styles.occupiedUntil}>Зайнято до {getTimeHHMM(new Date(classroom.occupied.until))}</Text>
-      )}
-      <UserInfo userId={classroom.occupied.user.id} hideModal={hideModal} visible={visible}/>
-    </Surface>
+    <UserInfoCard
+      user={user}
+      visible={visible}
+      userFullName={userFullName}
+      occupied={classroom.occupied}
+      showModal={showModal}
+      hideModal={hideModal}
+      timeLeft={timeLeft}
+      timeLeftInPer={timeLeftInPer}
+      classroomName={classroom.name}
+    />
   )}
-    {classroom.occupied.state === OccupiedState.RESERVED &&
-    classroom.occupied.user.id === user.id && (
+    {(occupied.state === OccupiedState.RESERVED
+      || occupied.state === OccupiedState.PENDING)
+    && occupied.user.id === me.id
+    && occupied?.keyHolder && (
+      <UserInfoCard
+        user={user}
+        visible={visible}
+        userFullName={userFullName}
+        occupied={classroom.occupied}
+        showModal={showModal}
+        hideModal={hideModal}
+        timeLeft={timeLeft}
+        timeLeftInPer={timeLeftInPer}
+        isKeyHolder
+        classroomName={classroom.name}
+      />
+    )}
+    {occupied.state === OccupiedState.RESERVED &&
+    occupied.user.id === user.id && (
       <>
         {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
             <Banner visible={visibleBanner} actions={[{
@@ -143,10 +150,6 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
 }
 
 const styles = StyleSheet.create({
-  occupationInfo: {
-    borderRadius: 8,
-    padding: 16
-  },
   freeText: {
     textAlign: 'center',
     fontSize: 20,
@@ -158,23 +161,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 32,
     color: '#bbb'
-  },
-  occupantName: {
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  occupantType: {
-    color: '#fff',
-    textAlign: 'center',
-    alignSelf: 'center',
-    paddingVertical: 2,
-    paddingHorizontal: 4,
-    marginTop: 8,
-    borderRadius: 4,
-  },
-  occupiedUntil: {
-    textAlign: 'center',
-    marginTop: 8
   },
   progressBar: {
     height: 24,

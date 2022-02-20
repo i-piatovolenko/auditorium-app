@@ -1,4 +1,4 @@
-import React, {useCallback} from "react";
+import React, {useCallback, useEffect} from "react";
 import {Image, Platform, StyleSheet, Text, TouchableHighlight, View} from "react-native";
 import {ClassroomType, DisabledState, Mode, Platforms} from "../../models/models";
 import Colors from "../../constants/Colors";
@@ -62,8 +62,8 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
   const defineStatus = useCallback(() => {
     const schedule = classroom.schedule.filter(unit => {
       const currentHHMM = getMinutesFromHHMM(moment().format('HH:MM'));
-      const unitFromHHMM = getMinutesFromHHMM(unit.from);
-      return unitFromHHMM >= currentHHMM;
+      const unitToHHMM = getMinutesFromHHMM(unit.to);
+      return unitToHHMM > currentHHMM;
     }).slice().sort((a, b) => {
       return getMinutesFromHHMM(a.from) - getMinutesFromHHMM(b.from);
     });
@@ -75,8 +75,7 @@ const FreeClassroomCell: React.FC<PropTypes> = ({classroom, isEnabledForCurrentU
           .queueAllowedDepartments.map(({department: {name}}) => name.toLowerCase()).join(', ')
       : Platform.OS === Platforms.WEB ? disabled?.comment
         : disabled?.comment + ' до ' + moment(disabled.until).format('DD-MM-YYYY HH:mm')
-      : schedule.length ? `Зайнято з ${schedule[0].from}`
-        : shouldOccupiedByTeacher(classroom.name, schedule);
+      : shouldOccupiedByTeacher(classroom.name, schedule);
   }, [isDisabled, isEnabledForCurrentUser, classroom.queueInfo.queuePolicy])
 
   return (

@@ -226,10 +226,6 @@ const ClassroomsList: React.FC = ({route}: any) => {
   };
 
   useEffect(() => {
-    console.log(data)
-  }, [data])
-
-  useEffect(() => {
     if (crashModeData) {
       setCrashMode(crashModeData.crashMode.isActive);
       setCrashModeComment(crashModeData.crashMode.comment);

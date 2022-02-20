@@ -141,6 +141,10 @@ export const GET_CLASSROOMS_WITH_SCHEDULE = gql`
         id
         from
         to
+        user {
+        id
+          lastName
+        }
       }
       isWing
       isOperaStudio
@@ -154,6 +158,19 @@ export const GET_CLASSROOMS_WITH_SCHEDULE = gql`
           nameTemp
           email
           phoneNumber
+        }
+         keyHolder {
+         id
+          firstName
+          patronymic
+          lastName
+          type
+          nameTemp
+          email
+          phoneNumber
+          department {
+              name
+          }
         }
         until
         state
