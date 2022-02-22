@@ -23,9 +23,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
   const {data: {mode}} = useLocal('mode');
   const {data: {me}} = useLocal('me');
   const {occupied} = classroom;
-  const occupiedUser = occupied.state === OccupiedState.RESERVED ? occupied.user : occupied.keyHolder
-    ? occupied.keyHolder : occupied.user;
-  const userFullName = isNotFree(classroom?.occupied) ? fullName(occupiedUser) : '';
+  const userFullName = isNotFree(classroom?.occupied) ? fullName(occupied.user) : '';
   const occupiedTotalTime = classroom.occupied.state === OccupiedState.OCCUPIED ? 180 :
     classroom.occupied.state === OccupiedState.RESERVED ? 15 : 2;
   const [timeLeft, timeLeftInPer] = useTimeLeft(classroom?.occupied, occupiedTotalTime);
@@ -60,7 +58,9 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
 
   return <>{!isNotFree(classroom.occupied)
     ? <Text style={styles.freeText}>Вільно</Text>
-    : !isPendingForMe(classroom.occupied, user, mode) && (
+    :
+    // !isPendingForMe(classroom.occupied, user, mode) &&
+    (
     <UserInfoCard
       user={user}
       visible={visible}
@@ -80,7 +80,7 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
       <UserInfoCard
         user={user}
         visible={visible}
-        userFullName={userFullName}
+        userFullName={fullName(occupied.keyHolder)}
         occupied={classroom.occupied}
         showModal={showModal}
         hideModal={hideModal}
@@ -90,6 +90,17 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
         classroomName={classroom.name}
       />
     )}
+    <View style={styles.buttons}>
+      <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
+              disabled={loading}
+              onPress={() => makeDecision(false)}>
+        <Text>Пропустити аудиторію</Text>
+      </Button>
+      <Button mode='contained' onPress={() => makeDecision(true)} loading={loading}
+              disabled={loading}>
+        <Text>Підтвердити аудиторію</Text>
+      </Button>
+    </View>
     {occupied.state === OccupiedState.RESERVED &&
     occupied.user.id === user.id && (
       <>
@@ -132,17 +143,6 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
                          style={styles.progressBar}
             />
         </View>}
-        <View style={styles.buttons}>
-          <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
-                  disabled={loading}
-                  onPress={() => makeDecision(false)}>
-            <Text>Пропустити аудиторію</Text>
-          </Button>
-          <Button mode='contained' onPress={() => makeDecision(true)} loading={loading}
-                  disabled={loading}>
-            <Text>Підтвердити аудиторію</Text>
-          </Button>
-        </View>
       </>
     )}
     <WaitDialog visible={loading}/>

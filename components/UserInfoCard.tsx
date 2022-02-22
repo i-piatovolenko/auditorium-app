@@ -81,9 +81,9 @@ const UserInfoCard: FC<UserInfoCardPropTypes> = (props) => {
                            style={styles.progressBar}
               />
           </View>
-        ) : (
+        ) : !isKeyHolder ? (
           <Text style={styles.occupiedUntil}>Зайнято до {getTimeHHMM(new Date(occupied.until))}</Text>
-        )}
+        ) : (<></>)}
         <UserInfo userId={occupiedUser.id} hideModal={hideModal} visible={visible}/>
       </Surface>
       {isKeyHolder && occupied.keyHolder && (occupied.state === OccupiedState.RESERVED
