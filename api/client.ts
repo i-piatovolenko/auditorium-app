@@ -8,12 +8,12 @@ import {localFields} from "./localClient";
 
 const ENV = {
   prod: {
-    wss: 'wss://api.auditoriu.me/',
-    https: 'https://api.auditoriu.me/',
+    wss: 'wss://api.knmau.auditorium.com.ua/',
+    https: 'https://api.knmau.auditorium.com.ua/',
   },
   stg: {
-    wss: 'wss://staging.api.auditoriu.me/',
-    https: 'https://staging.api.auditoriu.me/',
+    wss: 'wss://api.knmau.auditorium.com.ua/',
+    https: 'https://staging.api.knmau.auditorium.com.ua/',
   }
 }
 
