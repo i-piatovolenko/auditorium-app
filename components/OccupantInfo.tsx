@@ -56,26 +56,40 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
 
   const hideModal = () => setVisible(false);
 
-  return <>{!isNotFree(classroom.occupied)
-    ? <Text style={styles.freeText}>Вільно</Text>
-    :
-    // !isPendingForMe(classroom.occupied, user, mode) &&
-    (
-    <UserInfoCard
-      user={user}
-      visible={visible}
-      userFullName={userFullName}
-      occupied={classroom.occupied}
-      showModal={showModal}
-      hideModal={hideModal}
-      timeLeft={timeLeft}
-      timeLeftInPer={timeLeftInPer}
-      classroomName={classroom.name}
-    />
-  )}
+  return <>
+    {occupied.state === OccupiedState.PENDING && occupied?.user?.id === me.id && (
+      <View style={styles.buttons}>
+        <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
+                disabled={loading}
+                onPress={() => makeDecision(false)}>
+          <Text>Пропустити аудиторію</Text>
+        </Button>
+        <Button mode='contained' onPress={() => makeDecision(true)} loading={loading}
+                disabled={loading}>
+          <Text>Підтвердити аудиторію</Text>
+        </Button>
+      </View>
+    )}
+    {!isNotFree(classroom.occupied)
+      ? <Text style={styles.freeText}>Вільно</Text>
+      :
+      // !isPendingForMe(classroom.occupied, user, mode) &&
+      (
+        <UserInfoCard
+          user={user}
+          visible={visible}
+          userFullName={userFullName}
+          occupied={classroom.occupied}
+          showModal={showModal}
+          hideModal={hideModal}
+          timeLeft={timeLeft}
+          timeLeftInPer={timeLeftInPer}
+          classroomName={classroom.name}
+        />
+      )}
     {(occupied.state === OccupiedState.RESERVED
       || occupied.state === OccupiedState.PENDING)
-    && occupied.user.id === me.id
+    && (occupied.user?.id === me.id || occupied?.keyHolder?.id === me.id)
     && occupied?.keyHolder && (
       <UserInfoCard
         user={user}
@@ -90,19 +104,8 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
         classroomName={classroom.name}
       />
     )}
-    <View style={styles.buttons}>
-      <Button mode='contained' style={{marginBottom: 8}} color='#f91354' loading={loading}
-              disabled={loading}
-              onPress={() => makeDecision(false)}>
-        <Text>Пропустити аудиторію</Text>
-      </Button>
-      <Button mode='contained' onPress={() => makeDecision(true)} loading={loading}
-              disabled={loading}>
-        <Text>Підтвердити аудиторію</Text>
-      </Button>
-    </View>
     {occupied.state === OccupiedState.RESERVED &&
-    occupied.user.id === user.id && (
+    occupied.user?.id === user.id && (
       <>
         {timeLeftInPer > 0 && <View style={styles.spaceBottom30}>
             <Banner visible={visibleBanner} actions={[{
@@ -110,7 +113,11 @@ const OccupantInfo: React.FC<PropTypes> = ({classroom, user, navigation}) => {
               onPress: () => setVisibleBanner(false)
             }]}
                     style={styles.spaceBottom30}
-            >Заберіть ключі від аудиторії в учбовій частині. Максимальний час знаходження в аудиторії - 3 години.
+            >
+              {occupied.keyHolder === null ?
+                'Заберіть ключі від аудиторії в учбовій частині. Максимальний час знаходження в аудиторії - 3 години.'
+                : 'Заберіть ключ з аудиторії та натисніть "Ключ отримано"'
+              }
             </Banner>
             <Paragraph>
                 Чаc, щоб забрати ключ: {timeLeft}

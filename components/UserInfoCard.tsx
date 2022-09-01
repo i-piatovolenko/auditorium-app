@@ -63,6 +63,12 @@ const UserInfoCard: FC<UserInfoCardPropTypes> = (props) => {
       <Surface style={[{elevation: visible ? 0 : 4}, styles.occupationInfo]}
                onTouchEnd={showModal}
       >
+        {occupied.user && occupied.keyHolder && occupied.user.id !== occupied.keyHolder.id && (
+          <>
+            {me.id === occupied.keyHolder.id && !isKeyHolder && <Text>{occupied.user?.phoneNumber || ''}</Text>}
+            {me.id === occupied.user.id && isKeyHolder && <Text>{occupied.keyHolder?.phoneNumber || ''}</Text>}
+          </>
+        )}
         <Text style={styles.occupantName}>{userFullName} {isKeyHolder ? '(власник ключа)' : ''}</Text>
         <Text style={[{
           backgroundColor: UserTypeColors[occupied.user.type as UserTypes]
@@ -86,12 +92,17 @@ const UserInfoCard: FC<UserInfoCardPropTypes> = (props) => {
         ) : (<></>)}
         <UserInfo userId={occupiedUser.id} hideModal={hideModal} visible={visible}/>
       </Surface>
-      {isKeyHolder && occupied.keyHolder && (occupied.state === OccupiedState.RESERVED
-        || occupied.state === OccupiedState.PENDING) && occupied.user.id === me.id && (
-        <Button mode='contained' style={{marginTop: 10}} onPress={giveOutKey}>
-          Ключ отримано
-        </Button>
-      )}
+      {
+        isKeyHolder
+        && occupied.keyHolder
+        && occupied.state === OccupiedState.RESERVED
+        && occupied.user.id === me.id
+        && (
+          <Button mode='contained' style={{marginTop: 10}} onPress={giveOutKey}>
+            Ключ отримано
+          </Button>
+        )
+      }
     </>
   );
 };

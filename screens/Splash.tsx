@@ -1,5 +1,5 @@
 import React from 'react';
-import {ImageBackground, Image, View} from "react-native";
+import {ImageBackground, Image, View, Text} from "react-native";
 import {ProgressBar} from "react-native-paper";
 
 export default function Splash() {
@@ -18,6 +18,7 @@ export default function Splash() {
       }}/>
       <View style={{width: '70%', marginTop: 40}}>
         <ProgressBar indeterminate color='#fff'/>
+        <Text style={{color: '#fff'}}>2022</Text>
       </View>
     </ImageBackground>
   )
